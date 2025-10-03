@@ -97,6 +97,10 @@
             background-color: #3f3f46; /* zinc-700 */
             color: #60a5fa; /* blue-400 */
         }
+        .dark .tag.selected {
+            background-color: #3b82f6; /* blue-500 for better visibility */
+            color: #ffffff;
+        }
         .dark .border-blue-200 { border-color: #1d4ed8; } /* blue-700 */
         .dark .border-green-200 { border-color: #15803d; } /* green-700 */
         .dark .border-purple-200 { border-color: #7e22ce; } /* purple-700 */
@@ -282,15 +286,14 @@
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, addDoc, getDoc, getDocs, collection, onSnapshot, query, orderBy, deleteDoc, updateDoc, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-        // --- 고객님의 Firebase 설정 코드가 여기에 적용되었습니다 ---
+        // --- PASTE YOUR FIREBASE CONFIGURATION HERE ---
         const firebaseConfig = {
-          apiKey: "AIzaSyDZm5AazCafB0Sb2gd0llv9e3GAhE-nKBw",
-          authDomain: "sakurazima-mai-0u0.firebaseapp.com",
-          projectId: "sakurazima-mai-0u0",
-          storageBucket: "sakurazima-mai-0u0.appspot.com",
-          messagingSenderId: "697666115735",
-          appId: "1:697666115735:web:7380a588822f771dc071d2",
-          measurementId: "G-TZQ9GVFWV5"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
         // ---------------------------------------------
 
@@ -988,3 +991,4 @@
     </script>
 </body>
 </html>
+
