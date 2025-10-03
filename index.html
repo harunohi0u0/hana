@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="ko" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>매매일지</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: background-color 0.3s ease;
+        }
+        .tab-btn { transition: all 0.3s ease; }
+        .tab-btn.active { background-color: #4a90e2; color: white; font-weight: 700; }
+        .tag { transition: all 0.2s ease; cursor: pointer; }
+        .tag.selected { background-color: #4a90e2; color: white; }
+        .modal-backdrop { background-color: rgba(0,0,0,0.5); transition: opacity 0.3s ease; }
+        .modal-content { transition: transform 0.3s ease; }
+        
+        .toggle-group {
+            display: flex;
+            border-radius: 0.75rem;
+            padding: 0.25rem;
+            background-color: #e5e7eb; /* bg-gray-200 */
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 0.5rem 0;
+            border-radius: 0.5rem;
+            border: none;
+            background-color: transparent;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .toggle-btn.selected {
+            background-color: white;
+            color: #3b82f6; /* text-blue-600 */
+            font-weight: 700;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .tag.selected .delete-tag-span {
+            color: white;
+        }
+        .tag.selected .delete-tag-span:hover {
+            color: #fecaca; /* light red */
+        }
+
+        /* --- GUARANTEED DARK MODE STYLES --- */
+        .dark body {
+            background-color: #000;
+            color: #d4d4d8; /* zinc-300 */
+        }
+        .dark h1, .dark h2, .dark h3 {
+            color: #f4f4f5; /* zinc-100 */
+        }
+        .dark p, .dark label, .dark span, .dark strong {
+            color: #d4d4d8; /* zinc-300 */
+        }
+        .dark header p, .dark .text-gray-500 {
+            color: #a1a1aa; /* zinc-400 */
+        }
+        .dark #auth-info {
+            color: #71717a; /* zinc-500 */
+        }
+        .dark #theme-toggle:hover, .dark #logout-btn:hover {
+            background-color: #27272a; /* zinc-800 */
+        }
+        .dark nav, .dark form, .dark #list-view > div:first-child, .dark #stats-view > div:first-child, .dark .bg-white {
+            background-color: #18181b; /* zinc-900 */
+        }
+        .dark .tab-btn {
+             color: #d4d4d8; /* zinc-300 */
+        }
+        .dark input, .dark .toggle-group {
+            background-color: #27272a; /* zinc-800 */
+            border-color: #3f3f46; /* zinc-700 */
+            color: #e4e4e7; /* zinc-200 */
+        }
+         .dark input::placeholder {
+            color: #71717a; /* zinc-500 */
+        }
+        .dark .toggle-btn {
+            color: #d4d4d8; /* zinc-300 */
+        }
+        .dark .toggle-btn.selected {
+            background-color: #3f3f46; /* zinc-700 */
+            color: #60a5fa; /* blue-400 */
+        }
+        .dark .border-blue-200 { border-color: #1d4ed8; } /* blue-700 */
+        .dark .border-green-200 { border-color: #15803d; } /* green-700 */
+        .dark .border-purple-200 { border-color: #7e22ce; } /* purple-700 */
+        .dark .bg-blue-50 {
+            background-color: #27272a; /* zinc-800 */
+            border-color: #3f3f46;   /* zinc-700 */
+        }
+        .dark .text-blue-800 {
+             color: #d4d4d8; /* zinc-300 */
+        }
+        .dark .bg-gray-200 { background-color: #3f3f46; } /* zinc-700 */
+        .dark .text-gray-700 { color: #e4e4e7; } /* zinc-200 */
+        .dark .text-gray-600 { color: #d4d4d8; } /* zinc-300 */
+        .dark .text-gray-800 { color: #f4f4f5; } /* zinc-100 */
+        .dark .bg-green-100 { background-color: rgba(34, 197, 94, 0.1); }
+        .dark .text-green-800 { color: #4ade80; } /* green-400 */
+        .dark .bg-purple-100 { background-color: rgba(168, 85, 247, 0.1); }
+        .dark .text-purple-800 { color: #c084fc; } /* purple-400 */
+        .dark .border-gray-200 { border-color: #3f3f46; } /* zinc-700 */
+        .dark .bg-gray-50 { background-color: #27272a; } /* zinc-800 */
+        .dark .hover\:bg-gray-100:hover { background-color: #27272a; } /* zinc-800 */
+        .dark .bg-gray-300 { background-color: #52525b; } /* zinc-600 */
+        .dark .hover\:bg-gray-400:hover { background-color: #71717a; } /* zinc-500 */
+        /* --- END DARK MODE STYLES --- */
+    </style>
+    <!-- 다크모드 FOUC 방지 및 즉시 적용 스크립트 -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</head>
+<body class="bg-gray-100">
+
+    <div id="login-view" class="flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="text-center">
+            <h1 class="text-5xl font-bold mb-4">나의 매매일지 📝</h1>
+            <p class="text-xl text-gray-500 mb-8">당신의 모든 거래를 기록하고 성장하세요!</p>
+            <button id="login-btn" class="bg-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center justify-center">
+                <svg class="w-6 h-6 mr-3" viewBox="0 0 48 48"><defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath><path clip-path="url(#b)" fill="#FBBC05" d="M0 37V11l17 13z"/><path clip-path="url(#b)" fill="#EA4335" d="M0 11l17 13 7-6.1L48 14V0H0z"/><path clip-path="url(#b)" fill="#34A853" d="M0 37l30-23 7.9 1L48 0v48H0z"/><path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/></svg>
+                Google 계정으로 로그인
+            </button>
+        </div>
+    </div>
+
+    <div id="app-container" class="max-w-7xl mx-auto p-4 md:p-8 hidden">
+        
+        <header class="mb-8 relative">
+            <h1 class="text-4xl font-bold text-center mb-2">나의 매매일지 📝</h1>
+            <p class="text-center text-gray-500">당신의 모든 거래를 기록하고 성장하세요!</p>
+            <div id="auth-info" class="text-center text-xs mt-2"></div>
+            <div class="absolute top-0 right-0 flex items-center space-x-2">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <i id="sun-icon" data-lucide="sun" class="h-6 w-6"></i>
+                    <i id="moon-icon" data-lucide="moon" class="h-6 w-6"></i>
+                </button>
+                <button id="logout-btn" title="로그아웃" class="text-sm font-semibold hover:text-red-500 transition-colors p-2 rounded-md hover:bg-gray-200">
+                    <i data-lucide="log-out" class="h-5 w-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <nav class="flex justify-center bg-white rounded-xl shadow-md p-2 mb-8 space-x-2">
+            <button data-tab="form-view" class="tab-btn text-gray-600 active w-full md:w-auto px-6 py-3 rounded-lg"><i data-lucide="plus-circle" class="inline-block w-5 h-5 mr-2"></i>일지 작성</button>
+            <button data-tab="list-view" class="tab-btn text-gray-600 w-full md:w-auto px-6 py-3 rounded-lg"><i data-lucide="book-open" class="inline-block w-5 h-5 mr-2"></i>내 일지</button>
+            <button data-tab="stats-view" class="tab-btn text-gray-600 w-full md:w-auto px-6 py-3 rounded-lg"><i data-lucide="bar-chart-2" class="inline-block w-5 h-5 mr-2"></i>성과 분석</button>
+        </nav>
+
+        <main>
+            <div id="form-view">
+                <form id="journal-form" class="bg-white p-6 md:p-8 rounded-2xl shadow-lg space-y-8">
+                    <input type="hidden" id="journal-id">
+                    
+                    <div>
+                        <h2 class="text-2xl font-bold mb-4 border-b-2 border-blue-200 pb-2 flex items-center"><i data-lucide="clipboard-list" class="mr-3 text-blue-500"></i>기본 정보</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div><label for="date" class="block text-sm font-medium text-gray-700 mb-1">날짜</label><input type="date" id="date" required class="w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent text-gray-800"></div>
+                            <div><label for="ticker" class="block text-sm font-medium text-gray-700 mb-1">종목 이름</label><input type="text" id="ticker" placeholder="예: 삼성전자, BTCUSDT" required class="w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent placeholder-gray-400 text-gray-800"></div>
+                            <div><span class="block text-sm font-medium text-gray-700 mb-2">포지션</span><div class="toggle-group text-gray-600" data-group="position"><button type="button" data-value="long" class="toggle-btn">🟢 롱</button><button type="button" data-value="short" class="toggle-btn">🔴 숏</button></div></div>
+                            <div><span class="block text-sm font-medium text-gray-700 mb-2">매매 전략</span><div class="toggle-group text-gray-600" data-group="strategy"><button type="button" data-value="단타" class="toggle-btn">단타</button><button type="button" data-value="스윙" class="toggle-btn">스윙</button><button type="button" data-value="장기" class="toggle-btn">장기</button></div></div>
+                            <div class="md:col-span-2 lg:col-span-4"><span class="block text-sm font-medium text-gray-700 mb-2">입력 통화</span><div class="toggle-group text-gray-600 w-full md:w-auto md:max-w-xs" data-group="form-currency"><button type="button" id="form-currency-krw-btn" class="toggle-btn selected">원 (₩)</button><button type="button" id="form-currency-usd-btn" class="toggle-btn">달러 ($)</button></div></div>
+                            <div><label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">수량</label><input type="text" inputmode="numeric" id="quantity" placeholder="예: 100" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent placeholder-gray-400 text-gray-800"></div>
+                            <div><label for="entry-price" class="block text-sm font-medium text-gray-700 mb-1">매입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="예: 10,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent placeholder-gray-400 text-gray-800"></div>
+                            <div><label for="stop-loss" class="block text-sm font-medium text-gray-700 mb-1">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="예: 9,500" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent placeholder-gray-400 text-gray-800"></div>
+                            <div><label for="target-price" class="block text-sm font-medium text-gray-700 mb-1">목표가</label><input type="text" inputmode="decimal" id="target-price" placeholder="예: 11,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent placeholder-gray-400 text-gray-800"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 class="text-2xl font-bold mb-4 border-b-2 border-green-200 pb-2 flex items-center"><i data-lucide="siren" class="mr-3 text-green-500"></i>진입 근거</h2>
+                        <div id="entry-tags-container" class="flex flex-wrap gap-2 mb-2"></div>
+                        <div class="flex gap-2"><input type="text" id="new-entry-tag" placeholder="새로운 태그 추가 (예: 정배열 돌파)" class="flex-grow p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-green-400 focus:border-transparent placeholder-gray-400 text-gray-800"><button type="button" id="add-entry-tag-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">추가</button></div>
+                    </div>
+
+                    <div>
+                        <h2 class="text-2xl font-bold mb-4 border-b-2 border-purple-200 pb-2 flex items-center"><i data-lucide="brain-circuit" class="mr-3 text-purple-500"></i>심리 상태</h2>
+                        <div id="psychology-tags-container" class="flex flex-wrap gap-2 mb-2"></div>
+                        <div class="flex gap-2"><input type="text" id="new-psychology-tag" placeholder="새로운 태그 추가 (예: FOMO)" class="flex-grow p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-purple-400 focus:border-transparent placeholder-gray-400 text-gray-800"><button type="button" id="add-psychology-tag-btn" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">추가</button></div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4"><button type="button" id="clear-form-btn" class="bg-gray-400 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-500 transition">새로 작성</button><button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-600 transition"><i data-lucide="save" class="inline-block w-5 h-5 mr-2"></i>일지 저장</button></div>
+                </form>
+            </div>
+
+            <div id="list-view" class="hidden">
+                <div class="bg-white p-4 rounded-2xl shadow-lg mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
+                     <div class="flex items-center space-x-2">
+                        <label for="list-exchange-rate" class="font-medium text-sm text-gray-600">환율 (USD/KRW):</label>
+                        <input type="text" inputmode="numeric" id="list-exchange-rate" value="1,380" class="exchange-rate-input number-input w-28 p-2 border border-gray-300 bg-white rounded-lg text-center text-gray-800">
+                    </div>
+                </div>
+                <div class="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-4 rounded-xl mb-6 flex items-center gap-3">
+                    <i data-lucide="info" class="w-5 h-5 flex-shrink-0"></i>
+                    <p>각 일지 우측 상단의 <i data-lucide="log-out" class="inline-block w-4 h-4 mx-1"></i>(청산), <i data-lucide="edit" class="inline-block w-4 h-4 mx-1"></i>(수정), <i data-lucide="trash-2" class="inline-block w-4 h-4 mx-1"></i>(삭제) 아이콘을 눌러 관리할 수 있습니다.</p>
+                </div>
+                <div id="journal-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+
+            <div id="stats-view" class="hidden space-y-8">
+                <div class="bg-white p-4 rounded-2xl shadow-lg mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
+                    <div class="flex items-center space-x-2">
+                        <label for="stats-exchange-rate" class="font-medium text-sm text-gray-600">환율 (USD/KRW):</label>
+                        <input type="text" inputmode="numeric" id="stats-exchange-rate" value="1,380" class="exchange-rate-input number-input w-28 p-2 border border-gray-300 bg-white rounded-lg text-center text-gray-800">
+                    </div>
+                    <div class="toggle-group text-gray-600 w-full sm:w-auto" data-group="stats-currency">
+                        <button id="stats-currency-krw-btn" class="toggle-btn selected">원 (₩)</button>
+                        <button id="stats-currency-usd-btn" class="toggle-btn">달러 ($)</button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg md:col-span-1"><h3 class="text-xl font-bold mb-4">총 손익 구성</h3><div class="chart-container"><canvas id="pnl-composition-chart"></canvas></div></div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg md:col-span-2"><h3 class="text-xl font-bold mb-4">월별 손익 추세</h3><div class="chart-container"><canvas id="monthly-pnl-chart"></canvas></div><div id="monthly-pnl-summary" class="mt-4 text-sm text-center"></div></div>
+                </div>
+                <div class="grid grid-cols-1">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">분기별 손익 추세</h3><div class="chart-container"><canvas id="quarterly-pnl-chart"></canvas></div><div id="quarterly-pnl-summary" class="mt-4 text-sm text-center"></div></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                     <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">진입 근거별 승률</h3><div class="chart-container"><canvas id="entry-win-rate-chart"></canvas></div></div>
+                     <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">심리 상태별 승률</h3><div class="chart-container"><canvas id="psychology-win-rate-chart"></canvas></div></div>
+                     <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">매매 전략별 승률</h3><div class="chart-container"><canvas id="strategy-win-rate-chart"></canvas></div></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg md:col-span-2"><h3 class="text-xl font-bold mb-4">롱/숏 포지션 승률</h3><div class="chart-container"><canvas id="position-win-rate-chart"></canvas></div></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="exit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md modal-content transform scale-95">
+            <h2 class="text-2xl font-bold mb-6">청산 기록</h2>
+            <form id="exit-form"><input type="hidden" id="exit-journal-id">
+                <div class="space-y-4">
+                    <div><label for="exit-date" class="block text-sm font-medium text-gray-700">청산 날짜</label><input type="date" id="exit-date" required class="mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg text-gray-800"></div>
+                    <div><label for="exit-price" class="block text-sm font-medium text-gray-700">청산가</label><input type="text" inputmode="decimal" id="exit-price" required class="number-input mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg text-gray-800"></div>
+                    <div><label for="exit-quantity" class="block text-sm font-medium text-gray-700">청산 수량</label><input type="text" inputmode="numeric" id="exit-quantity" required class="number-input mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg text-gray-800"><p class="text-xs text-gray-500 mt-1">남은 수량: <span id="remaining-quantity"></span></p></div>
+                </div>
+                <div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">청산 추가</button></div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm modal-content transform scale-95">
+            <h2 id="confirm-title" class="text-xl font-bold mb-4">확인</h2>
+            <p id="confirm-message" class="text-gray-600 mb-6"></p>
+            <div class="flex justify-end space-x-3">
+                <button type="button" id="confirm-cancel-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">취소</button>
+                <button type="button" id="confirm-ok-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"><p id="toast-message"></p></div>
+    
+    <script type="module">
+        // Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, addDoc, getDoc, getDocs, collection, onSnapshot, query, orderBy, deleteDoc, updateDoc, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+        // --- 고객님의 Firebase 설정 코드가 여기에 적용되었습니다 ---
+        const firebaseConfig = {
+          apiKey: "AIzaSyDZm5AazCafB0Sb2gd0llv9e3GAhE-nKBw",
+          authDomain: "sakurazima-mai-0u0.firebaseapp.com",
+          projectId: "sakurazima-mai-0u0",
+          storageBucket: "sakurazima-mai-0u0.appspot.com",
+          messagingSenderId: "697666115735",
+          appId: "1:697666115735:web:7380a588822f771dc071d2",
+          measurementId: "G-TZQ9GVFWV5"
+        };
+        // ---------------------------------------------
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        let currentUser = null;
+        let unsubscribeJournals = null;
+        let unsubscribeTags = null;
+        let localJournals = [];
+        let localTags = { entry: [], psychology: [] };
+
+        const loginView = document.getElementById('login-view');
+        const appContainer = document.getElementById('app-container');
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        loginBtn.addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch(error => {
+                console.error("Login failed:", error);
+                showToast("로그인에 실패했습니다. 잠시 후 다시 시도해주세요.", "error");
+            });
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                loginView.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+                document.getElementById('auth-info').textContent = `${user.displayName}님 환영합니다!`;
+                initializeAppFunctionality();
+            } else {
+                currentUser = null;
+                loginView.classList.remove('hidden');
+                appContainer.classList.add('hidden');
+                if (unsubscribeJournals) unsubscribeJournals();
+                if (unsubscribeTags) unsubscribeTags();
+                journalList.innerHTML = '';
+                Object.values(charts).forEach(chart => chart.destroy());
+                charts = {};
+            }
+            lucide.createIcons();
+        });
+        
+        async function initializeAppFunctionality() {
+            if (!currentUser) return;
+            const userId = currentUser.uid;
+
+            const tagsDocRef = doc(db, "users", userId, "tags", "all");
+            const tagsDocSnap = await getDoc(tagsDocRef);
+            if (!tagsDocSnap.exists()) {
+                await setDoc(tagsDocRef, {
+                    entry: ['정배열 돌파', '낙주 매매'],
+                    psychology: ['FOMO', '확신']
+                });
+            }
+            
+            attachRealtimeListeners(userId);
+            resetForm();
+        }
+
+        function attachRealtimeListeners(userId) {
+            if (unsubscribeJournals) unsubscribeJournals();
+            const journalsQuery = query(collection(db, "users", userId, "journals"), orderBy("date", "desc"));
+            unsubscribeJournals = onSnapshot(journalsQuery, (snapshot) => {
+                const journals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                localJournals = journals.map(j => ({ ...j, date: j.date instanceof Timestamp ? j.date.toDate() : new Date(j.date) }));
+                renderJournals(localJournals);
+                renderStats(localJournals);
+            }, (error) => console.error("Error fetching journals:", error));
+
+            if (unsubscribeTags) unsubscribeTags();
+            const tagsDocRef = doc(db, "users", userId, "tags", "all");
+            unsubscribeTags = onSnapshot(tagsDocRef, (doc) => {
+                if (doc.exists()) {
+                    localTags = doc.data();
+                    renderTags(localTags.entry, 'entry-tags-container', 'entry');
+                    renderTags(localTags.psychology, 'psychology-tags-container', 'psychology');
+                }
+            }, (error) => console.error("Error fetching tags:", error));
+        }
+
+
+        const formView = document.getElementById('form-view');
+        const listView = document.getElementById('list-view');
+        const statsView = document.getElementById('stats-view');
+        const journalForm = document.getElementById('journal-form');
+        const journalList = document.getElementById('journal-list');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+
+        let charts = {};
+        let confirmCallback = null;
+        let statsCurrency = 'KRW';
+        let exchangeRate = 1380;
+        
+        const unformatNumber = (value) => value.toString().replace(/,/g, '');
+        const formatNumber = (value) => {
+            const num = parseFloat(unformatNumber(value));
+            if (isNaN(num)) return '';
+            return num.toLocaleString('en-US');
+        };
+
+        function formatPrice(price, currency){
+            if (isNaN(price)) return '';
+            if (currency === 'USD') return `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            return `₩${Math.round(price).toLocaleString('en-US')}`;
+        }
+        
+        function formatDualCurrency(pnlInKRW, originalCurrency) {
+            if (isNaN(pnlInKRW)) return '';
+            if (originalCurrency === 'KRW') {
+                const pnlInUSD = pnlInKRW / exchangeRate;
+                return `${formatPrice(pnlInKRW, 'KRW')} (${formatPrice(pnlInUSD, 'USD')})`;
+            } else { 
+                const pnlInUSD = pnlInKRW / exchangeRate;
+                return `${formatPrice(pnlInUSD, 'USD')} (${formatPrice(pnlInKRW, 'KRW')})`;
+            }
+        }
+        
+        function renderJournals(journals) {
+            journalList.innerHTML = '';
+            if (journals.length === 0) {
+                journalList.innerHTML = `<div class="bg-white col-span-full text-center text-gray-500 p-10 rounded-2xl shadow-md"><i data-lucide="folder-x" class="mx-auto w-16 h-16 text-gray-400 mb-4"></i><p class="text-xl">작성된 매매일지가 없습니다.</p><p>첫 번째 매매일지를 작성해보세요!</p></div>`;
+                lucide.createIcons(); return;
+            }
+
+            journals.forEach(journal => {
+                const totalQuantity = journal.quantity;
+                const exitedQuantity = journal.exits ? journal.exits.reduce((sum, exit) => sum + exit.quantity, 0) : 0;
+                const remainingQuantity = totalQuantity - exitedQuantity;
+                const isClosed = remainingQuantity <= 0;
+                
+                let totalPnl = 0;
+                if (journal.exits && journal.exits.length > 0) {
+                     totalPnl = journal.exits.reduce((sum, exit) => sum + (journal.position === 'long' ? (exit.price - journal.entryPrice) : (journal.entryPrice - exit.price)) * exit.quantity, 0);
+                }
+                const totalPnlInKRW = journal.currency === 'USD' ? totalPnl * exchangeRate : totalPnl;
+                const pnlClass = totalPnlInKRW > 0 ? 'text-green-500' : totalPnlInKRW < 0 ? 'text-red-500' : 'text-gray-500';
+                
+                const borderColor = isClosed ? (totalPnlInKRW > 0 ? 'border-green-500' : 'border-red-500') : 'border-yellow-500';
+                const card = document.createElement('div');
+                card.className = `bg-white p-5 rounded-xl shadow-md border-l-4 ${borderColor}`;
+                
+                let holdingPeriodHtml = '';
+                if (isClosed && journal.exits.length > 0) {
+                     const lastExit = journal.exits.reduce((latest, current) => {
+                        const latestDate = latest.date instanceof Timestamp ? latest.date.toDate() : new Date(latest.date);
+                        const currentDate = current.date instanceof Timestamp ? current.date.toDate() : new Date(current.date);
+                        return currentDate > latestDate ? current : latest;
+                    }, journal.exits[0]);
+
+                    const lastExitDate = lastExit.date instanceof Timestamp ? lastExit.date.toDate() : new Date(lastExit.date);
+                    const entryDate = journal.date;
+                    const diffTime = Math.abs(lastExitDate - entryDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    holdingPeriodHtml = `<p><strong>보유 기간:</strong> ${diffDays}일</p>`;
+                }
+
+                const exitsHtml = journal.exits && journal.exits.length > 0 ? `
+                    <div class="mt-3 pt-3 border-t border-gray-200 space-y-1 text-xs">
+                        <h5 class="font-semibold mb-1">청산 내역</h5>
+                        ${journal.exits.map(exit => {
+                            const exitPnl = (journal.position === 'long' ? (exit.price - journal.entryPrice) : (journal.entryPrice - exit.price)) * exit.quantity;
+                            const exitPnlClass = exitPnl > 0 ? 'text-green-500' : exitPnl < 0 ? 'text-red-500' : 'text-gray-500';
+                            const exitDate = exit.date instanceof Timestamp ? exit.date.toDate() : new Date(exit.date);
+                            return `<div class="flex justify-between items-center p-1 rounded bg-gray-50"><span>${exitDate.toLocaleDateString()} ${exit.type} @ ${formatPrice(exit.price, journal.currency)} (${formatNumber(exit.quantity)}주)</span><span class="${exitPnlClass} font-medium">${formatPrice(exitPnl, journal.currency)}</span></div>`
+                        }).join('')}
+                    </div>` : '';
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <p class="font-bold text-lg">${journal.date.toLocaleDateString()}</p>
+                            <p class="font-semibold text-md text-gray-800">${journal.ticker}</p>
+                            <span class="text-sm font-bold ${journal.position === 'long' ? 'text-green-500' : 'text-red-500'}">${journal.position === 'long' ? '🟢 롱' : '🔴 숏'}</span>
+                            <span class="text-sm text-gray-500 ml-2">${journal.strategy}</span>
+                        </div>
+                        <div class="flex space-x-2">
+                             ${!isClosed ? `<button class="p-2 hover:bg-gray-100 rounded-full exit-btn" data-id="${journal.id}"><i data-lucide="log-out" class="w-5 h-5 text-blue-500"></i></button>` : ''}
+                            <button class="p-2 hover:bg-gray-100 rounded-full edit-btn" data-id="${journal.id}"><i data-lucide="edit" class="w-5 h-5 text-gray-500"></i></button>
+                            <button class="p-2 hover:bg-gray-100 rounded-full delete-btn" data-id="${journal.id}"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></button>
+                        </div>
+                    </div>
+                    <div class="space-y-2 text-sm text-gray-700 mb-3">
+                        <p><strong>진입:</strong> ${formatPrice(journal.entryPrice, journal.currency)} / <strong>수량:</strong> ${formatNumber(totalQuantity)}</p>
+                        <p><strong>목표:</strong> ${formatPrice(journal.targetPrice, journal.currency)} / <strong>손절:</strong> ${formatPrice(journal.stopLoss, journal.currency)}</p>
+                        ${holdingPeriodHtml}
+                        ${journal.exits && journal.exits.length > 0 ? `<p class="font-bold"><strong>총 실현 손익:</strong> <span class="${pnlClass}">${formatDualCurrency(totalPnlInKRW, journal.currency)}</span></p>` : ''}
+                    </div>
+                    <div><h4 class="font-semibold text-xs text-gray-500 mb-1">진입 근거</h4><div class="flex flex-wrap gap-1">${(journal.entryTags || []).map(tag => `<span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}</div></div>
+                    <div class="mt-2"><h4 class="font-semibold text-xs text-gray-500 mb-1">심리 상태</h4><div class="flex flex-wrap gap-1">${(journal.psychologyTags || []).map(tag => `<span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}</div></div>
+                    ${exitsHtml}`;
+                journalList.appendChild(card);
+            });
+            lucide.createIcons();
+            addJournalListEventListeners();
+        }
+
+        async function getJournalById(id) {
+            const docRef = doc(db, "users", currentUser.uid, "journals", id);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                return { 
+                    id: docSnap.id, 
+                    ...data,
+                    date: data.date instanceof Timestamp ? data.date.toDate() : new Date(data.date)
+                };
+            }
+            return null;
+        }
+
+        async function addJournalListEventListeners() {
+            document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', handleDeleteJournal));
+            document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', handleEditJournal));
+            document.querySelectorAll('.exit-btn').forEach(btn => btn.addEventListener('click', handleOpenExitModal));
+        }
+        
+        function renderTags(tags, containerId, type) {
+            const container = document.getElementById(containerId); container.innerHTML = '';
+            if(!tags) return;
+            tags.forEach(tag => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center';
+                button.dataset.tag = tag;
+                
+                const textSpan = document.createElement('span');
+                textSpan.className = 'pl-3 pr-2 py-1';
+                textSpan.textContent = tag;
+                
+                const deleteSpan = document.createElement('span');
+                deleteSpan.className = 'delete-tag-span pr-2 text-gray-500 hover:text-red-500 transition-colors';
+                deleteSpan.innerHTML = `<i data-lucide="x" class="w-3 h-3 pointer-events-none"></i>`;
+                deleteSpan.dataset.tag = tag;
+                deleteSpan.dataset.type = type;
+
+                button.appendChild(textSpan);
+                button.appendChild(deleteSpan);
+
+                button.addEventListener('click', (e) => { e.currentTarget.classList.toggle('selected'); });
+                deleteSpan.addEventListener('click', handleDeleteTag);
+
+                container.appendChild(button);
+            });
+            lucide.createIcons();
+        }
+
+        async function handleDeleteTag(e) {
+            e.stopPropagation();
+            const target = e.currentTarget;
+            const tag = target.dataset.tag;
+            const type = target.dataset.type;
+
+            const isTagInUse = localJournals.some(journal => 
+                (type === 'entry' && journal.entryTags?.includes(tag)) || 
+                (type === 'psychology' && journal.psychologyTags?.includes(tag))
+            );
+            
+            if (isTagInUse) {
+                showToast("사용 중인 태그는 삭제할 수 없습니다.", "error");
+                return;
+            }
+
+            showConfirmModal(`'${tag}' 태그를 삭제하시겠습니까?`, async () => {
+                const tagsDocRef = doc(db, "users", currentUser.uid, "tags", "all");
+                const newTags = localTags[type].filter(t => t !== tag);
+                try {
+                    await updateDoc(tagsDocRef, { [type]: newTags });
+                    showToast(`'${tag}' 태그가 삭제되었습니다.`);
+                } catch(e) {
+                    showToast("태그 삭제에 실패했습니다.", "error");
+                }
+            }, '삭제');
+        }
+        
+        async function addTag(type, tag) {
+            if (!currentUser) return;
+            const tagsDocRef = doc(db, "users", currentUser.uid, "tags", "all");
+            
+            const currentTags = localTags[type] || [];
+            if (!currentTags.includes(tag)) {
+                try {
+                    await updateDoc(tagsDocRef, { [type]: [...currentTags, tag] });
+                    showToast(`'${tag}' 태그가 추가되었습니다.`);
+                } catch (e) {
+                    showToast("태그 추가에 실패했습니다.", "error");
+                }
+            } else {
+                showToast("이미 존재하는 태그입니다.", "error");
+            }
+        }
+        document.getElementById('add-entry-tag-btn').addEventListener('click', () => {
+                const input = document.getElementById('new-entry-tag');
+                if (input.value.trim()) { addTag('entry', input.value.trim()); input.value = ''; }
+        });
+        document.getElementById('add-psychology-tag-btn').addEventListener('click', () => {
+                const input = document.getElementById('new-psychology-tag');
+                if (input.value.trim()) { addTag('psychology', input.value.trim()); input.value = ''; }
+        });
+
+
+        journalForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentUser) return;
+
+            const journalId = document.getElementById('journal-id').value;
+            const positionBtn = document.querySelector('[data-group="position"] .toggle-btn.selected');
+            const strategyBtn = document.querySelector('[data-group="strategy"] .toggle-btn.selected');
+            const currencyBtn = document.querySelector('[data-group="form-currency"] .toggle-btn.selected');
+            if (!positionBtn || !strategyBtn || !currencyBtn) { showToast("포지션, 매매 전략, 입력 통화를 선택해주세요.", "error"); return; }
+            
+            const journalData = {
+                ticker: document.getElementById('ticker').value, 
+                date: Timestamp.fromDate(new Date(document.getElementById('date').value)),
+                position: positionBtn.dataset.value, 
+                strategy: strategyBtn.dataset.value, 
+                currency: currencyBtn.id.includes('usd') ? 'USD' : 'KRW',
+                quantity: parseFloat(unformatNumber(document.getElementById('quantity').value)), 
+                entryPrice: parseFloat(unformatNumber(document.getElementById('entry-price').value)),
+                stopLoss: parseFloat(unformatNumber(document.getElementById('stop-loss').value)), 
+                targetPrice: parseFloat(unformatNumber(document.getElementById('target-price').value)),
+                entryTags: Array.from(document.querySelectorAll('#entry-tags-container .tag.selected')).map(b => b.dataset.tag),
+                psychologyTags: Array.from(document.querySelectorAll('#psychology-tags-container .tag.selected')).map(b => b.dataset.tag),
+            };
+            
+            try {
+                if (journalId) {
+                    const journalRef = doc(db, "users", currentUser.uid, "journals", journalId);
+                    await updateDoc(journalRef, journalData);
+                    showToast("일지가 성공적으로 수정되었습니다.");
+                } else {
+                    journalData.exits = [];
+                    const collectionRef = collection(db, "users", currentUser.uid, "journals");
+                    await addDoc(collectionRef, journalData);
+                    showToast("일지가 성공적으로 저장되었습니다.");
+                }
+                resetForm();
+            } catch (error) {
+                console.error("Error saving journal: ", error);
+                showToast("저장에 실패했습니다.", "error");
+            }
+        });
+        
+        async function handleDeleteJournal(e) {
+            const id = e.currentTarget.dataset.id;
+            showConfirmModal("정말로 이 일지를 삭제하시겠습니까?", async () => {
+                try {
+                    await deleteDoc(doc(db, "users", currentUser.uid, "journals", id));
+                    showToast("일지를 삭제했습니다.");
+                } catch (error) {
+                     console.error("Error deleting journal: ", error);
+                    showToast("삭제에 실패했습니다.", "error");
+                }
+            }, '삭제');
+        }
+
+        async function handleEditJournal(e) {
+            const journal = await getJournalById(e.currentTarget.dataset.id);
+            if (journal) {
+                document.getElementById('journal-id').value = journal.id;
+                const entryDate = journal.date;
+                document.getElementById('date').value = entryDate.toISOString().split('T')[0];
+                document.getElementById('ticker').value = journal.ticker;
+
+                document.querySelectorAll('[data-group="position"] .toggle-btn').forEach(b => b.classList.toggle('selected', b.dataset.value === journal.position));
+                document.querySelectorAll('[data-group="strategy"] .toggle-btn').forEach(b => b.classList.toggle('selected', b.dataset.value === journal.strategy));
+                
+                document.querySelectorAll('[data-group="form-currency"] .toggle-btn').forEach(b => b.classList.remove('selected'));
+                if(journal.currency === 'USD') { document.getElementById('form-currency-usd-btn').classList.add('selected'); } 
+                else { document.getElementById('form-currency-krw-btn').classList.add('selected'); }
+
+                document.getElementById('quantity').value = formatNumber(journal.quantity); 
+                document.getElementById('entry-price').value = formatNumber(journal.entryPrice);
+                document.getElementById('stop-loss').value = formatNumber(journal.stopLoss); 
+                document.getElementById('target-price').value = formatNumber(journal.targetPrice);
+                
+                document.querySelectorAll('#entry-tags-container .tag').forEach(b => b.classList.remove('selected'));
+                (journal.entryTags || []).forEach(tag => {
+                    const tagEl = document.querySelector(`#entry-tags-container .tag[data-tag="${tag}"]`);
+                    if(tagEl) tagEl.classList.add('selected');
+                });
+
+                document.querySelectorAll('#psychology-tags-container .tag').forEach(b => b.classList.remove('selected'));
+                (journal.psychologyTags || []).forEach(tag => {
+                    const tagEl = document.querySelector(`#psychology-tags-container .tag[data-tag="${tag}"]`);
+                    if(tagEl) tagEl.classList.add('selected');
+                });
+
+                switchTab('form-view'); window.scrollTo(0, 0);
+            }
+        }
+
+        async function handleOpenExitModal(e) {
+            const journal = await getJournalById(e.currentTarget.dataset.id);
+            if(journal){
+                document.getElementById('exit-journal-id').value = journal.id;
+                const remaining = journal.quantity - (journal.exits ? journal.exits.reduce((s, ex) => s + ex.quantity, 0) : 0);
+                document.getElementById('remaining-quantity').textContent = formatNumber(remaining);
+                document.getElementById('exit-quantity').dataset.max = remaining;
+                document.getElementById('exit-quantity').value = formatNumber(remaining);
+                document.getElementById('exit-date').value = new Date().toISOString().split('T')[0];
+            }
+            const modal = document.getElementById('exit-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.firstElementChild.classList.remove('scale-95'); }, 10);
+        }
+
+        document.getElementById('exit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const journalId = document.getElementById('exit-journal-id').value;
+            const journal = await getJournalById(journalId);
+            if (!journal) return;
+
+            const price = parseFloat(unformatNumber(document.getElementById('exit-price').value));
+            const quantity = parseFloat(unformatNumber(document.getElementById('exit-quantity').value));
+            const date = Timestamp.fromDate(new Date(document.getElementById('exit-date').value));
+            const maxQuantity = parseFloat(document.getElementById('exit-quantity').dataset.max);
+
+            if (isNaN(price) || isNaN(quantity) || quantity <= 0 || quantity > maxQuantity) {
+                showToast(`청산 수량은 0보다 크고 ${formatNumber(maxQuantity)} 이하여야 합니다.`, "error"); return;
+            }
+            
+            const pnlPerShare = journal.position === 'long' ? price - journal.entryPrice : journal.entryPrice - price;
+            let type = '본절';
+            if (pnlPerShare > 0) type = '익절';
+            else if (pnlPerShare < 0) type = '손절';
+            
+            const exitData = { price, quantity, type, date };
+
+            showConfirmModal("이 청산 기록을 추가하시겠습니까?", async () => {
+                const journalRef = doc(db, "users", currentUser.uid, "journals", journalId);
+                const updatedExits = [...(journal.exits || []), exitData];
+                try {
+                    await updateDoc(journalRef, { exits: updatedExits });
+                    showToast("청산 기록이 추가되었습니다.");
+                    closeExitModal();
+                } catch(error) {
+                    console.error("Error adding exit:", error);
+                    showToast("청산 기록 추가에 실패했습니다.", "error");
+                }
+            }, '추가');
+        });
+        
+        function renderStats(journals) {
+            const completed = journals.filter(j => (j.exits ? j.exits.reduce((s, e) => s + e.quantity, 0) : 0) >= j.quantity);
+            renderPnlCompositionChart(completed);
+            renderPnlTrendCharts(completed);
+            renderWinRateCharts(completed);
+        }
+
+        function renderPnlCompositionChart(journals) {
+            let totalProfit = 0; let totalLoss = 0;
+            journals.forEach(j => {
+                const pnl = j.exits.reduce((s, e) => s + (j.position === 'long' ? (e.price - j.entryPrice) : (j.entryPrice - e.price)) * e.quantity, 0);
+                const pnlInKRW = j.currency === 'USD' ? pnl * exchangeRate : pnl;
+                if(pnlInKRW > 0) totalProfit += pnlInKRW;
+                else totalLoss += Math.abs(pnlInKRW);
+            });
+            createChart('pnl-composition-chart', 'doughnut', ['총 수익', '총 손실'], [totalProfit, totalLoss], '손익 구성');
+        }
+
+        function renderPnlTrendCharts(journals) {
+            const monthlyPnl = {}; const quarterlyPnl = {};
+            journals.forEach(j => {
+                const date = j.date;
+                const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                const quarter = `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`;
+                const pnl = j.exits.reduce((s, e) => s + (j.position === 'long' ? (e.price - j.entryPrice) : (j.entryPrice - e.price)) * e.quantity, 0);
+                const pnlInKRW = j.currency === 'USD' ? pnl * exchangeRate : pnl;
+                monthlyPnl[month] = (monthlyPnl[month] || 0) + pnlInKRW;
+                quarterlyPnl[quarter] = (quarterlyPnl[quarter] || 0) + pnlInKRW;
+            });
+            
+            const sortedMonthlyKeys = Object.keys(monthlyPnl).sort();
+            const sortedMonthlyValues = sortedMonthlyKeys.map(key => monthlyPnl[key]);
+            createChart('monthly-pnl-chart', 'bar', sortedMonthlyKeys, sortedMonthlyValues, '월별 손익');
+            renderSummary('monthly-pnl-summary', sortedMonthlyKeys, sortedMonthlyValues);
+
+            const sortedQuarterlyKeys = Object.keys(quarterlyPnl).sort();
+            const sortedQuarterlyValues = sortedQuarterlyKeys.map(key => quarterlyPnl[key]);
+            createChart('quarterly-pnl-chart', 'bar', sortedQuarterlyKeys, sortedQuarterlyValues, '분기별 손익');
+            renderSummary('quarterly-pnl-summary', sortedQuarterlyKeys, sortedQuarterlyValues);
+        }
+        
+        function renderSummary(elementId, labels, data) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            if (labels.length === 0) {
+                container.textContent = '데이터가 없습니다.';
+                return;
+            }
+            const summaryHtml = labels.map((label, index) => {
+                const value = data[index];
+                const pnlMultiplier = statsCurrency === 'USD' ? 1 / exchangeRate : 1;
+                const finalValue = value * pnlMultiplier;
+                const colorClass = finalValue >= 0 ? 'text-green-500' : 'text-red-500';
+                return `<span class="inline-block mx-2">${label}: <strong class="${colorClass}">${formatPrice(finalValue, statsCurrency)}</strong></span>`;
+            }).join('');
+            container.innerHTML = summaryHtml;
+        }
+
+        function renderWinRateCharts(journals) {
+            const entryTagStats = {}, psychologyTagStats = {}, strategyStats = {}, positionStats = { 'long': { wins: 0, trades: 0 }, 'short': { wins: 0, trades: 0 }};
+            journals.forEach(j => {
+                const pnl = j.exits.reduce((s, e) => s + (j.position === 'long' ? (e.price - j.entryPrice) : (j.entryPrice - e.price)) * e.quantity, 0);
+                const isWin = pnl > 0;
+                if (positionStats[j.position]) { positionStats[j.position].trades++; if (isWin) positionStats[j.position].wins++; }
+                [j.entryTags, j.psychologyTags, [j.strategy]].forEach((tags, i) => {
+                    const stats = [entryTagStats, psychologyTagStats, strategyStats][i];
+                    (tags || []).forEach(tag => { if (!stats[tag]) stats[tag] = { wins: 0, trades: 0 }; stats[tag].trades++; if (isWin) stats[tag].wins++; });
+                });
+            });
+            const createData = stats => ({ labels: Object.keys(stats), rates: Object.keys(stats).map(l => (stats[l].trades > 0 ? (stats[l].wins / stats[l].trades) * 100 : 0)) });
+            const entryData = createData(entryTagStats), psychologyData = createData(psychologyTagStats), strategyData = createData(strategyStats), positionData = createData(positionStats);
+            createChart('entry-win-rate-chart', 'bar', entryData.labels, entryData.rates, '승률 (%)', true);
+            createChart('psychology-win-rate-chart', 'bar', psychologyData.labels, psychologyData.rates, '승률 (%)', true);
+            createChart('strategy-win-rate-chart', 'bar', strategyData.labels, strategyData.rates, '승률 (%)', true);
+            createChart('position-win-rate-chart', 'bar', positionData.labels, positionData.rates, '승률 (%)', true);
+        }
+
+        function createChart(canvasId, type, labels, data, label, isWinRate = false) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (charts[canvasId]) charts[canvasId].destroy();
+            const pnlMultiplier = statsCurrency === 'USD' ? 1 / exchangeRate : 1;
+            const chartData = isWinRate ? data : data.map(d => d * pnlMultiplier);
+            
+            const commonOptions = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: type === 'doughnut' ? true : false, position: 'bottom' }, 
+                    tooltip: { callbacks: { label: c => isWinRate ? `${c.label}: ${c.parsed.toFixed(2)}%` : `${c.label}: ${formatPrice(c.raw, statsCurrency)}` } } 
+                }
+            };
+
+            if (type === 'doughnut') {
+                 charts[canvasId] = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ 
+                    label, data: chartData, 
+                    backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 99, 132, 0.7)'],
+                    borderColor: [document.documentElement.classList.contains('dark') ? '#18181b' : '#fff'], /* dark:zinc-900 or white */
+                    borderWidth: 4
+                }]}, options: commonOptions });
+            } else { // bar
+                 charts[canvasId] = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label, data: chartData, backgroundColor: chartData.map(d => d >= (isWinRate ? 50 : 0) ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'), borderColor: chartData.map(d => d >= (isWinRate ? 50 : 0) ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'), borderWidth: 1 }] }, 
+                 options: { ...commonOptions, scales: { y: { beginAtZero: true, ticks: { callback: v => isWinRate ? `${v.toFixed(0)}%` : formatPrice(v, statsCurrency) } } } } });
+            }
+        }
+        
+        function switchTab(tabId) {
+            [formView, listView, statsView].forEach(v => v.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+            lucide.createIcons();
+            if(tabId === 'stats-view' && currentUser) {
+                attachRealtimeListeners(currentUser.uid);
+            }
+        }
+        
+        function resetForm() {
+            journalForm.reset(); document.getElementById('journal-id').value = '';
+            document.querySelectorAll('.toggle-btn.selected').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.number-input').forEach(el => el.value = '');
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            document.querySelector('[data-group="position"] .toggle-btn').classList.add('selected');
+            document.querySelector('[data-group="strategy"] .toggle-btn').classList.add('selected');
+            document.getElementById('form-currency-krw-btn').classList.add('selected');
+        }
+
+        function closeExitModal() {
+            const modal = document.getElementById('exit-modal');
+            modal.firstElementChild.classList.add('scale-95'); modal.classList.add('opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); document.getElementById('exit-form').reset(); }, 300);
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.firstElementChild.textContent = message;
+            toast.className = `fixed bottom-5 right-5 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+        }
+
+        function showConfirmModal(message, callback, type = '삭제') {
+            const modal = document.getElementById('confirm-modal');
+            document.getElementById('confirm-message').textContent = message;
+            const okBtn = document.getElementById('confirm-ok-btn');
+            okBtn.textContent = type;
+            okBtn.className = `text-white px-4 py-2 rounded-lg ${type === '삭제' ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`;
+            confirmCallback = callback;
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.firstElementChild.classList.remove('scale-95'); }, 10);
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirm-modal');
+            modal.firstElementChild.classList.add('scale-95'); modal.classList.add('opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); confirmCallback = null; }, 300);
+        }
+
+        function updateChartTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            Chart.defaults.borderColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            Chart.defaults.color = isDark ? '#d4d4d8' : '#334155'; /* zinc-300, slate-700 */
+            if (statsView && !statsView.classList.contains('hidden') && currentUser) {
+                attachRealtimeListeners(currentUser.uid);
+            }
+        }
+        
+        function setTheme(theme) {
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
+
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            }
+            updateChartTheme();
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+
+        document.getElementById('confirm-ok-btn').addEventListener('click', () => { if (confirmCallback) confirmCallback(); closeConfirmModal(); });
+        document.getElementById('confirm-cancel-btn').addEventListener('click', closeConfirmModal);
+        document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+        document.getElementById('clear-form-btn').addEventListener('click', resetForm);
+        
+        document.getElementById('close-modal-btn').addEventListener('click', closeExitModal);
+        document.getElementById('exit-modal').addEventListener('click', e => { if (e.target.id === 'exit-modal') closeExitModal(); });
+        
+        document.querySelectorAll('.exchange-rate-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const value = unformatNumber(e.target.value);
+                e.target.value = formatNumber(value);
+                const newRate = parseFloat(value);
+                if (newRate > 0) {
+                    exchangeRate = newRate;
+                    document.querySelectorAll('.exchange-rate-input').forEach(otherInput => {
+                        if (otherInput !== e.target) otherInput.value = formatNumber(value);
+                    });
+                    if(currentUser) attachRealtimeListeners(currentUser.uid);
+                }
+            });
+        });
+
+        document.querySelectorAll('.number-input').forEach(input => {
+            if (!input.classList.contains('exchange-rate-input')) {
+                input.addEventListener('input', (e) => { e.target.value = formatNumber(e.target.value); });
+            }
+        });
+        
+        document.addEventListener('click', function(event) {
+            const button = event.target.closest('.toggle-btn');
+            if (button) {
+                const group = button.closest('.toggle-group');
+                if (group) {
+                    group.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('selected'));
+                    button.classList.add('selected');
+                    if(group.dataset.group === 'stats-currency' && currentUser) {
+                         statsCurrency = button.id.includes('usd') ? 'USD' : 'KRW';
+                         attachRealtimeListeners(currentUser.uid);
+                    }
+                }
+            }
+        });
+
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const initialTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            setTheme(initialTheme);
+            lucide.createIcons();
+            
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            document.querySelectorAll('.exchange-rate-input').forEach(input => input.value = formatNumber(exchangeRate));
+            
+            document.querySelector('[data-group="position"] .toggle-btn').classList.add('selected');
+            document.querySelector('[data-group="strategy"] .toggle-btn').classList.add('selected');
+            document.getElementById('form-currency-krw-btn').classList.add('selected');
+        });
+    </script>
+</body>
+</html>
+
+
