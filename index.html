@@ -292,17 +292,15 @@
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, addDoc, getDoc, getDocs, collection, onSnapshot, query, orderBy, deleteDoc, updateDoc, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-        // --- PASTE YOUR FIREBASE CONFIGURATION HERE ---
         const firebaseConfig = {
-            apiKey: "AIzaSyDZm5AazCafB0Sb2gd0llv9e3GAhE-nKBw",
-            authDomain: "sakurazima-mai-0u0.firebaseapp.com",
-            projectId: "sakurazima-mai-0u0",
-            storageBucket: "sakurazima-mai-0u0.appspot.com",
-            messagingSenderId: "697666115735",
-            appId: "1:697666115735:web:7380a588822f771dc071d2",
-            measurementId: "G-TZQ9GVFWV5"
+          apiKey: "AIzaSyDZm5AazCafB0Sb2gd0llv9e3GAhE-nKBw",
+          authDomain: "sakurazima-mai-0u0.firebaseapp.com",
+          projectId: "sakurazima-mai-0u0",
+          storageBucket: "sakurazima-mai-0u0.appspot.com",
+          messagingSenderId: "697666115735",
+          appId: "1:697666115735:web:7380a588822f771dc071d2",
+          measurementId: "G-TZQ9GVFWV5"
         };
-        // ---------------------------------------------
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
