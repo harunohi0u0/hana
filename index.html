@@ -52,8 +52,8 @@
         .dark .toggle-btn { color: #BDBDBD; }
         .dark .toggle-btn.selected { background-color: #4F4F4F; color: #FFFFFF; font-weight: 700; box-shadow: none; }
         .dark .tag.selected { background-color: #3b82f6; color: #ffffff; }
-        .dark #entry-tags-container .tag.selected { background-color: #16a34a; }
-        .dark #psychology-tags-container .tag.selected { background-color: #9333ea; }
+        .dark .entry-tags-container .tag.selected { background-color: #16a34a; }
+        .dark .psychology-tags-container .tag.selected { background-color: #9333ea; }
         .dark .border-blue-200 { border-color: #3b82f6; }
         .dark .border-green-200 { border-color: #16a34a; }
         .dark .border-purple-200 { border-color: #9333ea; }
@@ -135,36 +135,41 @@
                         <div>
                             <h2 class="text-2xl font-bold mb-4 border-b-2 border-blue-200 pb-2 flex items-center"><i data-lucide="clipboard-list" class="mr-3 text-blue-500"></i>기본 정보</h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div class="sm:col-span-2"><label for="ticker" class="block text-sm font-medium text-gray-700 mb-1">종목 이름</label><input type="text" id="ticker" placeholder="예: 삼성전자, BTCUSDT" required class="w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                <div class="sm:col-span-2"><span class="block text-sm font-medium text-gray-700 mb-2">자산 유형</span><div class="toggle-group text-gray-600" data-group="asset-type"><button type="button" data-value="spot" class="toggle-btn selected">현물</button><button type="button" data-value="futures" class="toggle-btn">선물</button></div></div>
+                                <div class="sm:col-span-2"><label for="ticker" class="block text-sm font-medium text-gray-700 mb-1">종목 이름</label><input type="text" id="ticker" placeholder="예: 삼성전자, NG" required class="w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
                                 <div><label for="date" class="block text-sm font-medium text-gray-700 mb-1">날짜</label><input type="date" id="date" required class="w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
-                                <div><span class="block text-sm font-medium text-gray-700 mb-2">포지션</span><div class="toggle-group text-gray-600" data-group="position"><button type="button" data-value="long" class="toggle-btn">🟢 롱</button><button type="button" data-value="short" class="toggle-btn">🔴 숏</button></div></div>
-                                <div class="sm:col-span-2"><span class="block text-sm font-medium text-gray-700 mb-2">매매 전략</span><div class="toggle-group text-gray-600" data-group="strategy"><button type="button" data-value="단타" class="toggle-btn">단타</button><button type="button" data-value="스윙" class="toggle-btn">스윙</button><button type="button" data-value="장기" class="toggle-btn">장기</button></div></div>
-                                <div class="sm:col-span-2"><span class="block text-sm font-medium text-gray-700 mb-2">입력 통화</span><div class="toggle-group text-gray-600 w-full" data-group="form-currency"><button type="button" id="form-currency-krw-btn" class="toggle-btn selected">원 (₩)</button><button type="button" id="form-currency-usd-btn" class="toggle-btn">달러 ($)</button></div></div>
-                                <div><label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">수량</label><input type="text" inputmode="numeric" id="quantity" placeholder="예: 100" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
-                                <div><label for="entry-price" class="block text-sm font-medium text-gray-700 mb-1">매입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="예: 10,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
-                                <div><label for="stop-loss" class="block text-sm font-medium text-gray-700 mb-1">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="예: 9,500" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
-                                <div><label for="target-price" class="block text-sm font-medium text-gray-700 mb-1">목표가</label><input type="text" inputmode="decimal" id="target-price" placeholder="예: 11,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                <div><span class="block text-sm font-medium text-gray-700 mb-2">포지션</span><div class="toggle-group text-gray-600" data-group="position"><button type="button" data-value="long" class="toggle-btn selected">🟢 롱</button><button type="button" data-value="short" class="toggle-btn">🔴 숏</button></div></div>
+                                <div class="sm:col-span-2"><span class="block text-sm font-medium text-gray-700 mb-2">매매 전략</span><div class="toggle-group text-gray-600" data-group="strategy"><button type="button" data-value="단타" class="toggle-btn selected">단타</button><button type="button" data-value="스윙" class="toggle-btn">스윙</button><button type="button" data-value="장기" class="toggle-btn">장기</button></div></div>
+                                <div class="sm:col-span-2"><span class="block text-sm font-medium text-gray-700 mb-2">입력 통화</span><div class="toggle-group text-gray-600 w-full" data-group="form-currency"><button type="button" id="form-currency-krw-btn" class="toggle-btn">원 (₩)</button><button type="button" id="form-currency-usd-btn" class="toggle-btn selected">달러 ($)</button></div></div>
                                 
-                                <!-- NEW FUTURES FIELDS -->
-                                <div>
-                                    <label for="tick-value" class="block text-sm font-medium text-gray-700 mb-1">틱가치 (선물)</label>
-                                    <input type="text" inputmode="decimal" id="tick-value" placeholder="예: 2.5" class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white">
+                                <!-- Spot Fields -->
+                                <div id="spot-fields">
+                                    <label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">수량</label>
+                                    <input type="text" inputmode="numeric" id="quantity" placeholder="예: 100" class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white">
                                 </div>
-                                <div>
-                                    <label for="tick-size" class="block text-sm font-medium text-gray-700 mb-1">틱단위 (선물)</label>
-                                    <input type="text" inputmode="decimal" id="tick-size" placeholder="예: 0.01" class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white">
+                                <!-- Futures Fields -->
+                                <div id="futures-fields" class="hidden sm:col-span-2">
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                        <div><label for="contracts" class="block text-sm font-medium text-gray-700 mb-1">계약 수</label><input type="text" inputmode="numeric" id="contracts" placeholder="예: 1" class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                        <div><label for="tick-value" class="block text-sm font-medium text-gray-700 mb-1">틱가치</label><input type="text" inputmode="decimal" id="tick-value" placeholder="예: 1" class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                        <div><label for="tick-size" class="block text-sm font-medium text-gray-700 mb-1">틱단위</label><input type="text" inputmode="decimal" id="tick-size" placeholder="예: 0.001" class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                    </div>
                                 </div>
+                                
+                                <div><label for="entry-price" class="block text-sm font-medium text-gray-700 mb-1">진입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="예: 10,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                <div><label for="stop-loss" class="block text-sm font-medium text-gray-700 mb-1">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="예: 9,500" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                <div class="sm:col-span-2"><label for="target-price" class="block text-sm font-medium text-gray-700 mb-1">목표가</label><input type="text" inputmode="decimal" id="target-price" placeholder="예: 11,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
                             </div>
                         </div>
                         <div>
                             <h2 class="text-2xl font-bold mb-4 border-b-2 border-green-200 pb-2 flex items-center"><i data-lucide="siren" class="mr-3 text-green-500"></i>진입 근거</h2>
-                            <div id="entry-tags-container" class="flex flex-wrap gap-2 mb-2"></div>
-                            <div class="flex flex-col sm:flex-row gap-2"><input type="text" id="new-entry-tag" placeholder="새로운 태그 추가" class="flex-grow p-2 border border-gray-300 rounded-lg bg-white"><button type="button" id="add-entry-tag-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">추가</button></div>
+                            <div id="entry-tags-container" class="flex flex-wrap gap-2 mb-2 entry-tags-container"></div>
+                            <div class="flex flex-col sm:flex-row gap-2"><input type="text" id="new-entry-tag" placeholder="새로운 태그 추가" class="flex-grow p-2 border border-gray-300 rounded-lg bg-white"><button type="button" class="add-entry-tag-btn bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">추가</button></div>
                         </div>
                         <div>
                             <h2 class="text-2xl font-bold mb-4 border-b-2 border-purple-200 pb-2 flex items-center"><i data-lucide="brain-circuit" class="mr-3 text-purple-500"></i>심리 상태</h2>
-                            <div id="psychology-tags-container" class="flex flex-wrap gap-2 mb-2"></div>
-                            <div class="flex flex-col sm:flex-row gap-2"><input type="text" id="new-psychology-tag" placeholder="새로운 태그 추가" class="flex-grow p-2 border border-gray-300 rounded-lg bg-white"><button type="button" id="add-psychology-tag-btn" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">추가</button></div>
+                            <div id="psychology-tags-container" class="flex flex-wrap gap-2 mb-2 psychology-tags-container"></div>
+                            <div class="flex flex-col sm:flex-row gap-2"><input type="text" id="new-psychology-tag" placeholder="새로운 태그 추가" class="flex-grow p-2 border border-gray-300 rounded-lg bg-white"><button type="button" class="add-psychology-tag-btn bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">추가</button></div>
                         </div>
                         <div class="flex justify-end space-x-4"><button type="button" id="clear-form-btn" class="bg-gray-400 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-500 transition">새로 작성</button><button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-600 transition"><i data-lucide="save" class="inline-block w-5 h-5 mr-2"></i>일지 저장</button></div>
                     </form>
@@ -258,7 +263,7 @@
     </div>
     
     <!-- Modals and Toast -->
-    <div id="exit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md modal-content transform scale-95"><h2 class="text-2xl font-bold mb-6">청산 기록</h2><form id="exit-form"><input type="hidden" id="exit-journal-id"><div class="space-y-4"><div><label for="exit-date">청산 날짜</label><input type="date" id="exit-date" required class="mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg"></div><div><label for="exit-price">청산가</label><input type="text" inputmode="decimal" id="exit-price" required class="number-input mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg"></div><div><label for="exit-quantity">청산 수량</label><input type="text" inputmode="numeric" id="exit-quantity" required class="number-input mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg"><p class="text-xs text-gray-500 mt-1">남은 수량: <span id="remaining-quantity"></span></p></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">청산 추가</button></div></form></div></div>
+    <div id="exit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md modal-content transform scale-95"><h2 class="text-2xl font-bold mb-6">청산 기록</h2><form id="exit-form"><input type="hidden" id="exit-journal-id"><div class="space-y-4"><div><label for="exit-date">청산 날짜</label><input type="date" id="exit-date" required class="mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg"></div><div><label for="exit-price">청산가</label><input type="text" inputmode="decimal" id="exit-price" required class="number-input mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg"></div><div><label for="exit-quantity" id="exit-quantity-label">청산 수량</label><input type="text" inputmode="numeric" id="exit-quantity" required class="number-input mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg"><p class="text-xs text-gray-500 mt-1">남은 수량: <span id="remaining-quantity"></span></p></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">청산 추가</button></div></form></div></div>
     <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm modal-content transform scale-95"><h2 id="confirm-title" class="text-xl font-bold mb-4">확인</h2><p id="confirm-message" class="text-gray-600 mb-6"></p><div class="flex justify-end space-x-3"><button type="button" id="confirm-cancel-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">취소</button><button type="button" id="confirm-ok-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">확인</button></div></div></div>
     <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"><p id="toast-message"></p></div>
     
@@ -407,6 +412,31 @@
         }
         document.querySelectorAll('#journal-container [data-tab]').forEach(b => b.addEventListener('click', () => switchJournalView(b.dataset.tab)));
         
+        // Asset type toggle
+        document.querySelectorAll('[data-group="asset-type"] .toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const isSpot = btn.dataset.value === 'spot';
+                document.getElementById('spot-fields').classList.toggle('hidden', !isSpot);
+                document.getElementById('futures-fields').classList.toggle('hidden', isSpot);
+                
+                // Set required attribute based on type
+                document.getElementById('quantity').required = isSpot;
+                document.getElementById('contracts').required = !isSpot;
+                document.getElementById('tick-value').required = !isSpot;
+                document.getElementById('tick-size').required = !isSpot;
+            });
+        });
+
+        function calculatePnl(journal, exit) {
+            const priceDiff = journal.position === 'long' ? (exit.price - journal.entryPrice) : (journal.entryPrice - exit.price);
+            if (journal.assetType === 'futures') {
+                if (!journal.tickSize || !journal.tickValue) return 0;
+                return (priceDiff / journal.tickSize) * journal.tickValue * exit.quantity; // exit.quantity is contracts here
+            } else { // spot
+                return priceDiff * exit.quantity;
+            }
+        }
+
         function renderJournals(journals) {
             journalList.innerHTML = '';
             if (journals.length === 0) {
@@ -415,13 +445,14 @@
             }
 
             journals.forEach(journal => {
-                const totalQuantity = journal.quantity;
-                const exitedQuantity = journal.exits ? journal.exits.reduce((sum, exit) => sum + exit.quantity, 0) : 0;
-                const isClosed = (totalQuantity - exitedQuantity) <= 0.0000001; // Epsilon for float comparison
+                const isSpot = journal.assetType === 'spot';
+                const totalAmount = isSpot ? journal.quantity : journal.contracts;
+                const exitedAmount = journal.exits ? journal.exits.reduce((sum, exit) => sum + exit.quantity, 0) : 0;
+                const isClosed = (totalAmount - exitedAmount) <= 1e-9;
                 
                 let totalPnl = 0;
                 if (journal.exits && journal.exits.length > 0) {
-                     totalPnl = journal.exits.reduce((sum, exit) => sum + (journal.position === 'long' ? (exit.price - journal.entryPrice) : (journal.entryPrice - exit.price)) * exit.quantity, 0);
+                     totalPnl = journal.exits.reduce((sum, exit) => sum + calculatePnl(journal, exit), 0);
                 }
                 const totalPnlInKRW = journal.currency === 'USD' ? totalPnl * exchangeRate : totalPnl;
                 const pnlClass = totalPnlInKRW > 0 ? 'text-green-500' : totalPnlInKRW < 0 ? 'text-red-500' : 'text-gray-500';
@@ -443,18 +474,21 @@
                     <div class="mt-3 pt-3 border-t border-gray-200 space-y-1 text-xs">
                         <h5 class="font-semibold mb-1">청산 내역</h5>
                         ${journal.exits.map(exit => {
-                            const exitPnl = (journal.position === 'long' ? (exit.price - journal.entryPrice) : (journal.entryPrice - exit.price)) * exit.quantity;
+                            const exitPnl = calculatePnl(journal, exit);
                             const exitPnlClass = exitPnl > 0 ? 'text-green-500' : exitPnl < 0 ? 'text-red-500' : 'text-gray-500';
                             const exitDate = exit.date.toDate ? exit.date.toDate() : new Date(exit.date);
-                            return `<div class="flex justify-between items-center p-1 rounded bg-gray-50"><span>${exitDate.toLocaleDateString()} @ ${formatPrice(exit.price, journal.currency)} (${formatNumber(exit.quantity)}주)</span><span class="${exitPnlClass} font-medium">${formatPrice(exitPnl, journal.currency)}</span></div>`
+                            const amountLabel = isSpot ? '주' : '계약';
+                            return `<div class="flex justify-between items-center p-1 rounded bg-gray-50"><span>${exitDate.toLocaleDateString()} @ ${formatPrice(exit.price, journal.currency)} (${formatNumber(exit.quantity)} ${amountLabel})</span><span class="${exitPnlClass} font-medium">${formatPrice(exitPnl, journal.currency)}</span></div>`
                         }).join('')}
                     </div>` : '';
-
+                
+                const amountLabel = isSpot ? '수량' : '계약';
+                
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-3">
                         <div>
                             <p class="font-bold text-lg">${journal.date.toLocaleDateString()}</p>
-                            <p class="font-semibold text-md text-gray-800">${journal.ticker}</p>
+                            <p class="font-semibold text-md text-gray-800">${journal.ticker} <span class="text-xs font-medium text-gray-400 align-top">${isSpot ? '현물' : '선물'}</span></p>
                             <span class="text-sm font-bold ${journal.position === 'long' ? 'text-green-500' : 'text-red-500'}">${journal.position === 'long' ? '🟢 롱' : '🔴 숏'}</span>
                             <span class="text-sm text-gray-500 ml-2">${journal.strategy}</span>
                         </div>
@@ -465,9 +499,9 @@
                         </div>
                     </div>
                     <div class="space-y-2 text-sm text-gray-700 mb-3">
-                        <p><strong>진입:</strong> ${formatPrice(journal.entryPrice, journal.currency)} / <strong>수량:</strong> ${formatNumber(journal.quantity)}</p>
+                        <p><strong>진입:</strong> ${formatPrice(journal.entryPrice, journal.currency)} / <strong>${amountLabel}:</strong> ${formatNumber(totalAmount)}</p>
                         <p><strong>목표:</strong> ${formatPrice(journal.targetPrice, journal.currency)} / <strong>손절:</strong> ${formatPrice(journal.stopLoss, journal.currency)}</p>
-                        ${ (journal.tickValue || journal.tickSize) ? `<p><strong>틱가치/단위:</strong> ${journal.tickValue ? formatNumber(journal.tickValue) : 'N/A'} / ${journal.tickSize ? formatNumber(journal.tickSize) : 'N/A'}</p>` : '' }
+                        ${ !isSpot ? `<p><strong>틱가치/단위:</strong> ${formatNumber(journal.tickValue)} / ${formatNumber(journal.tickSize)}</p>` : '' }
                         ${holdingPeriodHtml}
                         ${journal.exits && journal.exits.length > 0 ? `<p class="font-bold"><strong>총 실현 손익:</strong> <span class="${pnlClass}">${formatDualCurrency(totalPnlInKRW, journal.currency)}</span></p>` : ''}
                     </div>
@@ -540,11 +574,11 @@
                 showToast(`'${tag}' 태그가 추가되었습니다.`);
             } else { showToast("이미 존재하는 태그입니다.", "error"); }
         }
-        document.getElementById('add-entry-tag-btn').addEventListener('click', () => {
+        document.querySelector('.add-entry-tag-btn').addEventListener('click', () => {
             const input = document.getElementById('new-entry-tag');
             if (input.value.trim()) { addJournalTag('entry', input.value.trim()); input.value = ''; }
         });
-        document.getElementById('add-psychology-tag-btn').addEventListener('click', () => {
+        document.querySelector('.add-psychology-tag-btn').addEventListener('click', () => {
             const input = document.getElementById('new-psychology-tag');
             if (input.value.trim()) { addJournalTag('psychology', input.value.trim()); input.value = ''; }
         });
@@ -552,24 +586,29 @@
         journalForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const journalId = document.getElementById('journal-id').value;
-            const positionBtn = document.querySelector('[data-group="position"] .toggle-btn.selected');
-            const strategyBtn = document.querySelector('[data-group="strategy"] .toggle-btn.selected');
-            const currencyBtn = document.querySelector('[data-group="form-currency"] .toggle-btn.selected');
+            const assetType = document.querySelector('[data-group="asset-type"] .toggle-btn.selected').dataset.value;
             
             const journalData = {
+                assetType: assetType,
                 ticker: document.getElementById('ticker').value, 
                 date: Timestamp.fromDate(new Date(document.getElementById('date').value)),
-                position: positionBtn.dataset.value, strategy: strategyBtn.dataset.value, 
-                currency: currencyBtn.id.includes('usd') ? 'USD' : 'KRW',
-                quantity: parseFloat(unformatNumber(document.getElementById('quantity').value)), 
+                position: document.querySelector('[data-group="position"] .toggle-btn.selected').dataset.value,
+                strategy: document.querySelector('[data-group="strategy"] .toggle-btn.selected').dataset.value, 
+                currency: document.querySelector('[data-group="form-currency"] .toggle-btn.selected').id.includes('usd') ? 'USD' : 'KRW',
                 entryPrice: parseFloat(unformatNumber(document.getElementById('entry-price').value)),
                 stopLoss: parseFloat(unformatNumber(document.getElementById('stop-loss').value)), 
                 targetPrice: parseFloat(unformatNumber(document.getElementById('target-price').value)),
-                tickValue: parseFloat(unformatNumber(document.getElementById('tick-value').value)) || null,
-                tickSize: parseFloat(unformatNumber(document.getElementById('tick-size').value)) || null,
-                entryTags: Array.from(document.querySelectorAll('#entry-tags-container .tag.selected')).map(b => b.dataset.tag),
-                psychologyTags: Array.from(document.querySelectorAll('#psychology-tags-container .tag.selected')).map(b => b.dataset.tag),
+                entryTags: Array.from(document.querySelectorAll('.entry-tags-container .tag.selected')).map(b => b.dataset.tag),
+                psychologyTags: Array.from(document.querySelectorAll('.psychology-tags-container .tag.selected')).map(b => b.dataset.tag),
             };
+
+            if (assetType === 'spot') {
+                journalData.quantity = parseFloat(unformatNumber(document.getElementById('quantity').value));
+            } else { // futures
+                journalData.contracts = parseFloat(unformatNumber(document.getElementById('contracts').value));
+                journalData.tickValue = parseFloat(unformatNumber(document.getElementById('tick-value').value));
+                journalData.tickSize = parseFloat(unformatNumber(document.getElementById('tick-size').value));
+            }
             
             try {
                 if (journalId) {
@@ -581,7 +620,8 @@
                     showToast("일지가 저장되었습니다.");
                 }
                 resetForm();
-            } catch (error) { showToast("저장 실패.", "error"); }
+                switchJournalView('list-view');
+            } catch (error) { showToast("저장 실패: " + error.message, "error"); }
         });
         
         async function handleDeleteJournal(e) {
@@ -598,16 +638,29 @@
                 document.getElementById('journal-id').value = journal.id;
                 document.getElementById('date').value = journal.date.toISOString().split('T')[0];
                 document.getElementById('ticker').value = journal.ticker;
+                
+                // Select asset type and show correct fields
+                document.querySelector(`[data-group="asset-type"] .toggle-btn[data-value="${journal.assetType}"]`).click();
+
                 ['position', 'strategy'].forEach(group => document.querySelectorAll(`[data-group="${group}"] .toggle-btn`).forEach(b => b.classList.toggle('selected', b.dataset.value === journal[group])));
-                document.querySelectorAll('[data-group="form-currency"] .toggle-btn').forEach(b => b.classList.toggle('selected', (journal.currency === 'USD' && b.id.includes('usd')) || (journal.currency === 'KRW' && b.id.includes('krw'))));
-                ['quantity', 'entry-price', 'stop-loss', 'target-price'].forEach(id => document.getElementById(id).value = formatNumber(journal[id.replace('-','')]));
-                document.getElementById('tick-value').value = formatNumber(journal.tickValue);
-                document.getElementById('tick-size').value = formatNumber(journal.tickSize);
+                document.querySelectorAll('[data-group="form-currency"] .toggle-btn').forEach(b => b.classList.toggle('selected', (journal.currency === 'USD' && b.id.includes('usd')) || (journal.currency !== 'USD' && b.id.includes('krw'))));
+                
+                if (journal.assetType === 'spot') {
+                    document.getElementById('quantity').value = formatNumber(journal.quantity);
+                } else {
+                    document.getElementById('contracts').value = formatNumber(journal.contracts);
+                    document.getElementById('tick-value').value = formatNumber(journal.tickValue);
+                    document.getElementById('tick-size').value = formatNumber(journal.tickSize);
+                }
+
+                ['entry-price', 'stop-loss', 'target-price'].forEach(id => document.getElementById(id).value = formatNumber(journal[id.replace('-','')]));
+                
                 ['entryTags', 'psychologyTags'].forEach(type => {
-                    const containerId = type.replace('Tags', '-tags-container');
-                    document.querySelectorAll(`#${containerId} .tag`).forEach(b => b.classList.remove('selected'));
-                    (journal[type] || []).forEach(tag => document.querySelector(`#${containerId} .tag[data-tag="${tag}"]`)?.classList.add('selected'));
+                    const containerClass = `.${type.replace('Tags', '-tags-container')}`;
+                    document.querySelectorAll(`${containerClass} .tag`).forEach(b => b.classList.remove('selected'));
+                    (journal[type] || []).forEach(tag => document.querySelector(`${containerClass} .tag[data-tag="${tag}"]`)?.classList.add('selected'));
                 });
+
                 switchJournalView('form-view'); window.scrollTo(0, 0);
             }
         }
@@ -615,8 +668,13 @@
         async function handleOpenExitModal(e) {
             const journal = await getJournalById(e.currentTarget.dataset.id);
             if(journal){
+                const isSpot = journal.assetType === 'spot';
+                const totalAmount = isSpot ? journal.quantity : journal.contracts;
+                const exitedAmount = journal.exits ? journal.exits.reduce((s, ex) => s + ex.quantity, 0) : 0;
+                const remaining = totalAmount - exitedAmount;
+                
                 document.getElementById('exit-journal-id').value = journal.id;
-                const remaining = journal.quantity - (journal.exits ? journal.exits.reduce((s, ex) => s + ex.quantity, 0) : 0);
+                document.getElementById('exit-quantity-label').textContent = isSpot ? '청산 수량' : '청산 계약 수';
                 document.getElementById('remaining-quantity').textContent = formatNumber(remaining);
                 document.getElementById('exit-quantity').dataset.max = remaining;
                 document.getElementById('exit-quantity').value = formatNumber(remaining);
@@ -634,8 +692,8 @@
             const date = Timestamp.fromDate(new Date(document.getElementById('exit-date').value));
             const maxQuantity = parseFloat(document.getElementById('exit-quantity').dataset.max);
 
-            if (isNaN(quantity) || quantity <= 0 || quantity > maxQuantity) {
-                showToast(`청산 수량은 0보다 크고 ${formatNumber(maxQuantity)} 이하여야 합니다.`, "error"); return;
+            if (isNaN(quantity) || quantity <= 0 || quantity > maxQuantity + 1e-9) {
+                showToast(`청산 수량/계약 수는 0보다 크고 ${formatNumber(maxQuantity)} 이하여야 합니다.`, "error"); return;
             }
             
             const exitData = { price, quantity, date };
@@ -646,7 +704,12 @@
         });
         
         function renderJournalStats(journals) {
-            const completed = journals.filter(j => j.exits && j.exits.length > 0 && (j.quantity - j.exits.reduce((s, e) => s + e.quantity, 0) <= 0.0000001));
+            const completed = journals.filter(j => {
+                const isSpot = j.assetType === 'spot';
+                const totalAmount = isSpot ? j.quantity : j.contracts;
+                const exitedAmount = j.exits ? j.exits.reduce((s, e) => s + e.quantity, 0) : 0;
+                return j.exits && j.exits.length > 0 && (totalAmount - exitedAmount <= 1e-9);
+            });
             renderOverallStats(completed);
             renderPnlCompositionChart(completed);
             renderPnlTrendCharts(completed);
@@ -661,17 +724,18 @@
             let winningTrades = 0;
             const plRatios = [];
             journals.forEach(j => {
-                const totalPnl = j.exits.reduce((sum, exit) => sum + (j.position === 'long' ? (exit.price - j.entryPrice) : (j.entryPrice - exit.price)) * exit.quantity, 0);
+                const totalPnl = j.exits.reduce((sum, exit) => sum + calculatePnl(j, exit), 0);
                 if (totalPnl > 0) winningTrades++;
 
                 j.exits.forEach(exit => {
-                    const pnlPerShare = j.position === 'long' ? (exit.price - j.entryPrice) : (j.entryPrice - exit.price);
-                    if (pnlPerShare > 0) {
-                        const risk = Math.abs(j.entryPrice - j.stopLoss);
-                        if (risk > 0) plRatios.push(Math.abs(exit.price - j.entryPrice) / risk);
-                    } else if (pnlPerShare < 0) {
-                        const loss = Math.abs(j.entryPrice - exit.price);
-                        if (loss > 0) plRatios.push(Math.abs(j.targetPrice - j.entryPrice) / loss);
+                    const pnl = calculatePnl(j, { ...exit, quantity: 1 }); // PnL per one unit/contract
+                    if (pnl > 0) {
+                        const risk = Math.abs(calculatePnl(j, { price: j.stopLoss, quantity: 1}));
+                        if (risk > 0) plRatios.push(pnl / risk);
+                    } else if (pnl < 0) {
+                        const loss = Math.abs(pnl);
+                        const reward = Math.abs(calculatePnl(j, { price: j.targetPrice, quantity: 1 }));
+                        if (loss > 0) plRatios.push(reward / loss);
                     }
                 });
             });
@@ -689,7 +753,7 @@
         function renderPnlCompositionChart(journals) {
             let totalProfit = 0; let totalLoss = 0;
             journals.forEach(j => {
-                const pnl = j.exits.reduce((s, e) => s + (j.position === 'long' ? (e.price - j.entryPrice) : (j.entryPrice - e.price)) * e.quantity, 0);
+                const pnl = j.exits.reduce((s, e) => s + calculatePnl(j, e), 0);
                 const pnlInKRW = j.currency === 'USD' ? pnl * exchangeRate : pnl;
                 if(pnlInKRW > 0) totalProfit += pnlInKRW;
                 else totalLoss += Math.abs(pnlInKRW);
@@ -703,7 +767,7 @@
                 const date = j.date;
                 const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
                 const quarter = `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`;
-                const pnl = j.exits.reduce((s, e) => s + (j.position === 'long' ? (e.price - j.entryPrice) : (j.entryPrice - e.price)) * e.quantity, 0);
+                const pnl = j.exits.reduce((s, e) => s + calculatePnl(j,e), 0);
                 const pnlInKRW = j.currency === 'USD' ? pnl * exchangeRate : pnl;
                 monthlyPnl[month] = (monthlyPnl[month] || 0) + pnlInKRW;
                 quarterlyPnl[quarter] = (quarterlyPnl[quarter] || 0) + pnlInKRW;
@@ -735,7 +799,7 @@
         function renderWinRateCharts(journals) {
             const entryTagStats = {}, psychologyTagStats = {}, strategyStats = {}, positionStats = { 'long': { wins: 0, trades: 0 }, 'short': { wins: 0, trades: 0 }};
             journals.forEach(j => {
-                const pnl = j.exits.reduce((s, e) => s + (j.position === 'long' ? (e.price - j.entryPrice) : (j.entryPrice - e.price)) * e.quantity, 0);
+                const pnl = j.exits.reduce((s, e) => s + calculatePnl(j,e), 0);
                 const isWin = pnl > 0;
                 if (positionStats[j.position]) { positionStats[j.position].trades++; if (isWin) positionStats[j.position].wins++; }
                 [j.entryTags, j.psychologyTags, [j.strategy]].forEach((tags, i) => {
@@ -772,7 +836,7 @@
                  charts[canvasId] = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ 
                     label, data: chartData, 
                     backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 99, 132, 0.7)'],
-                    borderColor: [isDark ? '#1f2937' : '#fff'], borderWidth: 4
+                    borderColor: [isDark ? '#1E1E1E' : '#fff'], borderWidth: 4
                 }]}, options: commonOptions });
             } else { // bar
                  charts[canvasId] = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label, data: chartData, backgroundColor: chartData.map(d => d >= (isWinRate ? 50 : 0) ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'), borderWidth: 1 }] }, 
@@ -781,14 +845,19 @@
         }
         
         function resetForm() {
-            journalForm.reset(); document.getElementById('journal-id').value = '';
+            journalForm.reset(); 
+            document.getElementById('journal-id').value = '';
             document.querySelectorAll('#journal-main-content .toggle-btn.selected').forEach(el => el.classList.remove('selected'));
             document.querySelectorAll('#journal-form .number-input').forEach(el => el.value = '');
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            
+            // Set defaults
+            document.querySelector('[data-group="asset-type"] .toggle-btn[data-value="spot"]').click();
             document.querySelector('[data-group="position"] .toggle-btn[data-value="long"]').classList.add('selected');
             document.querySelector('[data-group="strategy"] .toggle-btn[data-value="단타"]').classList.add('selected');
-            document.getElementById('form-currency-krw-btn').classList.add('selected');
-            document.querySelectorAll('#entry-tags-container .tag.selected, #psychology-tags-container .tag.selected').forEach(t => t.classList.remove('selected'));
+            document.getElementById('form-currency-usd-btn').classList.add('selected');
+            
+            document.querySelectorAll('.entry-tags-container .tag.selected, .psychology-tags-container .tag.selected').forEach(t => t.classList.remove('selected'));
         }
         document.getElementById('clear-form-btn').addEventListener('click', resetForm);
         
@@ -1102,7 +1171,7 @@
             
             if(type === 'pie'){
                 datasets[0].backgroundColor = pieColors.slice(0, datasets[0].data.length);
-                datasets[0].borderColor = isDark ? '#1f2937' : '#fff';
+                datasets[0].borderColor = isDark ? '#1E1E1E' : '#fff';
             }
 
             charts[canvasId] = new Chart(ctx, {
@@ -1131,7 +1200,6 @@
             const options = { maximumFractionDigits: 6 };
             const num = parseFloat(price);
             if(currency === 'USD') return `$${num.toLocaleString('en-US', options)}`;
-            // For KRW, round if it has decimals, otherwise just format
             return `₩${num.toLocaleString('en-US', {maximumFractionDigits: (num % 1 === 0) ? 0 : 6})}`;
         };
         const formatDualCurrency = (pnlInKRW, originalCurrency) => {
@@ -1215,6 +1283,7 @@
             switchJournalView('form-view');
             switchLedgerView('ledger-form-view');
             document.querySelectorAll('.exchange-rate-input').forEach(input => input.value = formatNumber(exchangeRate));
+            resetForm(); // Ensure correct initial state for journal form
         });
 
         function setTheme(theme) {
