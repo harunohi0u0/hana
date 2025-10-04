@@ -53,7 +53,8 @@
             color: white;
         }
         .tag.selected .delete-tag-span:hover {
-            color: #fecaca; /* light red */
+            color: #fecaca;
+            /* light red */
         }
 
         /* --- GUARANTEED DARK MODE STYLES --- */
@@ -112,7 +113,7 @@
         .dark .border-purple-200 { border-color: #7e22ce; } /* purple-700 */
         .dark .bg-blue-50 {
             background-color: #27272a; /* zinc-800 */
-            border-color: #3f3f46;   /* zinc-700 */
+            border-color: #3f3f46; /* zinc-700 */
         }
         .dark .text-blue-800 {
              color: #d4d4d8; /* zinc-300 */
@@ -132,7 +133,6 @@
         .dark .hover\:bg-gray-400:hover { background-color: #71717a; } /* zinc-500 */
         /* --- END DARK MODE STYLES --- */
     </style>
-    <!-- 다크모드 FOUC 방지 및 즉시 적용 스크립트 -->
     <script>
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -217,7 +217,7 @@
 
             <div id="list-view" class="hidden">
                 <div class="bg-white p-4 rounded-2xl shadow-lg mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
-                     <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-2">
                         <label for="list-exchange-rate" class="font-medium text-sm text-gray-600">환율 (USD/KRW):</label>
                         <input type="text" inputmode="numeric" id="list-exchange-rate" value="1,380" class="exchange-rate-input number-input w-28 p-2 border border-gray-300 bg-white rounded-lg text-center text-gray-800">
                     </div>
@@ -240,7 +240,17 @@
                         <button id="stats-currency-usd-btn" class="toggle-btn">달러 ($)</button>
                     </div>
                 </div>
-                
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg text-center">
+                        <h3 class="text-xl font-bold mb-3 text-gray-700">총 승률</h3>
+                        <p id="total-win-rate" class="text-4xl font-bold text-blue-500">N/A</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg text-center">
+                        <h3 class="text-xl font-bold mb-3 text-gray-700">평균 손익비</h3>
+                        <p id="average-pl-ratio" class="text-4xl font-bold text-green-500">N/A</p>
+                    </div>
+                </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="bg-white p-6 rounded-2xl shadow-lg lg:col-span-1"><h3 class="text-xl font-bold mb-4">총 손익 구성</h3><div class="chart-container"><canvas id="pnl-composition-chart"></canvas></div></div>
                     <div class="bg-white p-6 rounded-2xl shadow-lg lg:col-span-2"><h3 class="text-xl font-bold mb-4">월별 손익 추세</h3><div class="chart-container"><canvas id="monthly-pnl-chart"></canvas></div><div id="monthly-pnl-summary" class="mt-4 text-sm text-center"></div></div>
@@ -302,13 +312,11 @@
           appId: "1:697666115735:web:7380a588822f771dc071d2",
           measurementId: "G-TZQ9GVFWV5"
         };
-
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
         const provider = new firebase.auth.GoogleAuthProvider();
         const Timestamp = firebase.firestore.Timestamp;
-
         let currentUser = null;
         let unsubscribeJournals = null;
         let unsubscribeTags = null;
@@ -326,11 +334,9 @@
                 showToast("로그인에 실패했습니다. 잠시 후 다시 시도해주세요.", "error");
             });
         });
-
         logoutBtn.addEventListener('click', () => {
             auth.signOut();
         });
-        
         auth.onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
@@ -350,7 +356,6 @@
             }
             lucide.createIcons();
         });
-        
         async function initializeAppFunctionality() {
             if (!currentUser) return;
             const userId = currentUser.uid;
@@ -449,7 +454,6 @@
                 const borderColor = isClosed ? (totalPnlInKRW > 0 ? 'border-green-500' : 'border-red-500') : 'border-yellow-500';
                 const card = document.createElement('div');
                 card.className = `bg-white p-5 rounded-xl shadow-md border-l-4 ${borderColor}`;
-                
                 let holdingPeriodHtml = '';
                 if (isClosed && journal.exits.length > 0) {
                      const lastExit = journal.exits.reduce((latest, current) => {
@@ -457,7 +461,6 @@
                         const currentDate = current.date instanceof Timestamp ? current.date.toDate() : new Date(current.date);
                         return currentDate > latestDate ? current : latest;
                     }, journal.exits[0]);
-
                     const lastExitDate = lastExit.date instanceof Timestamp ? lastExit.date.toDate() : new Date(lastExit.date);
                     const entryDate = journal.date;
                     const diffTime = Math.abs(lastExitDate - entryDate);
@@ -465,8 +468,8 @@
                     holdingPeriodHtml = `<p><strong>보유 기간:</strong> ${diffDays}일</p>`;
                 }
 
-                const exitsHtml = journal.exits && journal.exits.length > 0 ? `
-                    <div class="mt-3 pt-3 border-t border-gray-200 space-y-1 text-xs">
+                const exitsHtml = journal.exits && journal.exits.length > 0 ?
+                    `<div class="mt-3 pt-3 border-t border-gray-200 space-y-1 text-xs">
                         <h5 class="font-semibold mb-1">청산 내역</h5>
                         ${journal.exits.map(exit => {
                             const exitPnl = (journal.position === 'long' ? (exit.price - journal.entryPrice) : (journal.entryPrice - exit.price)) * exit.quantity;
@@ -475,7 +478,6 @@
                             return `<div class="flex justify-between items-center p-1 rounded bg-gray-50"><span>${exitDate.toLocaleDateString()} ${exit.type} @ ${formatPrice(exit.price, journal.currency)} (${formatNumber(exit.quantity)}주)</span><span class="${exitPnlClass} font-medium">${formatPrice(exitPnl, journal.currency)}</span></div>`
                         }).join('')}
                     </div>` : '';
-
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-3">
                         <div>
@@ -485,7 +487,7 @@
                             <span class="text-sm text-gray-500 ml-2">${journal.strategy}</span>
                         </div>
                         <div class="flex space-x-2">
-                             ${!isClosed ? `<button class="p-2 hover:bg-gray-100 rounded-full exit-btn" data-id="${journal.id}"><i data-lucide="log-out" class="w-5 h-5 text-blue-500"></i></button>` : ''}
+                            ${!isClosed ? `<button class="p-2 hover:bg-gray-100 rounded-full exit-btn" data-id="${journal.id}"><i data-lucide="log-out" class="w-5 h-5 text-blue-500"></i></button>` : ''}
                             <button class="p-2 hover:bg-gray-100 rounded-full edit-btn" data-id="${journal.id}"><i data-lucide="edit" class="w-5 h-5 text-gray-500"></i></button>
                             <button class="p-2 hover:bg-gray-100 rounded-full delete-btn" data-id="${journal.id}"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></button>
                         </div>
@@ -526,14 +528,15 @@
         }
         
         function renderTags(tags, containerId, type) {
-            const container = document.getElementById(containerId); container.innerHTML = '';
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
             if(!tags) return;
             tags.forEach(tag => {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center';
                 button.dataset.tag = tag;
-                
+              
                 const textSpan = document.createElement('span');
                 textSpan.className = 'pl-3 pr-2 py-1';
                 textSpan.textContent = tag;
@@ -560,12 +563,10 @@
             const target = e.currentTarget;
             const tag = target.dataset.tag;
             const type = target.dataset.type;
-
             const isTagInUse = localJournals.some(journal => 
                 (type === 'entry' && journal.entryTags?.includes(tag)) || 
                 (type === 'psychology' && journal.psychologyTags?.includes(tag))
             );
-            
             if (isTagInUse) {
                 showToast("사용 중인 태그는 삭제할 수 없습니다.", "error");
                 return;
@@ -607,8 +608,6 @@
                 const input = document.getElementById('new-psychology-tag');
                 if (input.value.trim()) { addTag('psychology', input.value.trim()); input.value = ''; }
         });
-
-
         journalForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if(!currentUser) return;
@@ -632,7 +631,6 @@
                 entryTags: Array.from(document.querySelectorAll('#entry-tags-container .tag.selected')).map(b => b.dataset.tag),
                 psychologyTags: Array.from(document.querySelectorAll('#psychology-tags-container .tag.selected')).map(b => b.dataset.tag),
             };
-            
             try {
                 if (journalId) {
                     const journalRef = db.collection("users").doc(currentUser.uid).collection("journals").doc(journalId);
@@ -650,7 +648,6 @@
                 showToast("저장에 실패했습니다.", "error");
             }
         });
-        
         async function handleDeleteJournal(e) {
             const id = e.currentTarget.dataset.id;
             showConfirmModal("정말로 이 일지를 삭제하시겠습니까?", async () => {
@@ -658,7 +655,7 @@
                     await db.collection("users").doc(currentUser.uid).collection("journals").doc(id).delete();
                     showToast("일지를 삭제했습니다.");
                 } catch (error) {
-                     console.error("Error deleting journal: ", error);
+                    console.error("Error deleting journal: ", error);
                     showToast("삭제에 실패했습니다.", "error");
                 }
             }, '삭제');
@@ -679,7 +676,7 @@
                 if(journal.currency === 'USD') { document.getElementById('form-currency-usd-btn').classList.add('selected'); } 
                 else { document.getElementById('form-currency-krw-btn').classList.add('selected'); }
 
-                document.getElementById('quantity').value = formatNumber(journal.quantity); 
+                document.getElementById('quantity').value = formatNumber(journal.quantity);
                 document.getElementById('entry-price').value = formatNumber(journal.entryPrice);
                 document.getElementById('stop-loss').value = formatNumber(journal.stopLoss); 
                 document.getElementById('target-price').value = formatNumber(journal.targetPrice);
@@ -689,13 +686,11 @@
                     const tagEl = document.querySelector(`#entry-tags-container .tag[data-tag="${tag}"]`);
                     if(tagEl) tagEl.classList.add('selected');
                 });
-
                 document.querySelectorAll('#psychology-tags-container .tag').forEach(b => b.classList.remove('selected'));
                 (journal.psychologyTags || []).forEach(tag => {
                     const tagEl = document.querySelector(`#psychology-tags-container .tag[data-tag="${tag}"]`);
                     if(tagEl) tagEl.classList.add('selected');
                 });
-
                 switchTab('form-view'); window.scrollTo(0, 0);
             }
         }
@@ -734,7 +729,6 @@
             let type = '본절';
             if (pnlPerShare > 0) type = '익절';
             else if (pnlPerShare < 0) type = '손절';
-            
             const exitData = { price, quantity, type, date };
 
             showConfirmModal("이 청산 기록을 추가하시겠습니까?", async () => {
@@ -753,13 +747,72 @@
         
         function renderStats(journals) {
             const completed = journals.filter(j => (j.exits ? j.exits.reduce((s, e) => s + e.quantity, 0) : 0) >= j.quantity);
+            renderOverallStats(completed); // NEW
             renderPnlCompositionChart(completed);
             renderPnlTrendCharts(completed);
             renderWinRateCharts(completed);
         }
 
+        // ================== NEW: Overall Stats Function ==================
+        function renderOverallStats(journals) {
+            const winRateEl = document.getElementById('total-win-rate');
+            const plRatioEl = document.getElementById('average-pl-ratio');
+
+            if (journals.length === 0) {
+                winRateEl.textContent = 'N/A';
+                plRatioEl.textContent = 'N/A';
+                return;
+            }
+
+            let winningTrades = 0;
+            const plRatios = [];
+
+            journals.forEach(j => {
+                const totalPnl = j.exits.reduce((sum, exit) => sum + (j.position === 'long' ? (exit.price - j.entryPrice) : (j.entryPrice - exit.price)) * exit.quantity, 0);
+                if (totalPnl > 0) {
+                    winningTrades++;
+                }
+
+                j.exits.forEach(exit => {
+                    const pnlPerShare = j.position === 'long' ? (exit.price - j.entryPrice) : (j.entryPrice - exit.price);
+                    
+                    if (pnlPerShare > 0) { // 익절
+                        const profit = Math.abs(exit.price - j.entryPrice);
+                        const risk = Math.abs(j.entryPrice - j.stopLoss);
+                        if (risk > 0) {
+                            plRatios.push(profit / risk);
+                        }
+                    } else if (pnlPerShare < 0) { // 손절
+                        const reward = Math.abs(j.targetPrice - j.entryPrice);
+                        const loss = Math.abs(j.entryPrice - exit.price);
+                        if (loss > 0) {
+                            plRatios.push(reward / loss);
+                        }
+                    }
+                });
+            });
+
+            // 승률 계산 및 표시
+            const winRate = (winningTrades / journals.length) * 100;
+            winRateEl.textContent = `${winRate.toFixed(2)}%`;
+            winRateEl.className = `text-4xl font-bold ${winRate >= 50 ? 'text-blue-500' : 'text-red-500'}`;
+
+
+            // 손익비 계산 및 표시
+            if (plRatios.length > 0) {
+                const averagePlRatio = plRatios.reduce((sum, ratio) => sum + ratio, 0) / plRatios.length;
+                plRatioEl.textContent = `${averagePlRatio.toFixed(2)} : 1`;
+                plRatioEl.className = `text-4xl font-bold ${averagePlRatio >= 1 ? 'text-green-500' : 'text-yellow-500'}`;
+            } else {
+                plRatioEl.textContent = 'N/A';
+                plRatioEl.className = 'text-4xl font-bold text-gray-500';
+            }
+        }
+        // ================== END: Overall Stats Function ==================
+
         function renderPnlCompositionChart(journals) {
-            let totalProfit = 0; let totalLoss = 0;
+            let totalProfit = 0;
+            let totalLoss = 0;
             journals.forEach(j => {
                 const pnl = j.exits.reduce((s, e) => s + (j.position === 'long' ? (e.price - j.entryPrice) : (j.entryPrice - e.price)) * e.quantity, 0);
                 const pnlInKRW = j.currency === 'USD' ? pnl * exchangeRate : pnl;
@@ -770,22 +823,21 @@
         }
 
         function renderPnlTrendCharts(journals) {
-            const monthlyPnl = {}; const quarterlyPnl = {};
+            const monthlyPnl = {};
+            const quarterlyPnl = {};
             journals.forEach(j => {
                 const date = j.date;
                 const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
                 const quarter = `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`;
-                const pnl = j.exits.reduce((s, e) => s + (j.position === 'long' ? (e.price - j.entryPrice) : (j.entryPrice - e.price)) * e.quantity, 0);
+                const pnl = j.exits.reduce((s, e) => s + (j.position === 'long' ? (j.entryPrice - e.price) : (e.price - j.entryPrice)) * e.quantity, 0);
                 const pnlInKRW = j.currency === 'USD' ? pnl * exchangeRate : pnl;
                 monthlyPnl[month] = (monthlyPnl[month] || 0) + pnlInKRW;
                 quarterlyPnl[quarter] = (quarterlyPnl[quarter] || 0) + pnlInKRW;
             });
-            
             const sortedMonthlyKeys = Object.keys(monthlyPnl).sort();
             const sortedMonthlyValues = sortedMonthlyKeys.map(key => monthlyPnl[key]);
             createChart('monthly-pnl-chart', 'bar', sortedMonthlyKeys, sortedMonthlyValues, '월별 손익');
             renderSummary('monthly-pnl-summary', sortedMonthlyKeys, sortedMonthlyValues);
-
             const sortedQuarterlyKeys = Object.keys(quarterlyPnl).sort();
             const sortedQuarterlyValues = sortedQuarterlyKeys.map(key => quarterlyPnl[key]);
             createChart('quarterly-pnl-chart', 'bar', sortedQuarterlyKeys, sortedQuarterlyValues, '분기별 손익');
@@ -841,7 +893,6 @@
                     tooltip: { callbacks: { label: c => isWinRate ? `${c.label}: ${c.parsed.toFixed(2)}%` : `${c.label}: ${formatPrice(c.raw, statsCurrency)}` } } 
                 }
             };
-
             if (type === 'doughnut') {
                  charts[canvasId] = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ 
                     label, data: chartData, 
@@ -866,7 +917,8 @@
         }
         
         function resetForm() {
-            journalForm.reset(); document.getElementById('journal-id').value = '';
+            journalForm.reset();
+            document.getElementById('journal-id').value = '';
             document.querySelectorAll('.toggle-btn.selected').forEach(el => el.classList.remove('selected'));
             document.querySelectorAll('.number-input').forEach(el => el.value = '');
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
@@ -937,15 +989,12 @@
             const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
             setTheme(newTheme);
         });
-
         document.getElementById('confirm-ok-btn').addEventListener('click', () => { if (confirmCallback) confirmCallback(); closeConfirmModal(); });
         document.getElementById('confirm-cancel-btn').addEventListener('click', closeConfirmModal);
         document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
         document.getElementById('clear-form-btn').addEventListener('click', resetForm);
-        
         document.getElementById('close-modal-btn').addEventListener('click', closeExitModal);
         document.getElementById('exit-modal').addEventListener('click', e => { if (e.target.id === 'exit-modal') closeExitModal(); });
-        
         document.querySelectorAll('.exchange-rate-input').forEach(input => {
             input.addEventListener('input', (e) => {
                 const value = unformatNumber(e.target.value);
@@ -960,13 +1009,11 @@
                 }
             });
         });
-
         document.querySelectorAll('.number-input').forEach(input => {
             if (!input.classList.contains('exchange-rate-input')) {
                 input.addEventListener('input', (e) => { e.target.value = formatNumber(e.target.value); });
             }
         });
-        
         document.addEventListener('click', function(event) {
             const button = event.target.closest('.toggle-btn');
             if (button) {
@@ -981,8 +1028,6 @@
                 }
             }
         });
-
-
         window.addEventListener('DOMContentLoaded', () => {
             const initialTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
             setTheme(initialTheme);
@@ -998,4 +1043,3 @@
     </script>
 </body>
 </html>
-
