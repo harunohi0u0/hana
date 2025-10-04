@@ -98,7 +98,7 @@
             color: #60a5fa; /* blue-400 */
         }
         .dark .tag.selected {
-            background-color: #3b82f6; /* blue-500 for better visibility */
+            background-color: #3b82f6; /* blue-500 */
             color: #ffffff;
         }
         .dark #entry-tags-container .tag.selected {
@@ -145,8 +145,8 @@
 
     <div id="login-view" class="flex flex-col items-center justify-center min-h-screen p-4">
         <div class="text-center">
-            <h1 class="text-5xl font-bold mb-4">나의 매매일지 📝</h1>
-            <p class="text-xl text-gray-500 mb-8">당신의 모든 거래를 기록하고 성장하세요!</p>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">나의 매매일지 📝</h1>
+            <p class="text-lg md:text-xl text-gray-500 mb-8">당신의 모든 거래를 기록하고 성장하세요!</p>
             <button id="login-btn" class="bg-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center justify-center">
                 <svg class="w-6 h-6 mr-3" viewBox="0 0 48 48"><defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath><path clip-path="url(#b)" fill="#FBBC05" d="M0 37V11l17 13z"/><path clip-path="url(#b)" fill="#EA4335" d="M0 11l17 13 7-6.1L48 14V0H0z"/><path clip-path="url(#b)" fill="#34A853" d="M0 37l30-23 7.9 1L48 0v48H0z"/><path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/></svg>
                 Google 계정으로 로그인
@@ -157,7 +157,7 @@
     <div id="app-container" class="max-w-7xl mx-auto p-4 md:p-8 hidden">
         
         <header class="mb-8 relative">
-            <h1 class="text-4xl font-bold text-center mb-2">나의 매매일지 📝</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2">나의 매매일지 📝</h1>
             <p class="text-center text-gray-500">당신의 모든 거래를 기록하고 성장하세요!</p>
             <div id="auth-info" class="text-center text-xs mt-2"></div>
             <div class="absolute top-0 right-0 flex items-center space-x-2">
@@ -172,9 +172,9 @@
         </header>
 
         <nav class="flex justify-center bg-white rounded-xl shadow-md p-2 mb-8 space-x-2">
-            <button data-tab="form-view" class="tab-btn text-gray-600 active w-full md:w-auto px-6 py-3 rounded-lg"><i data-lucide="plus-circle" class="inline-block w-5 h-5 mr-2"></i>일지 작성</button>
-            <button data-tab="list-view" class="tab-btn text-gray-600 w-full md:w-auto px-6 py-3 rounded-lg"><i data-lucide="book-open" class="inline-block w-5 h-5 mr-2"></i>내 일지</button>
-            <button data-tab="stats-view" class="tab-btn text-gray-600 w-full md:w-auto px-6 py-3 rounded-lg"><i data-lucide="bar-chart-2" class="inline-block w-5 h-5 mr-2"></i>성과 분석</button>
+            <button data-tab="form-view" class="tab-btn text-gray-600 active w-full md:w-auto px-4 md:px-6 py-3 rounded-lg text-sm md:text-base"><i data-lucide="plus-circle" class="inline-block w-5 h-5 mr-1 md:mr-2"></i>일지 작성</button>
+            <button data-tab="list-view" class="tab-btn text-gray-600 w-full md:w-auto px-4 md:px-6 py-3 rounded-lg text-sm md:text-base"><i data-lucide="book-open" class="inline-block w-5 h-5 mr-1 md:mr-2"></i>내 일지</button>
+            <button data-tab="stats-view" class="tab-btn text-gray-600 w-full md:w-auto px-4 md:px-6 py-3 rounded-lg text-sm md:text-base"><i data-lucide="bar-chart-2" class="inline-block w-5 h-5 mr-1 md:mr-2"></i>성과 분석</button>
         </nav>
 
         <main>
@@ -184,12 +184,12 @@
                     
                     <div>
                         <h2 class="text-2xl font-bold mb-4 border-b-2 border-blue-200 pb-2 flex items-center"><i data-lucide="clipboard-list" class="mr-3 text-blue-500"></i>기본 정보</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <div><label for="date" class="block text-sm font-medium text-gray-700 mb-1">날짜</label><input type="date" id="date" required class="w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent text-gray-800"></div>
-                            <div><label for="ticker" class="block text-sm font-medium text-gray-700 mb-1">종목 이름</label><input type="text" id="ticker" placeholder="예: 삼성전자, BTCUSDT" required class="w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent placeholder-gray-400 text-gray-800"></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div class="sm:col-span-2 lg:col-span-1"><label for="date" class="block text-sm font-medium text-gray-700 mb-1">날짜</label><input type="date" id="date" required class="w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent text-gray-800"></div>
+                            <div class="sm:col-span-2 lg:col-span-3"><label for="ticker" class="block text-sm font-medium text-gray-700 mb-1">종목 이름</label><input type="text" id="ticker" placeholder="예: 삼성전자, BTCUSDT" required class="w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent placeholder-gray-400 text-gray-800"></div>
                             <div><span class="block text-sm font-medium text-gray-700 mb-2">포지션</span><div class="toggle-group text-gray-600" data-group="position"><button type="button" data-value="long" class="toggle-btn">🟢 롱</button><button type="button" data-value="short" class="toggle-btn">🔴 숏</button></div></div>
                             <div><span class="block text-sm font-medium text-gray-700 mb-2">매매 전략</span><div class="toggle-group text-gray-600" data-group="strategy"><button type="button" data-value="단타" class="toggle-btn">단타</button><button type="button" data-value="스윙" class="toggle-btn">스윙</button><button type="button" data-value="장기" class="toggle-btn">장기</button></div></div>
-                            <div class="md:col-span-2 lg:col-span-4"><span class="block text-sm font-medium text-gray-700 mb-2">입력 통화</span><div class="toggle-group text-gray-600 w-full md:w-auto md:max-w-xs" data-group="form-currency"><button type="button" id="form-currency-krw-btn" class="toggle-btn selected">원 (₩)</button><button type="button" id="form-currency-usd-btn" class="toggle-btn">달러 ($)</button></div></div>
+                            <div class="sm:col-span-2"><span class="block text-sm font-medium text-gray-700 mb-2">입력 통화</span><div class="toggle-group text-gray-600 w-full" data-group="form-currency"><button type="button" id="form-currency-krw-btn" class="toggle-btn selected">원 (₩)</button><button type="button" id="form-currency-usd-btn" class="toggle-btn">달러 ($)</button></div></div>
                             <div><label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">수량</label><input type="text" inputmode="numeric" id="quantity" placeholder="예: 100" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent placeholder-gray-400 text-gray-800"></div>
                             <div><label for="entry-price" class="block text-sm font-medium text-gray-700 mb-1">매입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="예: 10,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent placeholder-gray-400 text-gray-800"></div>
                             <div><label for="stop-loss" class="block text-sm font-medium text-gray-700 mb-1">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="예: 9,500" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent placeholder-gray-400 text-gray-800"></div>
@@ -228,7 +228,7 @@
             </div>
 
             <div id="stats-view" class="hidden space-y-8">
-                <div class="bg-white p-4 rounded-2xl shadow-lg mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
+                <div class="bg-white p-4 rounded-2xl shadow-lg mb-6 flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-4">
                     <div class="flex items-center space-x-2">
                         <label for="stats-exchange-rate" class="font-medium text-sm text-gray-600">환율 (USD/KRW):</label>
                         <input type="text" inputmode="numeric" id="stats-exchange-rate" value="1,380" class="exchange-rate-input number-input w-28 p-2 border border-gray-300 bg-white rounded-lg text-center text-gray-800">
@@ -239,21 +239,21 @@
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="bg-white p-6 rounded-2xl shadow-lg md:col-span-1"><h3 class="text-xl font-bold mb-4">총 손익 구성</h3><div class="chart-container"><canvas id="pnl-composition-chart"></canvas></div></div>
-                    <div class="bg-white p-6 rounded-2xl shadow-lg md:col-span-2"><h3 class="text-xl font-bold mb-4">월별 손익 추세</h3><div class="chart-container"><canvas id="monthly-pnl-chart"></canvas></div><div id="monthly-pnl-summary" class="mt-4 text-sm text-center"></div></div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg lg:col-span-1"><h3 class="text-xl font-bold mb-4">총 손익 구성</h3><div class="chart-container"><canvas id="pnl-composition-chart"></canvas></div></div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg lg:col-span-2"><h3 class="text-xl font-bold mb-4">월별 손익 추세</h3><div class="chart-container"><canvas id="monthly-pnl-chart"></canvas></div><div id="monthly-pnl-summary" class="mt-4 text-sm text-center"></div></div>
                 </div>
                 <div class="grid grid-cols-1">
                     <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">분기별 손익 추세</h3><div class="chart-container"><canvas id="quarterly-pnl-chart"></canvas></div><div id="quarterly-pnl-summary" class="mt-4 text-sm text-center"></div></div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                      <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">진입 근거별 승률</h3><div class="chart-container"><canvas id="entry-win-rate-chart"></canvas></div></div>
                      <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">심리 상태별 승률</h3><div class="chart-container"><canvas id="psychology-win-rate-chart"></canvas></div></div>
                      <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">매매 전략별 승률</h3><div class="chart-container"><canvas id="strategy-win-rate-chart"></canvas></div></div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-white p-6 rounded-2xl shadow-lg md:col-span-2"><h3 class="text-xl font-bold mb-4">롱/숏 포지션 승률</h3><div class="chart-container"><canvas id="position-win-rate-chart"></canvas></div></div>
+                <div class="grid grid-cols-1">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">롱/숏 포지션 승률</h3><div class="chart-container"><canvas id="position-win-rate-chart"></canvas></div></div>
                 </div>
             </div>
         </main>
