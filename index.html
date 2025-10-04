@@ -286,12 +286,11 @@
 
     <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"><p id="toast-message"></p></div>
     
-    <script type="module">
-        // Firebase SDKs
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, addDoc, getDoc, getDocs, collection, onSnapshot, query, orderBy, deleteDoc, updateDoc, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+    
+    <script>
         const firebaseConfig = {
           apiKey: "AIzaSyDZm5AazCafB0Sb2gd0llv9e3GAhE-nKBw",
           authDomain: "sakurazima-mai-0u0.firebaseapp.com",
@@ -302,10 +301,11 @@
           measurementId: "G-TZQ9GVFWV5"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const Timestamp = firebase.firestore.Timestamp;
 
         let currentUser = null;
         let unsubscribeJournals = null;
@@ -319,17 +319,17 @@
         const logoutBtn = document.getElementById('logout-btn');
 
         loginBtn.addEventListener('click', () => {
-            signInWithPopup(auth, provider).catch(error => {
+            auth.signInWithPopup(provider).catch(error => {
                 console.error("Login failed:", error);
                 showToast("로그인에 실패했습니다. 잠시 후 다시 시도해주세요.", "error");
             });
         });
 
         logoutBtn.addEventListener('click', () => {
-            signOut(auth);
+            auth.signOut();
         });
         
-        onAuthStateChanged(auth, (user) => {
+        auth.onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
                 loginView.classList.add('hidden');
@@ -353,10 +353,10 @@
             if (!currentUser) return;
             const userId = currentUser.uid;
 
-            const tagsDocRef = doc(db, "users", userId, "tags", "all");
-            const tagsDocSnap = await getDoc(tagsDocRef);
-            if (!tagsDocSnap.exists()) {
-                await setDoc(tagsDocRef, {
+            const tagsDocRef = db.collection("users").doc(userId).collection("tags").doc("all");
+            const tagsDocSnap = await tagsDocRef.get();
+            if (!tagsDocSnap.exists) {
+                await tagsDocRef.set({
                     entry: ['정배열 돌파', '낙주 매매'],
                     psychology: ['FOMO', '확신']
                 });
@@ -368,8 +368,8 @@
 
         function attachRealtimeListeners(userId) {
             if (unsubscribeJournals) unsubscribeJournals();
-            const journalsQuery = query(collection(db, "users", userId, "journals"), orderBy("date", "desc"));
-            unsubscribeJournals = onSnapshot(journalsQuery, (snapshot) => {
+            const journalsQuery = db.collection("users").doc(userId).collection("journals").orderBy("date", "desc");
+            unsubscribeJournals = journalsQuery.onSnapshot((snapshot) => {
                 const journals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 localJournals = journals.map(j => ({ ...j, date: j.date instanceof Timestamp ? j.date.toDate() : new Date(j.date) }));
                 renderJournals(localJournals);
@@ -377,9 +377,9 @@
             }, (error) => console.error("Error fetching journals:", error));
 
             if (unsubscribeTags) unsubscribeTags();
-            const tagsDocRef = doc(db, "users", userId, "tags", "all");
-            unsubscribeTags = onSnapshot(tagsDocRef, (doc) => {
-                if (doc.exists()) {
+            const tagsDocRef = db.collection("users").doc(userId).collection("tags").doc("all");
+            unsubscribeTags = tagsDocRef.onSnapshot((doc) => {
+                if (doc.exists) {
                     localTags = doc.data();
                     renderTags(localTags.entry, 'entry-tags-container', 'entry');
                     renderTags(localTags.psychology, 'psychology-tags-container', 'psychology');
@@ -504,9 +504,9 @@
         }
 
         async function getJournalById(id) {
-            const docRef = doc(db, "users", currentUser.uid, "journals", id);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
+            const docRef = db.collection("users").doc(currentUser.uid).collection("journals").doc(id);
+            const docSnap = await docRef.get();
+            if (docSnap.exists) {
                 const data = docSnap.data();
                 return { 
                     id: docSnap.id, 
@@ -570,10 +570,10 @@
             }
 
             showConfirmModal(`'${tag}' 태그를 삭제하시겠습니까?`, async () => {
-                const tagsDocRef = doc(db, "users", currentUser.uid, "tags", "all");
+                const tagsDocRef = db.collection("users").doc(currentUser.uid).collection("tags").doc("all");
                 const newTags = localTags[type].filter(t => t !== tag);
                 try {
-                    await updateDoc(tagsDocRef, { [type]: newTags });
+                    await tagsDocRef.update({ [type]: newTags });
                     showToast(`'${tag}' 태그가 삭제되었습니다.`);
                 } catch(e) {
                     showToast("태그 삭제에 실패했습니다.", "error");
@@ -583,12 +583,12 @@
         
         async function addTag(type, tag) {
             if (!currentUser) return;
-            const tagsDocRef = doc(db, "users", currentUser.uid, "tags", "all");
+            const tagsDocRef = db.collection("users").doc(currentUser.uid).collection("tags").doc("all");
             
             const currentTags = localTags[type] || [];
             if (!currentTags.includes(tag)) {
                 try {
-                    await updateDoc(tagsDocRef, { [type]: [...currentTags, tag] });
+                    await tagsDocRef.update({ [type]: [...currentTags, tag] });
                     showToast(`'${tag}' 태그가 추가되었습니다.`);
                 } catch (e) {
                     showToast("태그 추가에 실패했습니다.", "error");
@@ -633,13 +633,13 @@
             
             try {
                 if (journalId) {
-                    const journalRef = doc(db, "users", currentUser.uid, "journals", journalId);
-                    await updateDoc(journalRef, journalData);
+                    const journalRef = db.collection("users").doc(currentUser.uid).collection("journals").doc(journalId);
+                    await journalRef.update(journalData);
                     showToast("일지가 성공적으로 수정되었습니다.");
                 } else {
                     journalData.exits = [];
-                    const collectionRef = collection(db, "users", currentUser.uid, "journals");
-                    await addDoc(collectionRef, journalData);
+                    const collectionRef = db.collection("users").doc(currentUser.uid).collection("journals");
+                    await collectionRef.add(journalData);
                     showToast("일지가 성공적으로 저장되었습니다.");
                 }
                 resetForm();
@@ -653,7 +653,7 @@
             const id = e.currentTarget.dataset.id;
             showConfirmModal("정말로 이 일지를 삭제하시겠습니까?", async () => {
                 try {
-                    await deleteDoc(doc(db, "users", currentUser.uid, "journals", id));
+                    await db.collection("users").doc(currentUser.uid).collection("journals").doc(id).delete();
                     showToast("일지를 삭제했습니다.");
                 } catch (error) {
                      console.error("Error deleting journal: ", error);
@@ -736,10 +736,10 @@
             const exitData = { price, quantity, type, date };
 
             showConfirmModal("이 청산 기록을 추가하시겠습니까?", async () => {
-                const journalRef = doc(db, "users", currentUser.uid, "journals", journalId);
+                const journalRef = db.collection("users").doc(currentUser.uid).collection("journals").doc(journalId);
                 const updatedExits = [...(journal.exits || []), exitData];
                 try {
-                    await updateDoc(journalRef, { exits: updatedExits });
+                    await journalRef.update({ exits: updatedExits });
                     showToast("청산 기록이 추가되었습니다.");
                     closeExitModal();
                 } catch(error) {
