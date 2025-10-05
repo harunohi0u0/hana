@@ -139,8 +139,8 @@
                                 <div class="sm:col-span-2"><label for="ticker" class="block text-sm font-medium text-gray-700 mb-1">종목 이름</label><input type="text" id="ticker" placeholder="예: 삼성전자, NG" required class="w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
                                 <div><label for="date" class="block text-sm font-medium text-gray-700 mb-1">날짜</label><input type="date" id="date" required class="w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
                                 <div><span class="block text-sm font-medium text-gray-700 mb-2">포지션</span><div class="toggle-group text-gray-600" data-group="position"><button type="button" data-value="long" class="toggle-btn selected">🟢 롱</button><button type="button" data-value="short" class="toggle-btn">🔴 숏</button></div></div>
-                                <div class="sm:col-span-2"><span class="block text-sm font-medium text-gray-700 mb-2">매매 전략</span><div class="toggle-group text-gray-600" data-group="strategy"><button type="button" data-value="단타" class="toggle-btn selected">단타</button><button type="button" data-value="스윙" class="toggle-btn">스윙</button><button type="button" data-value="장기" class="toggle-btn">장기</button></div></div>
-                                <div class="sm:col-span-2"><span class="block text-sm font-medium text-gray-700 mb-2">입력 통화</span><div class="toggle-group text-gray-600 w-full" data-group="form-currency"><button type="button" id="form-currency-krw-btn" class="toggle-btn">원 (₩)</button><button type="button" id="form-currency-usd-btn" class="toggle-btn selected">달러 ($)</button></div></div>
+                                <div><span class="block text-sm font-medium text-gray-700 mb-2">매매 전략</span><div class="toggle-group text-gray-600" data-group="strategy"><button type="button" data-value="단타" class="toggle-btn selected">단타</button><button type="button" data-value="스윙" class="toggle-btn">스윙</button><button type="button" data-value="장기" class="toggle-btn">장기</button></div></div>
+                                <div><span class="block text-sm font-medium text-gray-700 mb-2">입력 통화</span><div class="toggle-group text-gray-600" data-group="form-currency"><button type="button" id="form-currency-krw-btn" class="toggle-btn">원 (₩)</button><button type="button" id="form-currency-usd-btn" class="toggle-btn selected">달러 ($)</button></div></div>
                                 
                                 <!-- Spot Fields -->
                                 <div id="spot-fields">
@@ -157,8 +157,8 @@
                                 </div>
                                 
                                 <div><label for="entry-price" class="block text-sm font-medium text-gray-700 mb-1">진입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="예: 10,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
-                                <div><label for="stop-loss" class="block text-sm font-medium text-gray-700 mb-1">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="예: 9,500" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
-                                <div class="sm:col-span-2"><label for="target-price" class="block text-sm font-medium text-gray-700 mb-1">목표가</label><input type="text" inputmode="decimal" id="target-price" placeholder="예: 11,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                <div><label for="target-price" class="block text-sm font-medium text-gray-700 mb-1">목표가</label><input type="text" inputmode="decimal" id="target-price" placeholder="예: 11,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                <div class="sm:col-span-2"><label for="stop-loss" class="block text-sm font-medium text-gray-700 mb-1">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="예: 9,500" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
                             </div>
                         </div>
                         <div>
@@ -1308,4 +1308,6 @@
     </script>
 </body>
 </html>
+
+
 
