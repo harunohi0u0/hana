@@ -72,11 +72,11 @@
         .dark .hover\:bg-gray-100:hover { background-color: #2d2d2d; }
         .dark .bg-gray-300 { background-color: #4F4F4F; }
         .dark .hover\:bg-gray-400:hover { background-color: #666666; }
-        .dark #ledger-category-summary > div:hover { background-color: #2d2d2d; }
+        .dark #ledger-category-summary > div:hover, .dark #ledger-income-summary > div:hover { background-color: #2d2d2d; }
         
         /* Category selection highlight */
-        #ledger-category-summary > div.selected { background-color: #dbeafe; /* blue-100 */ }
-        .dark #ledger-category-summary > div.selected { background-color: #2563eb; /* blue-600 */ }
+        #ledger-category-summary > div.selected, #ledger-income-summary > div.selected { background-color: #dbeafe; /* blue-100 */ }
+        .dark #ledger-category-summary > div.selected, .dark #ledger-income-summary > div.selected { background-color: #2563eb; /* blue-600 */ }
     </style>
     <script>
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -158,7 +158,7 @@
                                 
                                 <div><label for="entry-price" class="block text-sm font-medium text-gray-700 mb-1">진입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="예: 10,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
                                 <div><label for="target-price" class="block text-sm font-medium text-gray-700 mb-1">목표가</label><input type="text" inputmode="decimal" id="target-price" placeholder="예: 11,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
-                                <div class="sm:col-span-2"><label for="stop-loss" class="block text-sm font-medium text-gray-700 mb-1">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="예: 9,500" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                <div><label for="stop-loss" class="block text-sm font-medium text-gray-700 mb-1">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="예: 9,500" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
                             </div>
                         </div>
                         <div>
@@ -243,19 +243,39 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">카테고리별 지출</h3><div id="ledger-category-summary" class="space-y-2"></div></div>
-                        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">상세 내역: <span id="ledger-detail-title">카테고리 선택</span></h3><div id="ledger-entry-details" class="space-y-2"></div></div>
+                        <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg space-y-4">
+                            <div>
+                                <h3 class="text-xl font-bold mb-4">카테고리별 지출</h3>
+                                <div id="ledger-category-summary" class="space-y-2"></div>
+                            </div>
+                             <div class="border-t pt-4">
+                                <h3 class="text-xl font-bold mb-4">수입</h3>
+                                <div id="ledger-income-summary" class="space-y-2"></div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
+                            <h3 class="text-xl font-bold mb-4">상세 내역: <span id="ledger-detail-title">내역 선택</span></h3>
+                            <div id="ledger-entry-details" class="space-y-2"></div>
+                        </div>
                     </div>
                 </div>
                 <div id="ledger-stats-view" class="hidden space-y-8">
+                    <div class="bg-white p-4 rounded-2xl shadow-lg flex flex-wrap items-center justify-center gap-4">
+                        <select id="ledger-stats-filter-type" class="p-2 border border-gray-300 rounded-lg"><option value="month">월별</option><option value="quarter">분기별</option><option value="year">연도별</option></select>
+                        <div class="flex items-center gap-2">
+                            <button id="ledger-stats-prev-btn" class="p-2 rounded-full hover:bg-gray-200"><i data-lucide="chevron-left"></i></button>
+                            <span id="ledger-stats-period-display" class="font-bold text-lg w-40 text-center"></span>
+                            <button id="ledger-stats-next-btn" class="p-2 rounded-full hover:bg-gray-200"><i data-lucide="chevron-right"></i></button>
+                        </div>
+                    </div>
                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2 text-green-500">총 수입</h3><p id="ledger-total-income" class="text-3xl font-bold">₩0</p></div>
-                        <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2 text-red-500">총 지출</h3><p id="ledger-total-expense" class="text-3xl font-bold">₩0</p></div>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2 text-green-500">기간 내 수입</h3><p id="ledger-total-income" class="text-3xl font-bold">₩0</p></div>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2 text-red-500">기간 내 지출</h3><p id="ledger-total-expense" class="text-3xl font-bold">₩0</p></div>
                         <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2">합계</h3><p id="ledger-balance" class="text-3xl font-bold">₩0</p></div>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                        <div class="bg-white p-6 rounded-2xl shadow-lg lg:col-span-3"><h3 class="text-xl font-bold mb-4">월별 수입/지출 (연간)</h3><div class="chart-container"><canvas id="ledger-monthly-pnl-chart"></canvas></div></div>
-                        <div class="bg-white p-6 rounded-2xl shadow-lg lg:col-span-2"><h3 class="text-xl font-bold mb-4">카테고리별 지출 (연간)</h3><div class="chart-container"><canvas id="ledger-category-chart"></canvas></div></div>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg lg:col-span-3"><h3 id="ledger-trend-chart-title" class="text-xl font-bold mb-4">수입/지출 추이</h3><div class="chart-container"><canvas id="ledger-monthly-pnl-chart"></canvas></div></div>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg lg:col-span-2"><h3 id="ledger-category-chart-title" class="text-xl font-bold mb-4">카테고리별 지출</h3><div class="chart-container"><canvas id="ledger-category-chart"></canvas></div></div>
                     </div>
                 </div>
             </main>
@@ -300,6 +320,7 @@
         let unsubscribeLedger = null, unsubscribeLedgerCategories = null;
         let localLedgerEntries = [], localLedgerCategories = [];
         let ledgerListDate = new Date();
+        let ledgerStatsDate = new Date();
 
         // DOM Elements
         const loginView = document.getElementById('login-view');
@@ -1002,26 +1023,12 @@
             const filterType = document.getElementById('ledger-list-filter-type').value;
             const displayEl = document.getElementById('ledger-list-period-display');
             
-            const year = ledgerListDate.getFullYear();
-            const month = ledgerListDate.getMonth();
-            const quarter = Math.floor(month / 3) + 1;
-
-            let start, end;
-            if (filterType === 'month') {
-                displayEl.textContent = `${year}년 ${month + 1}월`;
-                start = new Date(year, month, 1);
-                end = new Date(year, month + 1, 0, 23, 59, 59);
-            } else if (filterType === 'quarter') {
-                displayEl.textContent = `${year}년 ${quarter}분기`;
-                start = new Date(year, (quarter - 1) * 3, 1);
-                end = new Date(year, quarter * 3, 0, 23, 59, 59);
-            } else { // year
-                displayEl.textContent = `${year}년`;
-                start = new Date(year, 0, 1);
-                end = new Date(year, 11, 31, 23, 59, 59);
-            }
+            const { start, end, displayString } = getPeriod(ledgerListDate, filterType);
+            displayEl.textContent = displayString;
             
             const filteredEntries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
+            
+            // Render Expenses
             const expensesByCategory = filteredEntries
                 .filter(e => e.type === 'expense')
                 .reduce((acc, curr) => {
@@ -1031,44 +1038,72 @@
 
             const summaryContainer = document.getElementById('ledger-category-summary');
             summaryContainer.innerHTML = '';
-            
             if(Object.keys(expensesByCategory).length === 0){
-                summaryContainer.innerHTML = `<p class="text-gray-500 text-center">해당 기간의 지출 내역이 없습니다.</p>`;
-                document.getElementById('ledger-entry-details').innerHTML = '';
-                document.getElementById('ledger-detail-title').textContent = '카테고리 선택';
-                return;
+                summaryContainer.innerHTML = `<p class="text-gray-500 text-center text-sm">지출 내역 없음</p>`;
+            } else {
+                Object.entries(expensesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
+                    const div = document.createElement('div');
+                    div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 cursor-pointer';
+                    div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-red-500">- ${formatPrice(total, 'KRW')}</span>`;
+                    div.onclick = () => {
+                        document.querySelectorAll('#ledger-list-view .selected').forEach(el => el.classList.remove('selected'));
+                        div.classList.add('selected');
+                        renderLedgerDetails(category, filteredEntries);
+                    };
+                    summaryContainer.appendChild(div);
+                });
             }
 
-            Object.entries(expensesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
+            // Render Incomes
+            const incomeEntries = filteredEntries.filter(e => e.type === 'income');
+            const incomeContainer = document.getElementById('ledger-income-summary');
+            incomeContainer.innerHTML = '';
+            
+            if(incomeEntries.length === 0) {
+                 incomeContainer.innerHTML = `<p class="text-gray-500 text-center text-sm">수입 내역 없음</p>`;
+            } else {
+                const totalIncome = incomeEntries.reduce((sum, e) => sum + e.amount, 0);
                 const div = document.createElement('div');
-                div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
-                div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-red-500">- ${formatPrice(total, 'KRW')}</span>`;
+                div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 cursor-pointer';
+                div.innerHTML = `<span class="font-medium">총 수입</span><span class="font-bold text-green-500">+ ${formatPrice(totalIncome, 'KRW')}</span>`;
                 div.onclick = () => {
-                    document.querySelectorAll('#ledger-category-summary > div.selected').forEach(el => el.classList.remove('selected'));
+                    document.querySelectorAll('#ledger-list-view .selected').forEach(el => el.classList.remove('selected'));
                     div.classList.add('selected');
-                    renderLedgerDetails(category, filteredEntries);
+                    renderLedgerDetails('수입', filteredEntries);
                 };
-                summaryContainer.appendChild(div);
-            });
+                incomeContainer.appendChild(div);
+            }
+            
+            document.getElementById('ledger-entry-details').innerHTML = '';
+            document.getElementById('ledger-detail-title').textContent = '내역 선택';
         }
         
-        function renderLedgerDetails(category, entries) {
-            document.getElementById('ledger-detail-title').textContent = category;
+        function renderLedgerDetails(title, entries) {
+            document.getElementById('ledger-detail-title').textContent = title;
             const detailsContainer = document.getElementById('ledger-entry-details');
             detailsContainer.innerHTML = '';
 
-            entries.filter(e => e.category === category)
-                .sort((a,b) => b.date - a.date)
+            const isIncome = title === '수입';
+            const entriesToShow = isIncome ? entries.filter(e => e.type === 'income') : entries.filter(e => e.category === title);
+
+            if(entriesToShow.length === 0) {
+                detailsContainer.innerHTML = `<p class="text-gray-500 text-center">상세 내역이 없습니다.</p>`;
+                return;
+            }
+
+            entriesToShow.sort((a,b) => b.date - a.date)
                 .forEach(entry => {
                     const div = document.createElement('div');
                     div.className = 'p-3 rounded-lg border flex justify-between items-center';
+                    const amountClass = isIncome ? 'text-green-500' : 'text-red-500';
+                    const sign = isIncome ? '+' : '-';
                     div.innerHTML = `
                         <div>
                             <p class="font-medium">${entry.date.toLocaleDateString()}</p>
-                            <p class="text-sm text-gray-500">${entry.memo || '메모 없음'}</p>
+                            <p class="text-sm text-gray-500">${entry.memo || (isIncome ? '수입' : '메모 없음')}</p>
                         </div>
                         <div class="flex items-center gap-4">
-                            <span class="font-bold text-red-500">- ${formatPrice(entry.amount, 'KRW')}</span>
+                            <span class="font-bold ${amountClass}">${sign} ${formatPrice(entry.amount, 'KRW')}</span>
                             <div>
                                 <button class="p-1 hover:text-blue-500 edit-ledger-btn" data-id="${entry.id}"><i data-lucide="edit" class="w-4 h-4"></i></button>
                                 <button class="p-1 hover:text-red-500 delete-ledger-btn" data-id="${entry.id}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
@@ -1121,20 +1156,21 @@
         });
 
         function renderLedgerStatsView() {
-            const year = new Date().getFullYear();
-            const yearEntries = localLedgerEntries.filter(e => e.date.getFullYear() === year);
+            const filterType = document.getElementById('ledger-stats-filter-type').value;
+            const displayEl = document.getElementById('ledger-stats-period-display');
+            
+            const { start, end, displayString } = getPeriod(ledgerStatsDate, filterType);
+            displayEl.textContent = displayString;
+
+            const entries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
             
             let totalIncome = 0, totalExpense = 0;
-            const monthlyData = Array(12).fill(null).map(() => ({income: 0, expense: 0}));
             const expenseByCategory = {};
 
-            yearEntries.forEach(e => {
-                if (e.type === 'income') {
-                    totalIncome += e.amount;
-                    monthlyData[e.date.getMonth()].income += e.amount;
-                } else {
+            entries.forEach(e => {
+                if (e.type === 'income') totalIncome += e.amount;
+                else {
                     totalExpense += e.amount;
-                    monthlyData[e.date.getMonth()].expense += e.amount;
                     expenseByCategory[e.category] = (expenseByCategory[e.category] || 0) + e.amount;
                 }
             });
@@ -1145,48 +1181,92 @@
             const balanceEl = document.getElementById('ledger-balance');
             balanceEl.textContent = formatPrice(balance, 'KRW');
             balanceEl.className = `text-3xl font-bold ${balance >= 0 ? 'text-blue-500' : 'text-red-500'}`;
-
-            createLedgerChart('ledger-monthly-pnl-chart', 'bar', 
-                ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
-                [
-                    { label: '수입', data: monthlyData.map(d => d.income), backgroundColor: 'rgba(75, 192, 192, 0.6)' },
-                    { label: '지출', data: monthlyData.map(d => d.expense), backgroundColor: 'rgba(255, 99, 132, 0.6)' }
-                ]
-            );
             
+            // Trend Chart
+            let trendLabels, trendIncomeData, trendExpenseData;
+            if(filterType === 'year') {
+                document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 월별 추이`;
+                trendLabels = Array.from({length: 12}, (_, i) => `${i + 1}월`);
+                const monthlyData = trendLabels.map(() => ({income: 0, expense: 0}));
+                entries.forEach(e => {
+                    const month = e.date.getMonth();
+                    if (e.type === 'income') monthlyData[month].income += e.amount;
+                    else monthlyData[month].expense += e.amount;
+                });
+                trendIncomeData = monthlyData.map(d => d.income);
+                trendExpenseData = monthlyData.map(d => d.expense);
+            } else { // month or quarter
+                document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 일별 추이`;
+                const days = (end - start) / (1000 * 60 * 60 * 24);
+                trendLabels = Array.from({length: Math.ceil(days) + 1}, (_, i) => {
+                    const d = new Date(start);
+                    d.setDate(d.getDate() + i);
+                    return `${d.getMonth()+1}/${d.getDate()}`;
+                });
+                const dailyData = Object.fromEntries(trendLabels.map(l => [l, {income: 0, expense: 0}]));
+                entries.forEach(e => {
+                    const dayLabel = `${e.date.getMonth()+1}/${e.date.getDate()}`;
+                    if(dailyData[dayLabel]) {
+                        if (e.type === 'income') dailyData[dayLabel].income += e.amount;
+                        else dailyData[dayLabel].expense += e.amount;
+                    }
+                });
+                trendIncomeData = Object.values(dailyData).map(d => d.income);
+                trendExpenseData = Object.values(dailyData).map(d => d.expense);
+            }
+            
+            createLedgerChart('ledger-monthly-pnl-chart', 'bar', trendLabels,
+                [{ label: '수입', data: trendIncomeData, backgroundColor: 'rgba(75, 192, 192, 0.6)' },
+                 { label: '지출', data: trendExpenseData, backgroundColor: 'rgba(255, 99, 132, 0.6)' }]
+            );
+
+            // Category Chart
+            document.getElementById('ledger-category-chart-title').textContent = `${displayString} 지출 구성`;
             const sortedCategories = Object.entries(expenseByCategory).sort((a,b) => b[1] - a[1]);
             createLedgerChart('ledger-category-chart', 'pie', 
                 sortedCategories.map(c => c[0]), 
                 [{ label: '지출', data: sortedCategories.map(c => c[1]) }]
             );
         }
-
-        function createLedgerChart(canvasId, type, labels, datasets) {
-            if (charts[canvasId]) charts[canvasId].destroy();
-            const ctx = document.getElementById(canvasId)?.getContext('2d');
-            if(!ctx) return;
-            const isDark = document.documentElement.classList.contains('dark');
-
-            const pieColors = ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#C9CBCF', '#E7E9ED', '#8D5B4C', '#F47A1F', '#FDB45C', '#2A4D69'];
-            
-            if(type === 'pie'){
-                datasets[0].backgroundColor = pieColors.slice(0, datasets[0].data.length);
-                datasets[0].borderColor = isDark ? '#1E1E1E' : '#fff';
-            }
-
-            charts[canvasId] = new Chart(ctx, {
-                type: type,
-                data: { labels: labels, datasets: datasets },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: type === 'pie' ? 'right' : 'top' } },
-                    scales: type === 'bar' ? { y: { beginAtZero: true, ticks: { callback: v => formatPrice(v, 'KRW') } } } : {}
-                }
-            });
-        }
         
+        function updateLedgerStatsDate(offset) {
+            const filterType = document.getElementById('ledger-stats-filter-type').value;
+            if (filterType === 'month') ledgerStatsDate.setMonth(ledgerStatsDate.getMonth() + offset);
+            else if (filterType === 'quarter') ledgerStatsDate.setMonth(ledgerStatsDate.getMonth() + offset * 3);
+            else ledgerStatsDate.setFullYear(ledgerStatsDate.getFullYear() + offset);
+            renderLedgerStatsView();
+        }
+        document.getElementById('ledger-stats-prev-btn').addEventListener('click', () => updateLedgerStatsDate(-1));
+        document.getElementById('ledger-stats-next-btn').addEventListener('click', () => updateLedgerStatsDate(1));
+        document.getElementById('ledger-stats-filter-type').addEventListener('change', () => {
+            ledgerStatsDate = new Date();
+            renderLedgerStatsView();
+        });
+
+
         // ================== Global Helpers & Listeners ==================
         
+        function getPeriod(date, filterType) {
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            let start, end, displayString;
+            if (filterType === 'month') {
+                displayString = `${year}년 ${month + 1}월`;
+                start = new Date(year, month, 1);
+                end = new Date(year, month + 1, 0, 23, 59, 59);
+            } else if (filterType === 'quarter') {
+                const quarter = Math.floor(month / 3) + 1;
+                displayString = `${year}년 ${quarter}분기`;
+                start = new Date(year, (quarter - 1) * 3, 1);
+                end = new Date(year, quarter * 3, 0, 23, 59, 59);
+            } else { // year
+                displayString = `${year}년`;
+                start = new Date(year, 0, 1);
+                end = new Date(year, 11, 31, 23, 59, 59);
+            }
+            return { start, end, displayString };
+        }
+
         const unformatNumber = (value) => value ? value.toString().replace(/,/g, '') : '';
         const formatNumber = (value) => {
             if (value === null || value === undefined || value === '') return '';
@@ -1308,6 +1388,4 @@
     </script>
 </body>
 </html>
-
-
 
