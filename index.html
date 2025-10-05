@@ -1084,7 +1084,9 @@
             detailsContainer.innerHTML = '';
 
             const isIncome = title === '수입';
-            const entriesToShow = isIncome ? entries.filter(e => e.type === 'income') : entries.filter(e => e.category === title);
+            const entriesToShow = isIncome 
+                ? entries.filter(e => e.type === 'income') 
+                : entries.filter(e => e.category === title);
 
             if(entriesToShow.length === 0) {
                 detailsContainer.innerHTML = `<p class="text-gray-500 text-center">상세 내역이 없습니다.</p>`;
@@ -1095,12 +1097,15 @@
                 .forEach(entry => {
                     const div = document.createElement('div');
                     div.className = 'p-3 rounded-lg border flex justify-between items-center';
-                    const amountClass = isIncome ? 'text-green-500' : 'text-red-500';
-                    const sign = isIncome ? '+' : '-';
+                    
+                    // [수정] 명확성을 위해 각 항목(entry)의 타입을 직접 확인하여 스타일을 적용합니다.
+                    const amountClass = entry.type === 'income' ? 'text-green-500' : 'text-red-500';
+                    const sign = entry.type === 'income' ? '+' : '-';
+                    
                     div.innerHTML = `
                         <div>
                             <p class="font-medium">${entry.date.toLocaleDateString()}</p>
-                            <p class="text-sm text-gray-500">${entry.memo || (isIncome ? '수입' : '메모 없음')}</p>
+                            <p class="text-sm text-gray-500">${entry.memo || (entry.type === 'income' ? '수입' : '메모 없음')}</p>
                         </div>
                         <div class="flex items-center gap-4">
                             <span class="font-bold ${amountClass}">${sign} ${formatPrice(entry.amount, 'KRW')}</span>
@@ -1111,6 +1116,7 @@
                         </div>`;
                     detailsContainer.appendChild(div);
                 });
+                
             lucide.createIcons();
             document.querySelectorAll('.edit-ledger-btn').forEach(b => b.addEventListener('click', handleEditLedgerEntry));
             document.querySelectorAll('.delete-ledger-btn').forEach(b => b.addEventListener('click', handleDeleteLedgerEntry));
@@ -1266,6 +1272,47 @@
             }
             return { start, end, displayString };
         }
+        
+        function createLedgerChart(canvasId, type, labels, datasets) {
+            if (charts[canvasId]) charts[canvasId].destroy();
+            const ctx = document.getElementById(canvasId)?.getContext('2d');
+            if(!ctx) return;
+            const isDark = document.documentElement.classList.contains('dark');
+
+            const options = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: type !== 'pie', position: 'top' },
+                    tooltip: { callbacks: { label: c => `${c.label}: ${formatPrice(c.raw, 'KRW')}` } }
+                }
+            };
+
+            if (type === 'bar') {
+                options.scales = { x: { stacked: true }, y: { stacked: true, ticks: { callback: v => formatPrice(v, 'KRW') } } };
+            }
+            if (type === 'pie') {
+                options.plugins.legend.display = true;
+                options.plugins.legend.position = 'right';
+                 // Generate colors for pie chart
+                if (datasets.length > 0 && datasets[0].data.length > 0) {
+                    datasets[0].backgroundColor = generateColors(datasets[0].data.length);
+                }
+            }
+            
+            charts[canvasId] = new Chart(ctx, { type, data: { labels, datasets }, options });
+        }
+        
+        function generateColors(numColors) {
+            const colors = [];
+            const baseColors = [
+                '#42A5F5', '#66BB6A', '#FFA726', '#EF5350', '#AB47BC', '#26A69A', 
+                '#FFCA28', '#8D6E63', '#78909C', '#5C6BC0'
+            ];
+            for (let i = 0; i < numColors; i++) {
+                colors.push(baseColors[i % baseColors.length]);
+            }
+            return colors;
+        }
 
         const unformatNumber = (value) => value ? value.toString().replace(/,/g, '') : '';
         const formatNumber = (value) => {
@@ -1388,4 +1435,3 @@
     </script>
 </body>
 </html>
-
