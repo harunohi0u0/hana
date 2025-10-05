@@ -221,13 +221,13 @@
                                 <div class="sm:col-span-2" id="ledger-expense-category-section">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">지출 카테고리</label>
                                     <div id="ledger-expense-category-tags-container" class="flex flex-wrap gap-2 mb-3"></div>
-                                    <div class="flex flex-col sm:flex-row gap-2"><input type="text" id="new-ledger-expense-category" placeholder="새로운 지출 카테고리 추가" class="flex-grow p-2 border border-gray-300 rounded-lg bg-white"><button type="button" id="add-ledger-expense-category-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">카테고리 추가</button></div>
+                                    <div class="flex flex-col sm:flex-row gap-2"><input type="text" id="new-ledger-expense-category" placeholder="새로운 지출 카테고리 추가" class="flex-grow p-2 border border-gray-300 rounded-lg bg-white"><button type="button" id="add-ledger-expense-category-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">추가</button></div>
                                 </div>
 
                                 <div class="sm:col-span-2 hidden" id="ledger-income-category-section">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">수입 카테고리</label>
                                     <div id="ledger-income-category-tags-container" class="flex flex-wrap gap-2 mb-3"></div>
-                                    <div class="flex flex-col sm:flex-row gap-2"><input type="text" id="new-ledger-income-category" placeholder="새로운 수입 카테고리 추가" class="flex-grow p-2 border border-gray-300 rounded-lg bg-white"><button type="button" id="add-ledger-income-category-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">카테고리 추가</button></div>
+                                    <div class="flex flex-col sm:flex-row gap-2"><input type="text" id="new-ledger-income-category" placeholder="새로운 수입 카테고리 추가" class="flex-grow p-2 border border-gray-300 rounded-lg bg-white"><button type="button" id="add-ledger-income-category-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">추가</button></div>
                                 </div>
 
                                 <div class="sm:col-span-2"><label for="ledger-memo" class="block text-sm font-medium text-gray-700 mb-1">메모</label><input type="text" id="ledger-memo" placeholder="메모 내용 (선택)" class="w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
@@ -322,7 +322,7 @@
         // Household Ledger State
         let unsubscribeLedger = null, unsubscribeLedgerCategories = null;
         let localLedgerEntries = [];
-        let localLedgerCategories = { expense: [], income: [] }; // MODIFIED
+        let localLedgerCategories = { expense: [], income: [] };
         let ledgerListDate = new Date();
         let ledgerStatsDate = new Date();
 
@@ -1053,7 +1053,8 @@
             const expensesByCategory = filteredEntries
                 .filter(e => e.type === 'expense')
                 .reduce((acc, curr) => {
-                    acc[curr.category] = (acc[curr.category] || 0) + curr.amount;
+                    const category = curr.category || '미분류';
+                    acc[category] = (acc[category] || 0) + curr.amount;
                     return acc;
                 }, {});
 
@@ -1079,7 +1080,8 @@
             const incomesByCategory = filteredEntries
                 .filter(e => e.type === 'income')
                 .reduce((acc, curr) => {
-                    acc[curr.category] = (acc[curr.category] || 0) + curr.amount;
+                    const category = curr.category || '미분류'; // Handle uncategorized old entries
+                    acc[category] = (acc[category] || 0) + curr.amount;
                     return acc;
                 }, {});
             
@@ -1110,7 +1112,12 @@
             const detailsContainer = document.getElementById('ledger-entry-details');
             detailsContainer.innerHTML = '';
 
-            const entriesToShow = entries.filter(e => e.type === type && e.category === category);
+            let entriesToShow;
+            if (category === '미분류') {
+                entriesToShow = entries.filter(e => e.type === type && !e.category);
+            } else {
+                entriesToShow = entries.filter(e => e.type === type && e.category === category);
+            }
 
             if(entriesToShow.length === 0) {
                 detailsContainer.innerHTML = `<p class="text-gray-500 text-center">상세 내역이 없습니다.</p>`;
@@ -1198,11 +1205,13 @@
             entries.forEach(e => {
                 if (e.type === 'income') {
                     totalIncome += e.amount;
-                    if(e.category) incomeByCategory[e.category] = (incomeByCategory[e.category] || 0) + e.amount;
+                    const category = e.category || '미분류';
+                    incomeByCategory[category] = (incomeByCategory[category] || 0) + e.amount;
                 }
                 else {
                     totalExpense += e.amount;
-                    if(e.category) expenseByCategory[e.category] = (expenseByCategory[e.category] || 0) + e.amount;
+                    const category = e.category || '미분류';
+                    expenseByCategory[category] = (expenseByCategory[category] || 0) + e.amount;
                 }
             });
 
