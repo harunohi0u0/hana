@@ -35,6 +35,10 @@
         .chart-container { position: relative; height: 300px; width: 100%; }
         .tag.selected .delete-tag-span { color: white; }
         .tag.selected .delete-tag-span:hover { color: #fecaca; }
+        
+        .period-nav-btn { transition: background-color 0.2s ease-in-out; }
+        .period-nav-btn:hover { background-color: #dbeafe; /* blue-100 */ }
+
 
         /* Updated Dark Mode Styles */
         .dark body { background-color: #121212; color: #E0E0E0; }
@@ -72,11 +76,14 @@
         .dark .hover\:bg-gray-100:hover { background-color: #2d2d2d; }
         .dark .bg-gray-300 { background-color: #4F4F4F; }
         .dark .hover\:bg-gray-400:hover { background-color: #666666; }
-        .dark #ledger-category-summary > div:hover, .dark #ledger-income-summary > div:hover { background-color: #2d2d2d; }
+        .dark #ledger-category-summary > div:hover, .dark #ledger-income-category-summary > div:hover { background-color: #2d2d2d; }
+        .dark .text-red-500 { color: #f87171; } /* red-400 */
+        .dark .text-green-500 { color: #4ade80; } /* green-400 */
+        .dark .period-nav-btn:hover { background-color: #1e40af; /* blue-800 */ }
         
         /* Category selection highlight */
-        #ledger-category-summary > div.selected, #ledger-income-summary > div.selected { background-color: #dbeafe; /* blue-100 */ }
-        .dark #ledger-category-summary > div.selected, .dark #ledger-income-summary > div.selected { background-color: #2563eb; /* blue-600 */ }
+        #ledger-category-summary > div.selected, #ledger-income-category-summary > div.selected { background-color: #dbeafe; /* blue-100 */ }
+        .dark #ledger-category-summary > div.selected, .dark #ledger-income-category-summary > div.selected { background-color: #2563eb; /* blue-600 */ }
     </style>
     <script>
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -222,11 +229,18 @@
                                 <div class="sm:col-span-2"><div class="toggle-group text-gray-600" data-group="ledger-type"><button type="button" data-value="expense" class="toggle-btn selected">💸 지출</button><button type="button" data-value="income" class="toggle-btn">💰 수입</button></div></div>
                                 <div><label for="ledger-date" class="block text-sm font-medium text-gray-700 mb-1">날짜</label><input type="date" id="ledger-date" required class="w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
                                 <div><label for="ledger-amount" class="block text-sm font-medium text-gray-700 mb-1">금액</label><input type="text" inputmode="numeric" id="ledger-amount" placeholder="금액 입력" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
-                                <div class="sm:col-span-2" id="ledger-category-section">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
-                                    <div id="ledger-category-tags-container" class="flex flex-wrap gap-2 mb-3"></div>
-                                    <div class="flex flex-col sm:flex-row gap-2"><input type="text" id="new-ledger-category" placeholder="새로운 카테고리 추가" class="flex-grow p-2 border border-gray-300 rounded-lg bg-white"><button type="button" id="add-ledger-category-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">카테고리 추가</button></div>
+                                
+                                <div class="sm:col-span-2" id="ledger-expense-category-section">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">지출 카테고리</label>
+                                    <div id="ledger-expense-category-tags-container" class="flex flex-wrap gap-2 mb-3"></div>
+                                    <div class="flex flex-col sm:flex-row gap-2"><input type="text" id="new-ledger-expense-category" placeholder="새로운 지출 카테고리 추가" class="flex-grow p-2 border border-gray-300 rounded-lg bg-white"><button type="button" id="add-ledger-expense-category-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">카테고리 추가</button></div>
                                 </div>
+                                <div class="sm:col-span-2 hidden" id="ledger-income-category-section">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">수입 카테고리</label>
+                                    <div id="ledger-income-category-tags-container" class="flex flex-wrap gap-2 mb-3"></div>
+                                    <div class="flex flex-col sm:flex-row gap-2"><input type="text" id="new-ledger-income-category" placeholder="새로운 수입 카테고리 추가" class="flex-grow p-2 border border-gray-300 rounded-lg bg-white"><button type="button" id="add-ledger-income-category-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">카테고리 추가</button></div>
+                                </div>
+
                                 <div class="sm:col-span-2"><label for="ledger-memo" class="block text-sm font-medium text-gray-700 mb-1">메모</label><input type="text" id="ledger-memo" placeholder="메모 내용 (선택)" class="w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
                             </div>
                         </div>
@@ -237,9 +251,9 @@
                     <div class="bg-white p-4 rounded-2xl shadow-lg flex flex-wrap items-center justify-center gap-4">
                         <select id="ledger-list-filter-type" class="p-2 border border-gray-300 rounded-lg"><option value="month">월별</option><option value="quarter">분기별</option><option value="year">연도별</option></select>
                         <div class="flex items-center gap-2">
-                            <button id="ledger-list-prev-btn" class="p-2 rounded-full hover:bg-gray-200"><i data-lucide="chevron-left"></i></button>
+                            <button id="ledger-list-prev-btn" class="p-2 rounded-full period-nav-btn"><i data-lucide="chevron-left"></i></button>
                             <span id="ledger-list-period-display" class="font-bold text-lg w-40 text-center"></span>
-                            <button id="ledger-list-next-btn" class="p-2 rounded-full hover:bg-gray-200"><i data-lucide="chevron-right"></i></button>
+                            <button id="ledger-list-next-btn" class="p-2 rounded-full period-nav-btn"><i data-lucide="chevron-right"></i></button>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -249,8 +263,8 @@
                                 <div id="ledger-category-summary" class="space-y-2"></div>
                             </div>
                              <div class="border-t pt-4">
-                                <h3 class="text-xl font-bold mb-4">수입</h3>
-                                <div id="ledger-income-summary" class="space-y-2"></div>
+                                <h3 class="text-xl font-bold mb-4">카테고리별 수입</h3>
+                                <div id="ledger-income-category-summary" class="space-y-2"></div>
                             </div>
                         </div>
                         <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
@@ -263,9 +277,9 @@
                     <div class="bg-white p-4 rounded-2xl shadow-lg flex flex-wrap items-center justify-center gap-4">
                         <select id="ledger-stats-filter-type" class="p-2 border border-gray-300 rounded-lg"><option value="month">월별</option><option value="quarter">분기별</option><option value="year">연도별</option></select>
                         <div class="flex items-center gap-2">
-                            <button id="ledger-stats-prev-btn" class="p-2 rounded-full hover:bg-gray-200"><i data-lucide="chevron-left"></i></button>
+                            <button id="ledger-stats-prev-btn" class="p-2 rounded-full period-nav-btn"><i data-lucide="chevron-left"></i></button>
                             <span id="ledger-stats-period-display" class="font-bold text-lg w-40 text-center"></span>
-                            <button id="ledger-stats-next-btn" class="p-2 rounded-full hover:bg-gray-200"><i data-lucide="chevron-right"></i></button>
+                            <button id="ledger-stats-next-btn" class="p-2 rounded-full period-nav-btn"><i data-lucide="chevron-right"></i></button>
                         </div>
                     </div>
                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -318,7 +332,7 @@
         
         // Household Ledger State
         let unsubscribeLedger = null, unsubscribeLedgerCategories = null;
-        let localLedgerEntries = [], localLedgerCategories = [];
+        let localLedgerEntries = [], localLedgerExpenseCategories = [], localLedgerIncomeCategories = [];
         let ledgerListDate = new Date();
         let ledgerStatsDate = new Date();
 
@@ -891,7 +905,8 @@
             const docSnap = await categoriesDocRef.get();
             if (!docSnap.exists) {
                 await categoriesDocRef.set({
-                    list: ['식비', '교통비', '공과금', '구독료', '자기개발비', '오락/여가', '선물']
+                    expense_categories: ['식비', '교통비', '공과금', '구독료', '자기개발비', '오락/여가', '선물'],
+                    income_categories: ['월급', '부수입', '용돈']
                 });
             }
         }
@@ -908,8 +923,16 @@
             if (unsubscribeLedgerCategories) unsubscribeLedgerCategories();
             unsubscribeLedgerCategories = db.collection("users").doc(userId).collection("ledgerData").doc("categories")
                 .onSnapshot((doc) => {
-                    localLedgerCategories = doc.exists ? doc.data().list || [] : [];
-                    renderLedgerCategoryTags(localLedgerCategories);
+                    if (doc.exists) {
+                        const data = doc.data();
+                        localLedgerExpenseCategories = data.expense_categories || [];
+                        localLedgerIncomeCategories = data.income_categories || [];
+                    } else {
+                        localLedgerExpenseCategories = [];
+                        localLedgerIncomeCategories = [];
+                    }
+                    renderLedgerCategoryTags(localLedgerExpenseCategories, 'expense_categories', 'ledger-expense-category-tags-container');
+                    renderLedgerCategoryTags(localLedgerIncomeCategories, 'income_categories', 'ledger-income-category-tags-container');
                 });
         }
         
@@ -922,8 +945,8 @@
         }
         document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.addEventListener('click', () => switchLedgerView(btn.dataset.ledgerTab)));
 
-        function renderLedgerCategoryTags(categories) {
-            const container = document.getElementById('ledger-category-tags-container');
+        function renderLedgerCategoryTags(categories, categoryType, containerId) {
+            const container = document.getElementById(containerId);
             container.innerHTML = '';
             categories.forEach(cat => {
                 const button = document.createElement('button');
@@ -939,60 +962,76 @@
                 });
                 button.querySelector('.delete-tag-span').addEventListener('click', (e) => {
                     e.stopPropagation();
-                    handleDeleteLedgerCategory(cat);
+                    handleDeleteLedgerCategory(cat, categoryType);
                 });
                 container.appendChild(button);
             });
             lucide.createIcons();
         }
         
-        document.getElementById('add-ledger-category-btn').addEventListener('click', () => {
-            const input = document.getElementById('new-ledger-category');
+        async function handleAddLedgerCategory(categoryType) {
+            const inputId = `new-ledger-${categoryType === 'expense_categories' ? 'expense' : 'income'}-category`;
+            const input = document.getElementById(inputId);
             const newCategory = input.value.trim();
-            if (newCategory && !localLedgerCategories.includes(newCategory)) {
-                const updatedCategories = [...localLedgerCategories, newCategory].sort((a,b) => a.localeCompare(b));
-                db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories")
-                  .set({ list: updatedCategories })
-                  .then(() => {
-                      showToast(`'${newCategory}' 카테고리가 추가되었습니다.`);
-                      input.value = '';
-                  })
-                  .catch(e => showToast("카테고리 추가 실패", "error"));
-            } else if (localLedgerCategories.includes(newCategory)) {
+            const currentCategories = categoryType === 'expense_categories' ? localLedgerExpenseCategories : localLedgerIncomeCategories;
+
+            if (newCategory && !currentCategories.includes(newCategory)) {
+                const updatedCategories = [...currentCategories, newCategory].sort((a,b) => a.localeCompare(b));
+                try {
+                    await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories")
+                        .set({ [categoryType]: updatedCategories }, { merge: true });
+                    showToast(`'${newCategory}' 카테고리가 추가되었습니다.`);
+                    input.value = '';
+                } catch (e) { showToast("카테고리 추가 실패", "error"); }
+            } else if (currentCategories.includes(newCategory)) {
                 showToast("이미 존재하는 카테고리입니다.", "error");
             }
-        });
+        }
+
+        document.getElementById('add-ledger-expense-category-btn').addEventListener('click', () => handleAddLedgerCategory('expense_categories'));
+        document.getElementById('add-ledger-income-category-btn').addEventListener('click', () => handleAddLedgerCategory('income_categories'));
         
-        function handleDeleteLedgerCategory(category) {
-            const isCategoryInUse = localLedgerEntries.some(entry => entry.category === category);
+        function handleDeleteLedgerCategory(category, categoryType) {
+            const entryType = categoryType === 'expense_categories' ? 'expense' : 'income';
+            const isCategoryInUse = localLedgerEntries.some(entry => entry.type === entryType && entry.category === category);
             if (isCategoryInUse) {
                 showToast("사용 중인 카테고리는 삭제할 수 없습니다.", "error"); return;
             }
-            showConfirmModal(`'${category}' 카테고리를 삭제하시겠습니까?`, () => {
-                const updatedCategories = localLedgerCategories.filter(c => c !== category);
-                db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories")
-                  .set({ list: updatedCategories })
-                  .then(() => showToast(`'${category}' 카테고리가 삭제되었습니다.`))
-                  .catch(e => showToast("카테고리 삭제 실패", "error"));
+            showConfirmModal(`'${category}' 카테고리를 삭제하시겠습니까?`, async () => {
+                const currentCategories = categoryType === 'expense_categories' ? localLedgerExpenseCategories : localLedgerIncomeCategories;
+                const updatedCategories = currentCategories.filter(c => c !== category);
+                try {
+                    await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories")
+                        .update({ [categoryType]: updatedCategories });
+                    showToast(`'${category}' 카테고리가 삭제되었습니다.`);
+                } catch (e) { showToast("카테고리 삭제 실패", "error"); }
             }, '삭제');
         }
 
         document.getElementById('ledger-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('ledger-id').value;
-            const typeBtn = document.querySelector('[data-group="ledger-type"] .toggle-btn.selected');
-            const type = typeBtn.dataset.value;
-            const selectedCategoryTag = document.querySelector('#ledger-category-tags-container .tag.selected');
+            const type = document.querySelector('[data-group="ledger-type"] .toggle-btn.selected').dataset.value;
             const amount = parseFloat(unformatNumber(document.getElementById('ledger-amount').value));
+            
+            let category;
+            if (type === 'expense') {
+                const selectedTag = document.querySelector('#ledger-expense-category-tags-container .tag.selected');
+                if (!selectedTag) { showToast("지출 카테고리를 선택해주세요.", "error"); return; }
+                category = selectedTag.dataset.tag;
+            } else {
+                const selectedTag = document.querySelector('#ledger-income-category-tags-container .tag.selected');
+                if (!selectedTag) { showToast("수입 카테고리를 선택해주세요.", "error"); return; }
+                category = selectedTag.dataset.tag;
+            }
 
-            if(type === 'expense' && !selectedCategoryTag) { showToast("지출 카테고리를 선택해주세요.", "error"); return; }
             if(isNaN(amount) || amount <= 0) { showToast("올바른 금액을 입력해주세요.", "error"); return; }
 
             const entryData = {
                 type: type,
                 date: Timestamp.fromDate(new Date(document.getElementById('ledger-date').value)),
                 amount: amount,
-                category: type === 'expense' ? selectedCategoryTag.dataset.tag : null,
+                category: category,
                 memo: document.getElementById('ledger-memo').value.trim()
             };
 
@@ -1014,7 +1053,8 @@
             document.getElementById('ledger-form').reset();
             document.getElementById('ledger-id').value = '';
             document.getElementById('ledger-date').value = new Date().toISOString().split('T')[0];
-            document.querySelectorAll('#ledger-category-tags-container .tag.selected').forEach(t => t.classList.remove('selected'));
+            document.querySelectorAll('#ledger-expense-category-tags-container .tag.selected').forEach(t => t.classList.remove('selected'));
+            document.querySelectorAll('#ledger-income-category-tags-container .tag.selected').forEach(t => t.classList.remove('selected'));
             document.querySelector('#ledger-form .toggle-btn[data-value="expense"]').click();
         }
         document.getElementById('clear-ledger-form-btn').addEventListener('click', resetLedgerForm);
@@ -1028,18 +1068,16 @@
             
             const filteredEntries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
             
-            // Render Expenses
-            const expensesByCategory = filteredEntries
-                .filter(e => e.type === 'expense')
-                .reduce((acc, curr) => {
-                    acc[curr.category] = (acc[curr.category] || 0) + curr.amount;
-                    return acc;
-                }, {});
+            // Render Expenses by Category
+            const expensesByCategory = filteredEntries.filter(e => e.type === 'expense').reduce((acc, curr) => {
+                acc[curr.category] = (acc[curr.category] || 0) + curr.amount;
+                return acc;
+            }, {});
 
-            const summaryContainer = document.getElementById('ledger-category-summary');
-            summaryContainer.innerHTML = '';
+            const expenseSummaryContainer = document.getElementById('ledger-category-summary');
+            expenseSummaryContainer.innerHTML = '';
             if(Object.keys(expensesByCategory).length === 0){
-                summaryContainer.innerHTML = `<p class="text-gray-500 text-center text-sm">지출 내역 없음</p>`;
+                expenseSummaryContainer.innerHTML = `<p class="text-gray-500 text-center text-sm">지출 내역 없음</p>`;
             } else {
                 Object.entries(expensesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
                     const div = document.createElement('div');
@@ -1048,45 +1086,46 @@
                     div.onclick = () => {
                         document.querySelectorAll('#ledger-list-view .selected').forEach(el => el.classList.remove('selected'));
                         div.classList.add('selected');
-                        renderLedgerDetails(category, filteredEntries);
+                        renderLedgerDetails(category, filteredEntries, 'expense');
                     };
-                    summaryContainer.appendChild(div);
+                    expenseSummaryContainer.appendChild(div);
                 });
             }
 
-            // Render Incomes
-            const incomeEntries = filteredEntries.filter(e => e.type === 'income');
-            const incomeContainer = document.getElementById('ledger-income-summary');
-            incomeContainer.innerHTML = '';
+            // Render Incomes by Category
+            const incomesByCategory = filteredEntries.filter(e => e.type === 'income').reduce((acc, curr) => {
+                acc[curr.category] = (acc[curr.category] || 0) + curr.amount;
+                return acc;
+            }, {});
             
-            if(incomeEntries.length === 0) {
-                 incomeContainer.innerHTML = `<p class="text-gray-500 text-center text-sm">수입 내역 없음</p>`;
+            const incomeSummaryContainer = document.getElementById('ledger-income-category-summary');
+            incomeSummaryContainer.innerHTML = '';
+            if(Object.keys(incomesByCategory).length === 0) {
+                 incomeSummaryContainer.innerHTML = `<p class="text-gray-500 text-center text-sm">수입 내역 없음</p>`;
             } else {
-                const totalIncome = incomeEntries.reduce((sum, e) => sum + e.amount, 0);
-                const div = document.createElement('div');
-                div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 cursor-pointer';
-                div.innerHTML = `<span class="font-medium">총 수입</span><span class="font-bold text-green-500">+ ${formatPrice(totalIncome, 'KRW')}</span>`;
-                div.onclick = () => {
-                    document.querySelectorAll('#ledger-list-view .selected').forEach(el => el.classList.remove('selected'));
-                    div.classList.add('selected');
-                    renderLedgerDetails('수입', filteredEntries);
-                };
-                incomeContainer.appendChild(div);
+                Object.entries(incomesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
+                    const div = document.createElement('div');
+                    div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 cursor-pointer';
+                    div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-green-500">+ ${formatPrice(total, 'KRW')}</span>`;
+                    div.onclick = () => {
+                        document.querySelectorAll('#ledger-list-view .selected').forEach(el => el.classList.remove('selected'));
+                        div.classList.add('selected');
+                        renderLedgerDetails(category, filteredEntries, 'income');
+                    };
+                    incomeSummaryContainer.appendChild(div);
+                });
             }
             
             document.getElementById('ledger-entry-details').innerHTML = '';
             document.getElementById('ledger-detail-title').textContent = '내역 선택';
         }
         
-        function renderLedgerDetails(title, entries) {
+        function renderLedgerDetails(title, entries, type) {
             document.getElementById('ledger-detail-title').textContent = title;
             const detailsContainer = document.getElementById('ledger-entry-details');
             detailsContainer.innerHTML = '';
 
-            const isIncome = title === '수입';
-            const entriesToShow = isIncome 
-                ? entries.filter(e => e.type === 'income') 
-                : entries.filter(e => e.category === title);
+            const entriesToShow = entries.filter(e => e.type === type && e.category === title);
 
             if(entriesToShow.length === 0) {
                 detailsContainer.innerHTML = `<p class="text-gray-500 text-center">상세 내역이 없습니다.</p>`;
@@ -1097,15 +1136,13 @@
                 .forEach(entry => {
                     const div = document.createElement('div');
                     div.className = 'p-3 rounded-lg border flex justify-between items-center';
-                    
-                    // [수정] 명확성을 위해 각 항목(entry)의 타입을 직접 확인하여 스타일을 적용합니다.
                     const amountClass = entry.type === 'income' ? 'text-green-500' : 'text-red-500';
                     const sign = entry.type === 'income' ? '+' : '-';
                     
                     div.innerHTML = `
                         <div>
                             <p class="font-medium">${entry.date.toLocaleDateString()}</p>
-                            <p class="text-sm text-gray-500">${entry.memo || (entry.type === 'income' ? '수입' : '메모 없음')}</p>
+                            <p class="text-sm text-gray-500">${entry.memo || '메모 없음'}</p>
                         </div>
                         <div class="flex items-center gap-4">
                             <span class="font-bold ${amountClass}">${sign} ${formatPrice(entry.amount, 'KRW')}</span>
@@ -1131,9 +1168,13 @@
                 document.getElementById('ledger-date').value = entry.date.toISOString().split('T')[0];
                 document.getElementById('ledger-amount').value = formatNumber(entry.amount);
                 document.getElementById('ledger-memo').value = entry.memo;
+                
                 document.querySelector(`.toggle-btn[data-value="${entry.type}"]`).click();
+
                 if(entry.type === 'expense') {
-                    document.querySelector(`#ledger-category-tags-container .tag[data-tag="${entry.category}"]`)?.click();
+                    document.querySelector(`#ledger-expense-category-tags-container .tag[data-tag="${entry.category}"]`)?.click();
+                } else {
+                    document.querySelector(`#ledger-income-category-tags-container .tag[data-tag="${entry.category}"]`)?.click();
                 }
             }
         }
@@ -1398,7 +1439,9 @@
                          renderJournalStats(localJournals);
                     }
                     if (group.dataset.group === 'ledger-type') {
-                        document.getElementById('ledger-category-section').style.display = button.dataset.value === 'expense' ? 'block' : 'none';
+                        const isExpense = button.dataset.value === 'expense';
+                        document.getElementById('ledger-expense-category-section').classList.toggle('hidden', !isExpense);
+                        document.getElementById('ledger-income-category-section').classList.toggle('hidden', isExpense);
                     }
                 }
             }
@@ -1435,3 +1478,4 @@
     </script>
 </body>
 </html>
+
