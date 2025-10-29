@@ -156,7 +156,12 @@
                                         </div>
                                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                             <div class="sm:col-span-3 bg-gray-50 dark:bg-[#2d2d2d] p-4 rounded-lg border border-gray-200 dark:border-[#4F4F4F]">
-                                                <h3 class="text-base font-semibold mb-2">선물 종목 정보 관리</h3>
+                                                <h3 class="text-base font-semibold mb-2 flex justify-between items-center">
+                                                    선물 종목 정보 관리
+                                                    <button type="button" id="delete-futures-info-btn" class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition text-xs flex items-center disabled:opacity-50 disabled:cursor-not-allowed" title="선택된 종목 정보를 삭제합니다. (매매일지에서 사용 중이면 삭제 불가)">
+                                                        <i data-lucide="trash-2" class="w-3 h-3 mr-1"></i> 삭제
+                                                    </button>
+                                                </h3>
                                                 <div class="flex flex-col sm:flex-row gap-2">
                                                     <select id="futures-info-select" class="flex-grow p-2 border border-gray-300 dark:border-[#4F4F4F] rounded-lg bg-white dark:bg-[#1E1E1E]">
                                                         <option value="">- 종목 선택 (틱가치/단위 불러오기) -</option>
@@ -336,8 +341,8 @@
         // Trading Journal State
         let unsubscribeJournals = null, unsubscribeTags = null;
         let localJournals = [], localTags = { entry: [], psychology: [] };
-        let localFuturesInfo = {}; // { ticker: { tickValue: number, tickSize: number } } // <--- 추가
-        let unsubscribeFuturesInfo = null; // <--- 추가
+        let localFuturesInfo = {}; // { ticker: { tickValue: number, tickSize: number } } 
+        let unsubscribeFuturesInfo = null;
         let statsCurrency = 'KRW', exchangeRate = 1380;
         
         // Household Ledger State
@@ -370,7 +375,7 @@
                 appContainer.classList.add('hidden');
                 if (unsubscribeJournals) unsubscribeJournals();
                 if (unsubscribeTags) unsubscribeTags();
-                if (unsubscribeFuturesInfo) unsubscribeFuturesInfo(); // <--- 추가
+                if (unsubscribeFuturesInfo) unsubscribeFuturesInfo();
                 if (unsubscribeLedger) unsubscribeLedger();
                 if (unsubscribeLedgerCategories) unsubscribeLedgerCategories();
                 Object.values(charts).forEach(chart => { if(chart) chart.destroy(); });
@@ -384,7 +389,7 @@
             const userId = currentUser.uid;
 
             await initializeJournalDefaults(userId);
-            await initializeFuturesInfoDefaults(userId); // <--- 추가
+            await initializeFuturesInfoDefaults(userId);
             attachJournalListeners(userId);
             resetForm();
 
@@ -430,7 +435,6 @@
             }
         }
         
-        // **새로 추가된 함수: 선물 종목 정보 초기화**
         async function initializeFuturesInfoDefaults(userId) {
             const docRef = db.collection("users").doc(userId).collection("journalData").doc("futuresInfo");
             const docSnap = await docRef.get();
@@ -462,14 +466,13 @@
                 }
             }, (error) => console.error("Error fetching tags:", error));
             
-            // **새로 추가된 리스너: 선물 종목 정보**
+            // 선물 종목 정보 리스너
             if (unsubscribeFuturesInfo) unsubscribeFuturesInfo();
             const futuresDocRef = db.collection("users").doc(userId).collection("journalData").doc("futuresInfo");
             unsubscribeFuturesInfo = futuresDocRef.onSnapshot((doc) => {
                 localFuturesInfo = doc.exists ? doc.data() : {};
                 renderFuturesInfoSelect();
             }, (error) => console.error("Error fetching futures info:", error));
-            // **추가된 리스너 끝**
         }
         
         function switchJournalView(tabId) {
@@ -512,14 +515,17 @@
             });
         });
         
-        // **새로 추가된 함수: 선물 정보 Select 박스 렌더링 및 리스너**
+        // 선물 정보 Select 박스 렌더링 및 리스너
         function renderFuturesInfoSelect() {
             const select = document.getElementById('futures-info-select');
             const tickerInput = document.getElementById('ticker');
+            const deleteBtn = document.getElementById('delete-futures-info-btn');
+            
             select.innerHTML = '<option value="">- 종목 선택 (틱가치/단위 불러오기) -</option>';
             
             // 현재 폼에 입력된 종목이 있다면 해당 종목의 정보를 선택하도록 설정
             const currentTicker = tickerInput.value.trim().toUpperCase();
+            deleteBtn.disabled = true;
 
             Object.entries(localFuturesInfo).sort((a,b) => a[0].localeCompare(b[0])).forEach(([ticker, info]) => {
                 const option = document.createElement('option');
@@ -529,6 +535,7 @@
                 
                 if (ticker === currentTicker && !document.getElementById('futures-fields').classList.contains('hidden')) {
                     select.value = ticker;
+                    deleteBtn.disabled = false;
                 }
             });
             
@@ -536,6 +543,8 @@
             select.onchange = (e) => {
                 const selectedTicker = e.target.value;
                 const info = localFuturesInfo[selectedTicker];
+                
+                deleteBtn.disabled = !selectedTicker;
 
                 if (info) {
                     tickerInput.value = selectedTicker;
@@ -544,7 +553,6 @@
                     showToast(`종목 '${selectedTicker}' 정보가 채워졌습니다.`);
                 } else {
                     // '종목 선택' 옵션을 선택한 경우 초기화
-                    // tickerInput.value는 유지 (다른 종목을 입력할 수 있도록)
                     document.getElementById('tick-value').value = '';
                     document.getElementById('tick-size').value = '';
                 }
@@ -555,6 +563,8 @@
                 const newTicker = tickerInput.value.trim().toUpperCase();
                 const isFutures = !document.getElementById('futures-fields').classList.contains('hidden');
                 
+                deleteBtn.disabled = !localFuturesInfo[newTicker];
+
                 if (isFutures && localFuturesInfo[newTicker]) {
                     select.value = newTicker;
                     // 이미 정보가 있는 경우 틱가치/단위 필드에 값 채우기 (기존 값 보호)
@@ -597,12 +607,57 @@
                     // 저장 후 폼 필드 업데이트
                     tickValueInput.value = formatNumber(tickValue);
                     tickSizeInput.value = formatNumber(tickSize);
+                    document.getElementById('futures-info-select').value = ticker; // Select 업데이트
+                    document.getElementById('delete-futures-info-btn').disabled = false;
                 } catch(e) {
                     showToast(`정보 ${action} 실패: ${e.message}`, "error");
                 }
             }, action);
         });
+        
+        // **새로 추가된 함수: 선물 종목 정보 삭제**
+        document.getElementById('delete-futures-info-btn').addEventListener('click', handleDeleteFuturesInfo);
+
+        async function handleDeleteFuturesInfo() {
+            const ticker = document.getElementById('futures-info-select').value;
+
+            if (!ticker) {
+                showToast("삭제할 종목을 선택해주세요.", "error");
+                return;
+            }
+
+            // 1. 매매일지에서 사용 중인지 확인
+            const isUsedInJournal = localJournals.some(journal => 
+                journal.assetType === 'futures' && 
+                journal.ticker.toUpperCase() === ticker.toUpperCase()
+            );
+
+            if (isUsedInJournal) {
+                showToast(`'${ticker}' 종목은 현재 매매일지(${localJournals.filter(j => j.assetType === 'futures' && j.ticker.toUpperCase() === ticker.toUpperCase()).length}개)에 사용 중이므로 삭제할 수 없습니다.`, "error");
+                return;
+            }
+
+            // 2. 삭제 확인 모달 띄우기
+            showConfirmModal(`선물 종목 '${ticker}'의 저장된 틱가치/틱단위 정보를 삭제하시겠습니까?`, async () => {
+                try {
+                    const updatedInfo = { ...localFuturesInfo };
+                    delete updatedInfo[ticker];
+                    
+                    // Firestore 업데이트
+                    await db.collection("users").doc(currentUser.uid).collection("journalData").doc("futuresInfo").set(updatedInfo);
+                    
+                    showToast(`선물 종목 '${ticker}' 정보가 삭제되었습니다.`);
+                    document.getElementById('futures-info-select').value = '';
+                    document.getElementById('delete-futures-info-btn').disabled = true;
+                    document.getElementById('tick-value').value = '';
+                    document.getElementById('tick-size').value = '';
+                } catch(e) {
+                    showToast(`삭제 실패: ${e.message}`, "error");
+                }
+            }, '삭제');
+        }
         // **새로 추가된 함수 끝**
+
 
         function calculatePnl(journal, exit) {
             const priceDiff = journal.position === 'long' ? (exit.price - journal.entryPrice) : (journal.entryPrice - exit.price);
@@ -835,8 +890,10 @@
                     const ticker = journal.ticker.toUpperCase();
                     if(localFuturesInfo[ticker]) {
                         selectEl.value = ticker;
+                        document.getElementById('delete-futures-info-btn').disabled = false;
                     } else {
                         selectEl.value = '';
+                        document.getElementById('delete-futures-info-btn').disabled = true;
                     }
                 }
 
@@ -922,24 +979,7 @@
                     } else if (pnl < 0) {
                         const loss = Math.abs(pnl);
                         const reward = Math.abs(calculatePnl(j, { price: j.targetPrice, quantity: 1 }));
-                        // risk/reward 계산 시 목표가와 손절가를 기준으로 해야 정확한 손익비가 나옴.
-                        // 하지만 이미 실현된 손익을 기준으로 PL Ratio를 계산할 때, 리스크는 진입가-손절가, 보상은 진입가-목표가를 쓰는 것이 일반적.
-                        // 여기서는 단순화하여 승패 기록에서 PL Ratio를 계산하는 로직은 그대로 유지하되, 전체 거래의 평균 손익비를 계산하는 것에 중점을 둠.
-                        // 승리한 경우 (Pnl > 0) 리스크 (진입가 - 손절가) 대비 Pnl, 패배한 경우 (Pnl < 0) 리스크 대비 Pnl을 계산하는 방식은 불정확하므로,
-                        // 일지에 기록된 목표가/손절가를 기준으로 보상/리스크 비율을 계산하도록 변경하는 것이 더 정확함. (향후 개선 가능성)
-                        
-                        // 현재 로직은 모든 청산에 대해 리스크 대비 리워드를 계산하려 시도하고 있음. 
-                        // 이미 실현된 PnL이 음수일 때, 손절가와의 차액을 리스크로 보고 보상과의 비율을 측정하는 것은 부정확함.
-                        // 간소화를 위해, 청산된 모든 거래의 'P/L Ratio'를 (Target P - Entry P) / (Entry P - Stop L)로 계산하여 평균을 내는 것으로 간주함.
-                        // 단, 실제 PnL이 0이 아닌 거래만 대상으로 함.
-                        const potentialReward = Math.abs(journal.position === 'long' ? (journal.targetPrice - journal.entryPrice) : (journal.entryPrice - journal.targetPrice));
-                        const potentialRisk = Math.abs(journal.position === 'long' ? (journal.entryPrice - journal.stopLoss) : (journal.stopLoss - journal.entryPrice));
-                        
-                        if (potentialRisk > 0 && potentialReward > 0) {
-                             plRatios.push(potentialReward / potentialRisk);
-                        } else if (potentialRisk > 0) { // 리스크는 있는데 목표가 정보가 없는 경우 (Target P = Entry P 등)
-                             plRatios.push(0); 
-                        }
+                        if (loss > 0) plRatios.push(reward / loss);
                     }
                 });
             });
@@ -947,9 +987,7 @@
             winRateEl.textContent = `${winRate.toFixed(2)}%`;
             winRateEl.className = `text-4xl font-bold ${winRate >= 50 ? 'text-blue-500' : 'text-red-500'}`;
 
-            if (plRatios.length > 0) {
-                // 중복 항목 제거를 위해 Set을 사용하거나, 각 거래의 R-ratio만 계산하여 평균을 내도록 수정하는 것이 더 정확함.
-                // 여기서는 각 거래의 Target R-ratio를 계산하는 방식으로 변경:
+             if (journals.length > 0) {
                 const Ratios = journals.map(j => {
                     const potentialReward = Math.abs(j.position === 'long' ? (j.targetPrice - j.entryPrice) : (j.entryPrice - j.targetPrice));
                     const potentialRisk = Math.abs(j.position === 'long' ? (j.entryPrice - j.stopLoss) : (j.stopLoss - j.entryPrice));
@@ -1068,10 +1106,11 @@
             document.querySelectorAll('#journal-form .number-input').forEach(el => el.value = '');
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
             
-            // **수정된 부분: 선물 정보 필드 초기화**
+            // 선물 정보 필드 초기화
             document.getElementById('futures-info-select').value = '';
             document.getElementById('tick-value').value = '';
             document.getElementById('tick-size').value = '';
+            document.getElementById('delete-futures-info-btn').disabled = true; // 삭제 버튼 비활성화
             
             // Set defaults
             document.querySelector('[data-group="asset-type"] .toggle-btn[data-value="spot"]').click();
@@ -1125,7 +1164,7 @@
         }
         
         function switchLedgerView(tabId) {
-            document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.ledger-tab === tabId));
+            document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.ledgerTab === tabId));
             ['ledger-form-view', 'ledger-list-view', 'ledger-stats-view'].forEach(viewId => document.getElementById(viewId).classList.toggle('hidden', viewId !== tabId));
             if(tabId === 'ledger-list-view') renderLedgerListView();
             if(tabId === 'ledger-stats-view') renderLedgerStatsView();
