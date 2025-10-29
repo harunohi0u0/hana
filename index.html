@@ -503,6 +503,7 @@
                      document.getElementById('futures-info-select').value = '';
                      document.getElementById('tick-value').value = '';
                      document.getElementById('tick-size').value = '';
+                     document.getElementById('delete-futures-info-btn').disabled = true;
                 } else {
                      // 선물 탭으로 전환 시 현재 티커 정보로 select/필드 채우기 시도
                      const currentTicker = document.getElementById('ticker').value.trim().toUpperCase();
@@ -510,6 +511,10 @@
                         document.getElementById('futures-info-select').value = currentTicker;
                         document.getElementById('tick-value').value = formatNumber(localFuturesInfo[currentTicker].tickValue);
                         document.getElementById('tick-size').value = formatNumber(localFuturesInfo[currentTicker].tickSize);
+                        document.getElementById('delete-futures-info-btn').disabled = false;
+                     } else {
+                        document.getElementById('futures-info-select').value = '';
+                        document.getElementById('delete-futures-info-btn').disabled = true;
                      }
                 }
             });
@@ -521,11 +526,14 @@
             const tickerInput = document.getElementById('ticker');
             const deleteBtn = document.getElementById('delete-futures-info-btn');
             
+            // **수정 시작: 초기 상태 설정**
+            deleteBtn.disabled = true; 
+            // **수정 끝**
+            
             select.innerHTML = '<option value="">- 종목 선택 (틱가치/단위 불러오기) -</option>';
             
             // 현재 폼에 입력된 종목이 있다면 해당 종목의 정보를 선택하도록 설정
             const currentTicker = tickerInput.value.trim().toUpperCase();
-            deleteBtn.disabled = true;
 
             Object.entries(localFuturesInfo).sort((a,b) => a[0].localeCompare(b[0])).forEach(([ticker, info]) => {
                 const option = document.createElement('option');
@@ -544,7 +552,9 @@
                 const selectedTicker = e.target.value;
                 const info = localFuturesInfo[selectedTicker];
                 
+                // **수정 시작: 삭제 버튼 제어 로직**
                 deleteBtn.disabled = !selectedTicker;
+                // **수정 끝**
 
                 if (info) {
                     tickerInput.value = selectedTicker;
@@ -553,6 +563,7 @@
                     showToast(`종목 '${selectedTicker}' 정보가 채워졌습니다.`);
                 } else {
                     // '종목 선택' 옵션을 선택한 경우 초기화
+                    // tickerInput.value는 유지 (다른 종목을 입력할 수 있도록)
                     document.getElementById('tick-value').value = '';
                     document.getElementById('tick-size').value = '';
                 }
@@ -563,7 +574,9 @@
                 const newTicker = tickerInput.value.trim().toUpperCase();
                 const isFutures = !document.getElementById('futures-fields').classList.contains('hidden');
                 
+                // **수정 시작: 삭제 버튼 제어 로직**
                 deleteBtn.disabled = !localFuturesInfo[newTicker];
+                // **수정 끝**
 
                 if (isFutures && localFuturesInfo[newTicker]) {
                     select.value = newTicker;
@@ -603,6 +616,7 @@
                         [ticker]: { tickValue, tickSize }
                     };
                     await db.collection("users").doc(currentUser.uid).collection("journalData").doc("futuresInfo").set(updatedInfo);
+                    
                     showToast(`선물 종목 정보가 ${action}되었습니다.`);
                     // 저장 후 폼 필드 업데이트
                     tickValueInput.value = formatNumber(tickValue);
@@ -615,7 +629,7 @@
             }, action);
         });
         
-        // **새로 추가된 함수: 선물 종목 정보 삭제**
+        // 선물 종목 정보 삭제 리스너
         document.getElementById('delete-futures-info-btn').addEventListener('click', handleDeleteFuturesInfo);
 
         async function handleDeleteFuturesInfo() {
@@ -656,7 +670,6 @@
                 }
             }, '삭제');
         }
-        // **새로 추가된 함수 끝**
 
 
         function calculatePnl(journal, exit) {
