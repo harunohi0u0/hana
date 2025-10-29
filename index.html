@@ -73,6 +73,9 @@
         .dark .bg-gray-300 { background-color: #4F4F4F; }
         .dark .hover\:bg-gray-400:hover { background-color: #666666; }
         .dark #ledger-category-summary > div:hover, .dark #ledger-income-summary > div:hover { background-color: #2d2d2d; }
+        .dark .bg-gray-50 { background-color: #2d2d2d; }
+        .dark .bg-gray-50 .text-gray-700 { color: #E0E0E0; }
+        .dark .bg-gray-50 .text-gray-500 { color: #BDBDBD; }
         
         /* Category selection highlight */
         #ledger-category-summary > div.selected, #ledger-income-summary > div.selected { background-color: #dbeafe; /* blue-100 */ }
@@ -144,14 +147,30 @@
                                     <label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">수량</label>
                                     <input type="text" inputmode="numeric" id="quantity" placeholder="예: 100" class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white">
                                 </div>
+                                
                                 <div id="futures-fields" class="hidden sm:col-span-2">
-                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                                        <div><label for="contracts" class="block text-sm font-medium text-gray-700 mb-1">계약 수</label><input type="text" inputmode="numeric" id="contracts" placeholder="예: 1" class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
-                                        <div><label for="tick-value" class="block text-sm font-medium text-gray-700 mb-1">틱가치</label><input type="text" inputmode="decimal" id="tick-value" placeholder="예: 1" class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
-                                        <div><label for="tick-size" class="block text-sm font-medium text-gray-700 mb-1">틱단위</label><input type="text" inputmode="decimal" id="tick-size" placeholder="예: 0.001" class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label for="contracts" class="block text-sm font-medium text-gray-700 mb-1">계약 수</label>
+                                            <input type="text" inputmode="numeric" id="contracts" placeholder="예: 1" class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white">
+                                        </div>
+                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                            <div class="sm:col-span-3 bg-gray-50 dark:bg-[#2d2d2d] p-4 rounded-lg border border-gray-200 dark:border-[#4F4F4F]">
+                                                <h3 class="text-base font-semibold mb-2">선물 종목 정보 관리</h3>
+                                                <div class="flex flex-col sm:flex-row gap-2">
+                                                    <select id="futures-info-select" class="flex-grow p-2 border border-gray-300 dark:border-[#4F4F4F] rounded-lg bg-white dark:bg-[#1E1E1E]">
+                                                        <option value="">- 종목 선택 (틱가치/단위 불러오기) -</option>
+                                                    </select>
+                                                    <button type="button" id="save-futures-info-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition text-sm">정보 저장</button>
+                                                </div>
+                                                <div class="mt-4 grid grid-cols-2 gap-4">
+                                                    <div><label for="tick-value" class="block text-sm font-medium text-gray-700 mb-1">틱가치 ($)</label><input type="text" inputmode="decimal" id="tick-value" placeholder="예: 1" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]"></div>
+                                                    <div><label for="tick-size" class="block text-sm font-medium text-gray-700 mb-1">틱단위</label><input type="text" inputmode="decimal" id="tick-size" placeholder="예: 0.001" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]"></div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                
                                 <div><label for="entry-price" class="block text-sm font-medium text-gray-700 mb-1">진입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="예: 10,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
                                 <div><label for="target-price" class="block text-sm font-medium text-gray-700 mb-1">목표가</label><input type="text" inputmode="decimal" id="target-price" placeholder="예: 11,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
                                 <div><label for="stop-loss" class="block text-sm font-medium text-gray-700 mb-1">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="예: 9,500" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
@@ -317,6 +336,8 @@
         // Trading Journal State
         let unsubscribeJournals = null, unsubscribeTags = null;
         let localJournals = [], localTags = { entry: [], psychology: [] };
+        let localFuturesInfo = {}; // { ticker: { tickValue: number, tickSize: number } } // <--- 추가
+        let unsubscribeFuturesInfo = null; // <--- 추가
         let statsCurrency = 'KRW', exchangeRate = 1380;
         
         // Household Ledger State
@@ -349,6 +370,7 @@
                 appContainer.classList.add('hidden');
                 if (unsubscribeJournals) unsubscribeJournals();
                 if (unsubscribeTags) unsubscribeTags();
+                if (unsubscribeFuturesInfo) unsubscribeFuturesInfo(); // <--- 추가
                 if (unsubscribeLedger) unsubscribeLedger();
                 if (unsubscribeLedgerCategories) unsubscribeLedgerCategories();
                 Object.values(charts).forEach(chart => { if(chart) chart.destroy(); });
@@ -362,6 +384,7 @@
             const userId = currentUser.uid;
 
             await initializeJournalDefaults(userId);
+            await initializeFuturesInfoDefaults(userId); // <--- 추가
             attachJournalListeners(userId);
             resetForm();
 
@@ -406,6 +429,19 @@
                 });
             }
         }
+        
+        // **새로 추가된 함수: 선물 종목 정보 초기화**
+        async function initializeFuturesInfoDefaults(userId) {
+            const docRef = db.collection("users").doc(userId).collection("journalData").doc("futuresInfo");
+            const docSnap = await docRef.get();
+            if (!docSnap.exists) {
+                // 예시 데이터
+                await docRef.set({
+                    'ES': { tickValue: 5.0, tickSize: 0.25 },
+                    'NG': { tickValue: 10.0, tickSize: 0.001 }
+                });
+            }
+        }
 
         function attachJournalListeners(userId) {
             if (unsubscribeJournals) unsubscribeJournals();
@@ -425,6 +461,15 @@
                     renderJournalTags(localTags.psychology, 'psychology-tags-container', 'psychology');
                 }
             }, (error) => console.error("Error fetching tags:", error));
+            
+            // **새로 추가된 리스너: 선물 종목 정보**
+            if (unsubscribeFuturesInfo) unsubscribeFuturesInfo();
+            const futuresDocRef = db.collection("users").doc(userId).collection("journalData").doc("futuresInfo");
+            unsubscribeFuturesInfo = futuresDocRef.onSnapshot((doc) => {
+                localFuturesInfo = doc.exists ? doc.data() : {};
+                renderFuturesInfoSelect();
+            }, (error) => console.error("Error fetching futures info:", error));
+            // **추가된 리스너 끝**
         }
         
         function switchJournalView(tabId) {
@@ -449,8 +494,115 @@
                 document.getElementById('contracts').required = !isSpot;
                 document.getElementById('tick-value').required = !isSpot;
                 document.getElementById('tick-size').required = !isSpot;
+                
+                // 폼 전환 시 선물 정보 필드 초기화 (선물 탭으로 돌아올 때만 제외)
+                if (isSpot) {
+                     document.getElementById('futures-info-select').value = '';
+                     document.getElementById('tick-value').value = '';
+                     document.getElementById('tick-size').value = '';
+                } else {
+                     // 선물 탭으로 전환 시 현재 티커 정보로 select/필드 채우기 시도
+                     const currentTicker = document.getElementById('ticker').value.trim().toUpperCase();
+                     if (localFuturesInfo[currentTicker]) {
+                        document.getElementById('futures-info-select').value = currentTicker;
+                        document.getElementById('tick-value').value = formatNumber(localFuturesInfo[currentTicker].tickValue);
+                        document.getElementById('tick-size').value = formatNumber(localFuturesInfo[currentTicker].tickSize);
+                     }
+                }
             });
         });
+        
+        // **새로 추가된 함수: 선물 정보 Select 박스 렌더링 및 리스너**
+        function renderFuturesInfoSelect() {
+            const select = document.getElementById('futures-info-select');
+            const tickerInput = document.getElementById('ticker');
+            select.innerHTML = '<option value="">- 종목 선택 (틱가치/단위 불러오기) -</option>';
+            
+            // 현재 폼에 입력된 종목이 있다면 해당 종목의 정보를 선택하도록 설정
+            const currentTicker = tickerInput.value.trim().toUpperCase();
+
+            Object.entries(localFuturesInfo).sort((a,b) => a[0].localeCompare(b[0])).forEach(([ticker, info]) => {
+                const option = document.createElement('option');
+                option.value = ticker;
+                option.textContent = `${ticker} (가치: ${formatNumber(info.tickValue)}, 단위: ${formatNumber(info.tickSize)})`;
+                select.appendChild(option);
+                
+                if (ticker === currentTicker && !document.getElementById('futures-fields').classList.contains('hidden')) {
+                    select.value = ticker;
+                }
+            });
+            
+            // 종목 선택 변경 시 필드 업데이트
+            select.onchange = (e) => {
+                const selectedTicker = e.target.value;
+                const info = localFuturesInfo[selectedTicker];
+
+                if (info) {
+                    tickerInput.value = selectedTicker;
+                    document.getElementById('tick-value').value = formatNumber(info.tickValue);
+                    document.getElementById('tick-size').value = formatNumber(info.tickSize);
+                    showToast(`종목 '${selectedTicker}' 정보가 채워졌습니다.`);
+                } else {
+                    // '종목 선택' 옵션을 선택한 경우 초기화
+                    // tickerInput.value는 유지 (다른 종목을 입력할 수 있도록)
+                    document.getElementById('tick-value').value = '';
+                    document.getElementById('tick-size').value = '';
+                }
+            };
+            
+            // 종목 입력 필드가 변경될 때마다 select 옵션 변경 및 필드 자동 채우기
+            tickerInput.oninput = () => {
+                const newTicker = tickerInput.value.trim().toUpperCase();
+                const isFutures = !document.getElementById('futures-fields').classList.contains('hidden');
+                
+                if (isFutures && localFuturesInfo[newTicker]) {
+                    select.value = newTicker;
+                    // 이미 정보가 있는 경우 틱가치/단위 필드에 값 채우기 (기존 값 보호)
+                    document.getElementById('tick-value').value = formatNumber(localFuturesInfo[newTicker].tickValue);
+                    document.getElementById('tick-size').value = formatNumber(localFuturesInfo[newTicker].tickSize);
+                } else if (isFutures) {
+                     // 새로운 종목이거나 입력이 빈칸일 때
+                     select.value = '';
+                }
+            }
+        }
+        
+        // 선물 정보 저장 버튼 리스너
+        document.getElementById('save-futures-info-btn').addEventListener('click', async () => {
+            const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+            const tickValueInput = document.getElementById('tick-value');
+            const tickSizeInput = document.getElementById('tick-size');
+            
+            const tickValue = parseFloat(unformatNumber(tickValueInput.value));
+            const tickSize = parseFloat(unformatNumber(tickSizeInput.value));
+
+            if (!ticker || isNaN(tickValue) || tickValue <= 0 || isNaN(tickSize) || tickSize <= 0) {
+                showToast("종목 이름, 틱가치, 틱단위를 올바르게 입력해주세요.", "error");
+                return;
+            }
+
+            const currentInfo = localFuturesInfo[ticker];
+            const isUpdating = currentInfo;
+            const message = isUpdating ? `'${ticker}' 종목 정보를 업데이트하시겠습니까?` : `'${ticker}' 종목 정보를 저장하시겠습니까?`;
+            const action = isUpdating ? '업데이트' : '저장';
+
+            showConfirmModal(message, async () => {
+                try {
+                    const updatedInfo = {
+                        ...localFuturesInfo,
+                        [ticker]: { tickValue, tickSize }
+                    };
+                    await db.collection("users").doc(currentUser.uid).collection("journalData").doc("futuresInfo").set(updatedInfo);
+                    showToast(`선물 종목 정보가 ${action}되었습니다.`);
+                    // 저장 후 폼 필드 업데이트
+                    tickValueInput.value = formatNumber(tickValue);
+                    tickSizeInput.value = formatNumber(tickSize);
+                } catch(e) {
+                    showToast(`정보 ${action} 실패: ${e.message}`, "error");
+                }
+            }, action);
+        });
+        // **새로 추가된 함수 끝**
 
         function calculatePnl(journal, exit) {
             const priceDiff = journal.position === 'long' ? (exit.price - journal.entryPrice) : (journal.entryPrice - exit.price);
@@ -503,7 +655,7 @@
                             const exitPnlClass = exitPnl > 0 ? 'text-green-500' : exitPnl < 0 ? 'text-red-500' : 'text-gray-500';
                             const exitDate = exit.date.toDate ? exit.date.toDate() : new Date(exit.date);
                             const amountLabel = isSpot ? '주' : '계약';
-                            return `<div class="flex justify-between items-center p-1 rounded bg-gray-50"><span>${exitDate.toLocaleDateString()} @ ${formatPrice(exit.price, journal.currency)} (${formatNumber(exit.quantity)} ${amountLabel})</span><span class="${exitPnlClass} font-medium">${formatPrice(exitPnl, journal.currency)}</span></div>`
+                            return `<div class="flex justify-between items-center p-1 rounded bg-gray-50 dark:bg-[#2d2d2d]"><span>${exitDate.toLocaleDateString()} @ ${formatPrice(exit.price, journal.currency)} (${formatNumber(exit.quantity)} ${amountLabel})</span><span class="${exitPnlClass} font-medium">${formatPrice(exitPnl, journal.currency)}</span></div>`
                         }).join('')}
                     </div>` : '';
                 
@@ -526,7 +678,7 @@
                     <div class="space-y-2 text-sm text-gray-700 mb-3">
                         <p><strong>진입:</strong> ${formatPrice(journal.entryPrice, journal.currency)} / <strong>${amountLabel}:</strong> ${formatNumber(totalAmount)}</p>
                         <p><strong>목표:</strong> ${formatPrice(journal.targetPrice, journal.currency)} / <strong>손절:</strong> ${formatPrice(journal.stopLoss, journal.currency)}</p>
-                        ${ !isSpot ? `<p><strong>틱가치/단위:</strong> ${formatNumber(journal.tickValue)} / ${formatNumber(journal.tickSize)}</p>` : '' }
+                        ${ !isSpot ? `<p><strong>틱가치/단위:</strong> ${formatPrice(journal.tickValue, journal.currency)} / ${formatNumber(journal.tickSize)}</p>` : '' }
                         ${holdingPeriodHtml}
                         ${journal.exits && journal.exits.length > 0 ? `<p class="font-bold"><strong>총 실현 손익:</strong> <span class="${pnlClass}">${formatDualCurrency(totalPnlInKRW, journal.currency)}</span></p>` : ''}
                     </div>
@@ -615,7 +767,7 @@
             
             const journalData = {
                 assetType: assetType,
-                ticker: document.getElementById('ticker').value, 
+                ticker: document.getElementById('ticker').value.toUpperCase(), // 종목 이름 대문자 처리
                 date: Timestamp.fromDate(new Date(document.getElementById('date').value)),
                 position: document.querySelector('[data-group="position"] .toggle-btn.selected').dataset.value,
                 strategy: document.querySelector('[data-group="strategy"] .toggle-btn.selected').dataset.value, 
@@ -674,8 +826,18 @@
                     document.getElementById('quantity').value = formatNumber(journal.quantity);
                 } else {
                     document.getElementById('contracts').value = formatNumber(journal.contracts);
+                    // 선물 종목 정보 관리 기능을 위해 필드 값을 채움
                     document.getElementById('tick-value').value = formatNumber(journal.tickValue);
                     document.getElementById('tick-size').value = formatNumber(journal.tickSize);
+                    
+                    // Select 박스에서도 해당 종목을 선택하도록 업데이트
+                    const selectEl = document.getElementById('futures-info-select');
+                    const ticker = journal.ticker.toUpperCase();
+                    if(localFuturesInfo[ticker]) {
+                        selectEl.value = ticker;
+                    } else {
+                        selectEl.value = '';
+                    }
                 }
 
                 ['entry-price', 'stop-loss', 'target-price'].forEach(id => document.getElementById(id).value = formatNumber(journal[id.replace('-','')]));
@@ -760,7 +922,24 @@
                     } else if (pnl < 0) {
                         const loss = Math.abs(pnl);
                         const reward = Math.abs(calculatePnl(j, { price: j.targetPrice, quantity: 1 }));
-                        if (loss > 0) plRatios.push(reward / loss);
+                        // risk/reward 계산 시 목표가와 손절가를 기준으로 해야 정확한 손익비가 나옴.
+                        // 하지만 이미 실현된 손익을 기준으로 PL Ratio를 계산할 때, 리스크는 진입가-손절가, 보상은 진입가-목표가를 쓰는 것이 일반적.
+                        // 여기서는 단순화하여 승패 기록에서 PL Ratio를 계산하는 로직은 그대로 유지하되, 전체 거래의 평균 손익비를 계산하는 것에 중점을 둠.
+                        // 승리한 경우 (Pnl > 0) 리스크 (진입가 - 손절가) 대비 Pnl, 패배한 경우 (Pnl < 0) 리스크 대비 Pnl을 계산하는 방식은 불정확하므로,
+                        // 일지에 기록된 목표가/손절가를 기준으로 보상/리스크 비율을 계산하도록 변경하는 것이 더 정확함. (향후 개선 가능성)
+                        
+                        // 현재 로직은 모든 청산에 대해 리스크 대비 리워드를 계산하려 시도하고 있음. 
+                        // 이미 실현된 PnL이 음수일 때, 손절가와의 차액을 리스크로 보고 보상과의 비율을 측정하는 것은 부정확함.
+                        // 간소화를 위해, 청산된 모든 거래의 'P/L Ratio'를 (Target P - Entry P) / (Entry P - Stop L)로 계산하여 평균을 내는 것으로 간주함.
+                        // 단, 실제 PnL이 0이 아닌 거래만 대상으로 함.
+                        const potentialReward = Math.abs(journal.position === 'long' ? (journal.targetPrice - journal.entryPrice) : (journal.entryPrice - journal.targetPrice));
+                        const potentialRisk = Math.abs(journal.position === 'long' ? (journal.entryPrice - journal.stopLoss) : (journal.stopLoss - journal.entryPrice));
+                        
+                        if (potentialRisk > 0 && potentialReward > 0) {
+                             plRatios.push(potentialReward / potentialRisk);
+                        } else if (potentialRisk > 0) { // 리스크는 있는데 목표가 정보가 없는 경우 (Target P = Entry P 등)
+                             plRatios.push(0); 
+                        }
                     }
                 });
             });
@@ -769,9 +948,22 @@
             winRateEl.className = `text-4xl font-bold ${winRate >= 50 ? 'text-blue-500' : 'text-red-500'}`;
 
             if (plRatios.length > 0) {
-                const averagePlRatio = plRatios.reduce((sum, r) => sum + r, 0) / plRatios.length;
-                plRatioEl.textContent = `${averagePlRatio.toFixed(2)} : 1`;
-                plRatioEl.className = `text-4xl font-bold ${averagePlRatio >= 1 ? 'text-green-500' : 'text-yellow-500'}`;
+                // 중복 항목 제거를 위해 Set을 사용하거나, 각 거래의 R-ratio만 계산하여 평균을 내도록 수정하는 것이 더 정확함.
+                // 여기서는 각 거래의 Target R-ratio를 계산하는 방식으로 변경:
+                const Ratios = journals.map(j => {
+                    const potentialReward = Math.abs(j.position === 'long' ? (j.targetPrice - j.entryPrice) : (j.entryPrice - j.targetPrice));
+                    const potentialRisk = Math.abs(j.position === 'long' ? (j.entryPrice - j.stopLoss) : (j.stopLoss - j.entryPrice));
+                    return potentialRisk > 0 ? (potentialReward / potentialRisk) : 0;
+                }).filter(r => r > 0);
+                
+                if (Ratios.length > 0) {
+                    const averagePlRatio = Ratios.reduce((sum, r) => sum + r, 0) / Ratios.length;
+                    plRatioEl.textContent = `${averagePlRatio.toFixed(2)} : 1`;
+                    plRatioEl.className = `text-4xl font-bold ${averagePlRatio >= 1 ? 'text-green-500' : 'text-yellow-500'}`;
+                } else {
+                    plRatioEl.textContent = 'N/A';
+                }
+
             } else { plRatioEl.textContent = 'N/A'; }
         }
 
@@ -876,6 +1068,11 @@
             document.querySelectorAll('#journal-form .number-input').forEach(el => el.value = '');
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
             
+            // **수정된 부분: 선물 정보 필드 초기화**
+            document.getElementById('futures-info-select').value = '';
+            document.getElementById('tick-value').value = '';
+            document.getElementById('tick-size').value = '';
+            
             // Set defaults
             document.querySelector('[data-group="asset-type"] .toggle-btn[data-value="spot"]').click();
             document.querySelector('[data-group="position"] .toggle-btn[data-value="long"]').classList.add('selected');
@@ -928,7 +1125,7 @@
         }
         
         function switchLedgerView(tabId) {
-            document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.ledgerTab === tabId));
+            document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.ledger-tab === tabId));
             ['ledger-form-view', 'ledger-list-view', 'ledger-stats-view'].forEach(viewId => document.getElementById(viewId).classList.toggle('hidden', viewId !== tabId));
             if(tabId === 'ledger-list-view') renderLedgerListView();
             if(tabId === 'ledger-stats-view') renderLedgerStatsView();
@@ -1065,10 +1262,11 @@
             } else {
                 Object.entries(expensesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
                     const div = document.createElement('div');
-                    div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 cursor-pointer';
+                    div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
                     div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-red-500">- ${formatPrice(total, 'KRW')}</span>`;
                     div.onclick = () => {
-                        document.querySelectorAll('#ledger-list-view .selected').forEach(el => el.classList.remove('selected'));
+                        document.querySelectorAll('#ledger-list-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
+                        document.querySelectorAll('#ledger-list-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
                         div.classList.add('selected');
                         renderLedgerDetails(category, 'expense', filteredEntries);
                     };
@@ -1092,10 +1290,11 @@
             } else {
                 Object.entries(incomesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
                     const div = document.createElement('div');
-                    div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 cursor-pointer';
+                    div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
                     div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-green-500">+ ${formatPrice(total, 'KRW')}</span>`;
                     div.onclick = () => {
-                        document.querySelectorAll('#ledger-list-view .selected').forEach(el => el.classList.remove('selected'));
+                        document.querySelectorAll('#ledger-list-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
+                        document.querySelectorAll('#ledger-list-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
                         div.classList.add('selected');
                         renderLedgerDetails(category, 'income', filteredEntries);
                     };
@@ -1127,7 +1326,7 @@
             entriesToShow.sort((a,b) => b.date - a.date)
                 .forEach(entry => {
                     const div = document.createElement('div');
-                    div.className = 'p-3 rounded-lg border flex justify-between items-center';
+                    div.className = 'p-3 rounded-lg border border-gray-200 dark:border-[#4F4F4F] flex justify-between items-center bg-gray-50 dark:bg-[#1E1E1E]';
                     const amountClass = type === 'income' ? 'text-green-500' : 'text-red-500';
                     const sign = type === 'income' ? '+' : '-';
                     div.innerHTML = `
