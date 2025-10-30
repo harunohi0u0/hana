@@ -137,7 +137,7 @@
                             <h2 class="text-2xl font-bold mb-4 border-b-2 border-blue-200 pb-2 flex items-center"><i data-lucide="clipboard-list" class="mr-3 text-blue-500"></i>기본 정보</h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div class="sm:col-span-2"><span class="block text-sm font-medium text-gray-700 mb-2">자산 유형</span><div class="toggle-group text-gray-600" data-group="asset-type"><button type="button" data-value="spot" class="toggle-btn selected">현물</button><button type="button" data-value="futures" class="toggle-btn">선물</button></div></div>
-                                <div class="sm:col-span-2"><label for="ticker" class="block text-sm font-medium text-gray-700 mb-1">종목 이름</label><input type="text" id="ticker" placeholder="예: 삼성전자, NG" required class="w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                <div class="sm:col-span-2"><label for="ticker" class="block text-sm font-medium text-gray-700 mb-1">종목 이름</label><input type="text" id="ticker" placeholder="예: 삼성전자, ZB" required class="w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
                                 <div><label for="date" class="block text-sm font-medium text-gray-700 mb-1">날짜</label><input type="date" id="date" required class="w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
                                 <div><span class="block text-sm font-medium text-gray-700 mb-2">포지션</span><div class="toggle-group text-gray-600" data-group="position"><button type="button" data-value="long" class="toggle-btn selected">🟢 롱</button><button type="button" data-value="short" class="toggle-btn">🔴 숏</button></div></div>
                                 <div><span class="block text-sm font-medium text-gray-700 mb-2">매매 전략</span><div class="toggle-group text-gray-600" data-group="strategy"><button type="button" data-value="단타" class="toggle-btn selected">단타</button><button type="button" data-value="스윙" class="toggle-btn">스윙</button><button type="button" data-value="장기" class="toggle-btn">장기</button></div></div>
@@ -154,6 +154,16 @@
                                             <label for="contracts" class="block text-sm font-medium text-gray-700 mb-1">계약 수</label>
                                             <input type="text" inputmode="numeric" id="contracts" placeholder="예: 1" class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white">
                                         </div>
+                                        <div class="sm:col-span-2">
+                                            <span class="block text-sm font-medium text-gray-700 mb-2">채권 선물 사용</span>
+                                            <div class="toggle-group text-gray-600" data-group="is-bond-futures">
+                                                <button type="button" data-value="false" class="toggle-btn selected">일반 선물</button>
+                                                <button type="button" data-value="true" class="toggle-btn">채권 선물</button>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-2" id="bond-futures-tip">
+                                                * 채권 선물($\text{ZB/ZN/ZF}$ 등)은 $120'16$ 형식으로 가격을 입력하세요.
+                                            </p>
+                                        </div>
                                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                             <div class="sm:col-span-3 bg-gray-50 dark:bg-[#2d2d2d] p-4 rounded-lg border border-gray-200 dark:border-[#4F4F4F]">
                                                 <h3 class="text-base font-semibold mb-2 flex justify-between items-center">
@@ -169,16 +179,22 @@
                                                     <button type="button" id="save-futures-info-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition text-sm">정보 저장</button>
                                                 </div>
                                                 <div class="mt-4 grid grid-cols-2 gap-4">
-                                                    <div><label for="tick-value" class="block text-sm font-medium text-gray-700 mb-1">틱가치 ($)</label><input type="text" inputmode="decimal" id="tick-value" placeholder="예: 1" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]"></div>
-                                                    <div><label for="tick-size" class="block text-sm font-medium text-gray-700 mb-1">틱단위</label><input type="text" inputmode="decimal" id="tick-size" placeholder="예: 0.001" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]"></div>
+                                                    <div id="tick-value-field">
+                                                        <label for="tick-value" class="block text-sm font-medium text-gray-700 mb-1">틱가치 ($)</label>
+                                                        <input type="text" inputmode="decimal" id="tick-value" placeholder="예: 31.25" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]">
+                                                    </div>
+                                                    <div id="tick-size-field">
+                                                        <label for="tick-size" class="block text-sm font-medium text-gray-700 mb-1">틱단위</label>
+                                                        <input type="text" inputmode="decimal" id="tick-size" placeholder="예: 0.001" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]">
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div><label for="entry-price" class="block text-sm font-medium text-gray-700 mb-1">진입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="예: 10,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
-                                <div><label for="target-price" class="block text-sm font-medium text-gray-700 mb-1">목표가</label><input type="text" inputmode="decimal" id="target-price" placeholder="예: 11,000" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
-                                <div><label for="stop-loss" class="block text-sm font-medium text-gray-700 mb-1">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="예: 9,500" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                <div id="entry-price-wrapper"><label for="entry-price" class="block text-sm font-medium text-gray-700 mb-1" id="entry-price-label">진입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="예: 10,000" required class="price-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                <div id="target-price-wrapper"><label for="target-price" class="block text-sm font-medium text-gray-700 mb-1" id="target-price-label">목표가</label><input type="text" inputmode="decimal" id="target-price" placeholder="예: 11,000" required class="price-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
+                                <div id="stop-loss-wrapper"><label for="stop-loss" class="block text-sm font-medium text-gray-700 mb-1" id="stop-loss-label">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="예: 9,500" required class="price-input w-full p-2 border border-gray-300 rounded-lg bg-white"></div>
                             </div>
                         </div>
                         <div>
@@ -442,7 +458,8 @@
                 // 예시 데이터
                 await docRef.set({
                     'ES': { tickValue: 5.0, tickSize: 0.25 },
-                    'NG': { tickValue: 10.0, tickSize: 0.001 }
+                    'NG': { tickValue: 10.0, tickSize: 0.001 },
+                    'ZB': { tickValue: 31.25, tickSize: 0.03125 } // T-Bond 예시 (32nds)
                 });
             }
         }
@@ -504,6 +521,7 @@
                      document.getElementById('tick-value').value = '';
                      document.getElementById('tick-size').value = '';
                      document.getElementById('delete-futures-info-btn').disabled = true;
+                     document.querySelector('[data-group="is-bond-futures"] .toggle-btn[data-value="false"]').click(); // 일반 선물로 리셋
                 } else {
                      // 선물 탭으로 전환 시 현재 티커 정보로 select/필드 채우기 시도
                      const currentTicker = document.getElementById('ticker').value.trim().toUpperCase();
@@ -519,7 +537,60 @@
                 }
             });
         });
-        
+
+        // **새로 추가된 Bond Futures Toggle Listener**
+        document.querySelectorAll('[data-group="is-bond-futures"] .toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const isBond = btn.dataset.value === 'true';
+                document.getElementById('bond-futures-tip').classList.toggle('hidden', !isBond);
+
+                // 가격 입력 필드 타입 변경 및 라벨 변경
+                document.querySelectorAll('.price-input').forEach(input => {
+                    input.classList.toggle('bond-price-input', isBond);
+                    input.inputMode = isBond ? 'text' : 'decimal';
+                    input.placeholder = isBond ? "예: 120'16" : "예: 10,000";
+                });
+                
+                const formatLabel = (label) => isBond ? `${label} (120'16)` : label;
+                document.getElementById('entry-price-label').textContent = formatLabel('진입가');
+                document.getElementById('target-price-label').textContent = formatLabel('목표가');
+                document.getElementById('stop-loss-label').textContent = formatLabel('손절가');
+
+                // 채권 선물일 경우 틱가치/단위 필드는 숨기고, 일반 선물일 경우 다시 표시
+                document.getElementById('tick-value-field').classList.toggle('hidden', isBond);
+                document.getElementById('tick-size-field').classList.toggle('hidden', isBond);
+
+                // Bond input에 포맷팅 적용
+                if (isBond) {
+                     document.querySelectorAll('.bond-price-input').forEach(input => {
+                        input.removeEventListener('input', numberInputHandler);
+                        input.addEventListener('input', bondInputHandler);
+                    });
+                    // 채권 선물 시 틱가치와 틱단위 필드는 임시로 비활성화 (가격만 입력받고 변환하여 사용)
+                    document.getElementById('tick-value').required = false;
+                    document.getElementById('tick-size').required = false;
+
+                } else {
+                    document.querySelectorAll('.bond-price-input').forEach(input => {
+                        input.removeEventListener('input', bondInputHandler);
+                        input.addEventListener('input', numberInputHandler);
+                    });
+                    // 일반 선물 시 틱가치와 틱단위 필드 다시 활성화
+                    document.getElementById('tick-value').required = true;
+                    document.getElementById('tick-size').required = true;
+                }
+                
+                // 폼 내용이 있을 경우, 단위 전환에 따라 값도 변환하여 표시 (사용자 경험 개선)
+                const currentEntry = unformatPrice(document.getElementById('entry-price').value, !isBond);
+                document.getElementById('entry-price').value = formatPriceDisplay(currentEntry, isBond);
+                const currentTarget = unformatPrice(document.getElementById('target-price').value, !isBond);
+                document.getElementById('target-price').value = formatPriceDisplay(currentTarget, isBond);
+                const currentStopLoss = unformatPrice(document.getElementById('stop-loss').value, !isBond);
+                document.getElementById('stop-loss').value = formatPriceDisplay(currentStopLoss, isBond);
+            });
+        });
+
+
         // 선물 정보 Select 박스 렌더링 및 리스너
         function renderFuturesInfoSelect() {
             const select = document.getElementById('futures-info-select');
@@ -681,6 +752,40 @@
                 return priceDiff * exit.quantity;
             }
         }
+        
+        // **새로 추가된 Bond Price 변환 함수**
+        // 채권 선물 가격 (예: 120'16)을 소수점 가격 (예: 120.5)으로 변환
+        const bondPriceToDecimal = (bondPrice) => {
+            const price = bondPrice.toString().replace(/,/g, '');
+            if (!price) return null;
+            
+            const parts = price.split("'");
+            if (parts.length === 2) {
+                const whole = parseFloat(parts[0]);
+                const fraction = parseFloat(parts[1]);
+                if (isNaN(whole) || isNaN(fraction)) return null;
+
+                // ZB, ZN, ZF 등 주요 채권 선물은 32nds 단위를 사용 (틱단위 1/32)
+                // 32nds 기준으로 변환: 정수 + 분수/32
+                return whole + fraction / 32.0;
+            }
+            // 일반 십진수 가격일 경우도 처리
+            return parseFloat(price);
+        }
+
+        // 소수점 가격 (예: 120.5)을 채권 가격 (예: 120'16)으로 변환
+        const decimalToBondPrice = (decimalPrice) => {
+            if (isNaN(decimalPrice) || decimalPrice === null) return '';
+            const whole = Math.floor(decimalPrice);
+            // 분수 부분을 32nds로 변환
+            const fraction = Math.round((decimalPrice - whole) * 32);
+            // 만약 분수 부분이 32를 넘어가면 (계산 오류 방지)
+            if (fraction >= 32) {
+                 return `${whole + 1}'00`;
+            }
+            return `${whole}'${String(fraction).padStart(2, '0')}`;
+        }
+        // **Bond Price 변환 함수 끝**
 
         function renderJournals(journals) {
             journalList.innerHTML = '';
@@ -714,7 +819,11 @@
                     const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
                     holdingPeriodHtml = `<p><strong>보유 기간:</strong> ${diffDays}일</p>`;
                 }
-
+                
+                // **수정된 부분: 가격 출력 시 채권 선물 단위 적용**
+                const isBond = journal.assetType === 'futures' && (localFuturesInfo[journal.ticker.toUpperCase()]?.tickSize === 0.03125 || journal.ticker.match(/^(ZB|ZN|ZF|UB)$/i));
+                const formatPriceDisplayForJournal = (price) => isBond ? decimalToBondPrice(price) : formatPrice(price, journal.currency);
+                
                 const exitsHtml = journal.exits && journal.exits.length > 0 ? `
                     <div class="mt-3 pt-3 border-t border-gray-200 space-y-1 text-xs">
                         <h5 class="font-semibold mb-1">청산 내역</h5>
@@ -723,7 +832,7 @@
                             const exitPnlClass = exitPnl > 0 ? 'text-green-500' : exitPnl < 0 ? 'text-red-500' : 'text-gray-500';
                             const exitDate = exit.date.toDate ? exit.date.toDate() : new Date(exit.date);
                             const amountLabel = isSpot ? '주' : '계약';
-                            return `<div class="flex justify-between items-center p-1 rounded bg-gray-50 dark:bg-[#2d2d2d]"><span>${exitDate.toLocaleDateString()} @ ${formatPrice(exit.price, journal.currency)} (${formatNumber(exit.quantity)} ${amountLabel})</span><span class="${exitPnlClass} font-medium">${formatPrice(exitPnl, journal.currency)}</span></div>`
+                            return `<div class="flex justify-between items-center p-1 rounded bg-gray-50 dark:bg-[#2d2d2d]"><span>${exitDate.toLocaleDateString()} @ ${formatPriceDisplayForJournal(exit.price)} (${formatNumber(exit.quantity)} ${amountLabel})</span><span class="${exitPnlClass} font-medium">${formatPrice(exitPnl, journal.currency)}</span></div>`
                         }).join('')}
                     </div>` : '';
                 
@@ -744,8 +853,8 @@
                         </div>
                     </div>
                     <div class="space-y-2 text-sm text-gray-700 mb-3">
-                        <p><strong>진입:</strong> ${formatPrice(journal.entryPrice, journal.currency)} / <strong>${amountLabel}:</strong> ${formatNumber(totalAmount)}</p>
-                        <p><strong>목표:</strong> ${formatPrice(journal.targetPrice, journal.currency)} / <strong>손절:</strong> ${formatPrice(journal.stopLoss, journal.currency)}</p>
+                        <p><strong>진입:</strong> ${formatPriceDisplayForJournal(journal.entryPrice)} / <strong>${amountLabel}:</strong> ${formatNumber(totalAmount)}</p>
+                        <p><strong>목표:</strong> ${formatPriceDisplayForJournal(journal.targetPrice)} / <strong>손절:</strong> ${formatPriceDisplayForJournal(journal.stopLoss)}</p>
                         ${ !isSpot ? `<p><strong>틱가치/단위:</strong> ${formatPrice(journal.tickValue, journal.currency)} / ${formatNumber(journal.tickSize)}</p>` : '' }
                         ${holdingPeriodHtml}
                         ${journal.exits && journal.exits.length > 0 ? `<p class="font-bold"><strong>총 실현 손익:</strong> <span class="${pnlClass}">${formatDualCurrency(totalPnlInKRW, journal.currency)}</span></p>` : ''}
@@ -833,6 +942,26 @@
             const journalId = document.getElementById('journal-id').value;
             const assetType = document.querySelector('[data-group="asset-type"] .toggle-btn.selected').dataset.value;
             
+            const isBond = document.querySelector('[data-group="is-bond-futures"] .toggle-btn.selected')?.dataset.value === 'true';
+            
+            // **수정 시작: 채권 선물 가격 변환 및 유효성 검사**
+            let entryPrice, targetPrice, stopLoss;
+            if (isBond) {
+                entryPrice = bondPriceToDecimal(document.getElementById('entry-price').value);
+                targetPrice = bondPriceToDecimal(document.getElementById('target-price').value);
+                stopLoss = bondPriceToDecimal(document.getElementById('stop-loss').value);
+                
+                if (isNaN(entryPrice) || isNaN(targetPrice) || isNaN(stopLoss) || entryPrice === null || targetPrice === null || stopLoss === null) {
+                    showToast("채권 선물 가격을 올바른 형식 (예: 120'16)으로 입력해주세요.", "error");
+                    return;
+                }
+            } else {
+                entryPrice = parseFloat(unformatNumber(document.getElementById('entry-price').value));
+                targetPrice = parseFloat(unformatNumber(document.getElementById('target-price').value));
+                stopLoss = parseFloat(unformatNumber(document.getElementById('stop-loss').value));
+            }
+            // **수정 끝**
+            
             const journalData = {
                 assetType: assetType,
                 ticker: document.getElementById('ticker').value.toUpperCase(), // 종목 이름 대문자 처리
@@ -840,9 +969,11 @@
                 position: document.querySelector('[data-group="position"] .toggle-btn.selected').dataset.value,
                 strategy: document.querySelector('[data-group="strategy"] .toggle-btn.selected').dataset.value, 
                 currency: document.querySelector('[data-group="form-currency"] .toggle-btn.selected').id.includes('usd') ? 'USD' : 'KRW',
-                entryPrice: parseFloat(unformatNumber(document.getElementById('entry-price').value)),
-                stopLoss: parseFloat(unformatNumber(document.getElementById('stop-loss').value)), 
-                targetPrice: parseFloat(unformatNumber(document.getElementById('target-price').value)),
+                // **수정: 변환된 가격 사용**
+                entryPrice: entryPrice,
+                stopLoss: stopLoss, 
+                targetPrice: targetPrice,
+                // **수정 끝**
                 entryTags: Array.from(document.querySelectorAll('.entry-tags-container .tag.selected')).map(b => b.dataset.tag),
                 psychologyTags: Array.from(document.querySelectorAll('.psychology-tags-container .tag.selected')).map(b => b.dataset.tag),
             };
@@ -851,8 +982,18 @@
                 journalData.quantity = parseFloat(unformatNumber(document.getElementById('quantity').value));
             } else { // futures
                 journalData.contracts = parseFloat(unformatNumber(document.getElementById('contracts').value));
-                journalData.tickValue = parseFloat(unformatNumber(document.getElementById('tick-value').value));
-                journalData.tickSize = parseFloat(unformatNumber(document.getElementById('tick-size').value));
+                // **수정 시작: 채권 선물일 경우 틱가치/단위를 임의로 설정**
+                if (isBond) {
+                     // Bond Futures (32nds)의 일반적인 틱 단위/가치를 임의로 설정. (실제 값은 localFuturesInfo에서 가져와야 함)
+                     // 사용자에게 틱가치/단위를 입력받지 않으므로, 저장된 값을 사용하거나 일반적인 값을 사용.
+                     const savedInfo = localFuturesInfo[journalData.ticker] || {};
+                     journalData.tickValue = savedInfo.tickValue || 31.25;
+                     journalData.tickSize = savedInfo.tickSize || 0.03125;
+                } else {
+                     journalData.tickValue = parseFloat(unformatNumber(document.getElementById('tick-value').value));
+                     journalData.tickSize = parseFloat(unformatNumber(document.getElementById('tick-size').value));
+                }
+                // **수정 끝**
             }
             
             try {
@@ -894,7 +1035,13 @@
                     document.getElementById('quantity').value = formatNumber(journal.quantity);
                 } else {
                     document.getElementById('contracts').value = formatNumber(journal.contracts);
-                    // 선물 종목 정보 관리 기능을 위해 필드 값을 채움
+                    
+                    // **수정 시작: 채권 선물 여부 판별 및 가격 표시**
+                    // 틱단위가 1/32 (0.03125)인 경우 채권 선물로 간주
+                    const isBond = journal.tickSize === 0.03125;
+                    document.querySelector(`[data-group="is-bond-futures"] .toggle-btn[data-value="${isBond}"]`).click();
+
+                    // 틱가치/단위 필드에 값 채움 (채권 선물이 아닐 경우만 표시됨)
                     document.getElementById('tick-value').value = formatNumber(journal.tickValue);
                     document.getElementById('tick-size').value = formatNumber(journal.tickSize);
                     
@@ -908,7 +1055,17 @@
                         selectEl.value = '';
                         document.getElementById('delete-futures-info-btn').disabled = true;
                     }
+                    
+                    // 가격 필드에 값 채움 (Bond 여부에 따라 포맷팅 적용)
+                    document.getElementById('entry-price').value = formatPriceDisplay(journal.entryPrice, isBond);
+                    document.getElementById('target-price').value = formatPriceDisplay(journal.targetPrice, isBond);
+                    document.getElementById('stop-loss').value = formatPriceDisplay(journal.stopLoss, isBond);
+                    
+                    return; // 이미 아래에서 가격 필드를 채우지 않도록 하기 위해 early return
+
                 }
+                // **수정 끝**
+                
 
                 ['entry-price', 'stop-loss', 'target-price'].forEach(id => document.getElementById(id).value = formatNumber(journal[id.replace('-','')]));
                 
@@ -1132,6 +1289,9 @@
             document.getElementById('form-currency-usd-btn').classList.add('selected');
             
             document.querySelectorAll('.entry-tags-container .tag.selected, .psychology-tags-container .tag.selected').forEach(t => t.classList.remove('selected'));
+            
+            // **추가된 부분: 채권 선물 토글 리셋**
+            document.querySelector('[data-group="is-bond-futures"] .toggle-btn[data-value="false"]').click();
         }
         document.getElementById('clear-form-btn').addEventListener('click', resetForm);
         
@@ -1614,11 +1774,24 @@
             if(currency === 'USD') return `$${num.toLocaleString('en-US', options)}`;
             return `₩${num.toLocaleString('en-US', {maximumFractionDigits: (num % 1 === 0) ? 0 : 6})}`;
         };
+        
+        // **새로 추가된 가격 포맷팅 함수**
+        const formatPriceDisplay = (price, isBond) => {
+            if (price === null || price === undefined) return '';
+            return isBond ? decimalToBondPrice(price) : formatNumber(price);
+        }
+        // **가격 포맷팅 함수 끝**
+        
         const formatDualCurrency = (pnlInKRW, originalCurrency) => {
             const pnlInUSD = pnlInKRW / exchangeRate;
             return originalCurrency === 'KRW' ? `${formatPrice(pnlInKRW, 'KRW')} (${formatPrice(pnlInUSD, 'USD')})` : `${formatPrice(pnlInUSD, 'USD')} (${formatPrice(pnlInKRW, 'KRW')})`;
         }
         
+        function unformatPrice(value, isBond) {
+             if (isBond) return bondPriceToDecimal(value);
+             return parseFloat(unformatNumber(value));
+        }
+
         function openModal(modalId) {
             const modal = document.getElementById(modalId);
             modal.classList.remove('hidden');
@@ -1653,8 +1826,22 @@
         document.getElementById('confirm-ok-btn').addEventListener('click', () => { if (confirmCallback) confirmCallback(); closeModal('confirm-modal'); });
         document.getElementById('confirm-cancel-btn').addEventListener('click', () => closeModal('confirm-modal'));
 
+        const numberInputHandler = (e) => { e.target.value = formatNumber(e.target.value); };
+        const bondInputHandler = (e) => {
+            // 숫자, ', . 만 허용
+            let value = e.target.value.replace(/[^0-9']/g, '');
+            // '가 두 개 이상 오지 않도록
+            if ((value.match(/'/g) || []).length > 1) {
+                value = value.substring(0, value.lastIndexOf("'")) + value.substring(value.lastIndexOf("'") + 1);
+            }
+            e.target.value = value;
+        };
+
         document.querySelectorAll('.number-input').forEach(input => {
-            input.addEventListener('input', (e) => { e.target.value = formatNumber(e.target.value); });
+            input.addEventListener('input', numberInputHandler);
+        });
+        document.querySelectorAll('.price-input').forEach(input => {
+            input.addEventListener('input', numberInputHandler);
         });
         
         document.querySelectorAll('.exchange-rate-input').forEach(input => {
