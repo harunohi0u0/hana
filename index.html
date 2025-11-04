@@ -47,7 +47,7 @@
         .dark nav, .dark form, .dark .bg-white { background-color: #1E1E1E; }
         .dark .tab-btn { color: #E0E0E0; }
         .dark .tab-btn.active { background-color: #3b82f6; color: white; }
-        .dark input, .dark .toggle-group, .dark select { background-color: #2d2d2d; border-color: #4F4F4F; color: #E0E0E0; }
+        .dark input, .dark .toggle-group, .dark select, .dark textarea { background-color: #2d2d2d; border-color: #4F4F4F; color: #E0E0E0; }
         .dark input::placeholder { color: #828282; }
         .dark .toggle-btn { color: #BDBDBD; }
         .dark .toggle-btn.selected { background-color: #4F4F4F; color: #FFFFFF; font-weight: 700; box-shadow: none; }
@@ -156,7 +156,7 @@
                                         </div>
                                         <div class="sm:col-span-2">
                                             <p class="text-xs text-gray-500 mt-2">
-                                                * 채권 선물($\text{ZB/ZN/ZF}$ 등)은 $120'16$ 형식으로, 일반 선물은 $10,000$ 형식으로 가격을 입력하세요.
+                                                * 채권 선물($\text{ZB/ZN/ZF}$ 등)은 $120'16$ 또는 $120'16'5$ 형식으로, 일반 선물은 $10,000$ 형식으로 가격을 입력하세요.
                                             </p>
                                         </div>
                                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -180,7 +180,15 @@
                                                     </div>
                                                     <div id="tick-size-field">
                                                         <label for="tick-size" class="block text-sm font-medium text-gray-700 mb-1">틱단위</label>
-                                                        <input type="text" inputmode="decimal" id="tick-size" placeholder="예: 0.001" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]">
+                                                        <input type="text" inputmode="decimal" id="tick-size" placeholder="예: 0.03125" required class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]">
+                                                    </div>
+                                                    <div id="commission-buy-field">
+                                                        <label for="commission-buy" class="block text-sm font-medium text-gray-700 mb-1">매수 수수료 ($)</label>
+                                                        <input type="text" inputmode="decimal" id="commission-buy" placeholder="예: 2.50" class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]">
+                                                    </div>
+                                                    <div id="commission-sell-field">
+                                                        <label for="commission-sell" class="block text-sm font-medium text-gray-700 mb-1">매도 수수료 ($)</label>
+                                                        <input type="text" inputmode="decimal" id="commission-sell" placeholder="예: 2.50" class="number-input w-full p-2 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]">
                                                     </div>
                                                 </div>
                                             </div>
@@ -209,7 +217,7 @@
                     <div class="bg-white p-4 rounded-2xl shadow-lg mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
                         <div class="flex items-center space-x-2"><label for="list-exchange-rate" class="font-medium text-sm text-gray-600">환율:</label><input type="text" inputmode="numeric" id="list-exchange-rate" value="1,380" class="exchange-rate-input number-input w-28 p-2 border border-gray-300 bg-white rounded-lg text-center"></div>
                     </div>
-                    <div class="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-4 rounded-xl mb-6 flex items-center gap-3"><i data-lucide="info" class="w-5 h-5 flex-shrink-0"></i><p>일지 우측의 <i data-lucide="log-out" class="inline-block w-4 h-4 mx-1"></i>(청산), <i data-lucide="edit" class="inline-block w-4 h-4 mx-1"></i>(수정), <i data-lucide="trash-2" class="inline-block w-4 h-4 mx-1"></i>(삭제) 아이콘으로 관리하세요.</p></div>
+                    <div class="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-4 rounded-xl mb-6 flex items-center gap-3"><i data-lucide="info" class="w-5 h-5 flex-shrink-0"></i><p>일지 우측의 <i data-lucide="log-out" class="inline-block w-4 h-4 mx-1"></i>(청산), <i data-lucide="sticky-note" class="inline-block w-4 h-4 mx-1"></i>(메모), <i data-lucide="edit" class="inline-block w-4 h-4 mx-1"></i>(수정), <i data-lucide="trash-2" class="inline-block w-4 h-4 mx-1"></i>(삭제) 아이콘으로 관리하세요.</p></div>
                     <div id="journal-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
                 </div>
                 <div id="stats-view" class="hidden space-y-8">
@@ -239,8 +247,7 @@
         <div id="ledger-container" class="hidden">
             <nav class="flex justify-center bg-white rounded-xl shadow-md p-2 mb-8 space-x-1 sm:space-x-2">
                 <button data-ledger-tab="ledger-form-view" class="tab-btn text-gray-600 active w-full md:w-auto px-4 md:px-6 py-3 rounded-lg"><i data-lucide="plus-circle" class="inline-block w-5 h-5 mr-2"></i>내역 입력</button>
-                <button data-ledger-tab="ledger-list-view" class="tab-btn text-gray-600 w-full md:w-auto px-4 md:px-6 py-3 rounded-lg"><i data-lucide="list" class="inline-block w-5 h-5 mr-2"></i>상세 내역</button>
-                <button data-ledger-tab="ledger-stats-view" class="tab-btn text-gray-600 w-full md:w-auto px-4 md:px-6 py-3 rounded-lg"><i data-lucide="pie-chart" class="inline-block w-5 h-5 mr-2"></i>통계 분석</button>
+                <button data-ledger-tab="ledger-analysis-view" class="tab-btn text-gray-600 w-full md:w-auto px-4 md:px-6 py-3 rounded-lg"><i data-lucide="pie-chart" class="inline-block w-5 h-5 mr-2"></i>소비 분석</button>
             </nav>
             <main id="ledger-main-content">
                 <div id="ledger-form-view">
@@ -271,15 +278,28 @@
                         <div class="flex justify-end space-x-4"><button type="button" id="clear-ledger-form-btn" class="bg-gray-400 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-500 transition">새로 작성</button><button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-600 transition"><i data-lucide="save" class="inline-block w-5 h-5 mr-2"></i>내역 저장</button></div>
                     </form>
                 </div>
-                <div id="ledger-list-view" class="hidden space-y-6">
+
+                <div id="ledger-analysis-view" class="hidden space-y-8">
                     <div class="bg-white p-4 rounded-2xl shadow-lg flex flex-wrap items-center justify-center gap-4">
-                        <select id="ledger-list-filter-type" class="p-2 border border-gray-300 rounded-lg"><option value="month">월별</option><option value="quarter">분기별</option><option value="year">연도별</option></select>
+                        <select id="ledger-analysis-filter-type" class="p-2 border border-gray-300 rounded-lg"><option value="month">월별</option><option value="quarter">분기별</option><option value="year">연도별</option></select>
                         <div class="flex items-center gap-2">
-                            <button id="ledger-list-prev-btn" class="p-2 rounded-full hover:bg-gray-200"><i data-lucide="chevron-left"></i></button>
-                            <span id="ledger-list-period-display" class="font-bold text-lg w-40 text-center"></span>
-                            <button id="ledger-list-next-btn" class="p-2 rounded-full hover:bg-gray-200"><i data-lucide="chevron-right"></i></button>
+                            <button id="ledger-analysis-prev-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><i data-lucide="chevron-left"></i></button>
+                            <span id="ledger-analysis-period-display" class="font-bold text-lg w-40 text-center"></span>
+                            <button id="ledger-analysis-next-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"><i data-lucide="chevron-right"></i></button>
                         </div>
                     </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2 text-green-500">기간 내 수입</h3><p id="ledger-total-income" class="text-3xl font-bold">₩0</p></div>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2 text-red-500">기간 내 지출</h3><p id="ledger-total-expense" class="text-3xl font-bold">₩0</p></div>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2">합계</h3><p id="ledger-balance" class="text-3xl font-bold">₩0</p></div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 id="ledger-expense-chart-title" class="text-xl font-bold mb-4">카테고리별 지출</h3><div class="chart-container"><canvas id="ledger-expense-chart"></canvas></div></div>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 id="ledger-income-chart-title" class="text-xl font-bold mb-4">카테고리별 수입</h3><div class="chart-container"><canvas id="ledger-income-chart"></canvas></div></div>
+                    </div>
+
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg space-y-4">
                             <div>
@@ -296,26 +316,9 @@
                             <div id="ledger-entry-details" class="space-y-2"></div>
                         </div>
                     </div>
-                </div>
-                <div id="ledger-stats-view" class="hidden space-y-8">
-                    <div class="bg-white p-4 rounded-2xl shadow-lg flex flex-wrap items-center justify-center gap-4">
-                        <select id="ledger-stats-filter-type" class="p-2 border border-gray-300 rounded-lg"><option value="month">월별</option><option value="quarter">분기별</option><option value="year">연도별</option></select>
-                        <div class="flex items-center gap-2">
-                            <button id="ledger-stats-prev-btn" class="p-2 rounded-full hover:bg-gray-200"><i data-lucide="chevron-left"></i></button>
-                            <span id="ledger-stats-period-display" class="font-bold text-lg w-40 text-center"></span>
-                            <button id="ledger-stats-next-btn" class="p-2 rounded-full hover:bg-gray-200"><i data-lucide="chevron-right"></i></button>
-                        </div>
-                    </div>
-                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2 text-green-500">기간 내 수입</h3><p id="ledger-total-income" class="text-3xl font-bold">₩0</p></div>
-                        <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2 text-red-500">기간 내 지출</h3><p id="ledger-total-expense" class="text-3xl font-bold">₩0</p></div>
-                        <div class="bg-white p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2">합계</h3><p id="ledger-balance" class="text-3xl font-bold">₩0</p></div>
-                    </div>
+                    
                     <div class="grid grid-cols-1"><div class="bg-white p-6 rounded-2xl shadow-lg"><h3 id="ledger-trend-chart-title" class="text-xl font-bold mb-4">수입/지출 추이</h3><div class="chart-container"><canvas id="ledger-monthly-pnl-chart"></canvas></div></div></div>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 id="ledger-expense-chart-title" class="text-xl font-bold mb-4">카테고리별 지출</h3><div class="chart-container"><canvas id="ledger-expense-chart"></canvas></div></div>
-                        <div class="bg-white p-6 rounded-2xl shadow-lg"><h3 id="ledger-income-chart-title" class="text-xl font-bold mb-4">카테고리별 수입</h3><div class="chart-container"><canvas id="ledger-income-chart"></canvas></div></div>
-                    </div>
+
                 </div>
             </main>
         </div>
@@ -323,6 +326,26 @@
     
     <div id="exit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md modal-content transform scale-95"><h2 class="text-2xl font-bold mb-6">청산 기록</h2><form id="exit-form"><input type="hidden" id="exit-journal-id"><div class="space-y-4"><div><label for="exit-date">청산 날짜</label><input type="date" id="exit-date" required class="mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg"></div><div><label for="exit-price">청산가</label><input type="text" inputmode="decimal" id="exit-price" required class="number-input mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg"></div><div><label for="exit-quantity" id="exit-quantity-label">청산 수량</label><input type="text" inputmode="numeric" id="exit-quantity" required class="number-input mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg"><p class="text-xs text-gray-500 mt-1">남은 수량: <span id="remaining-quantity"></span></p></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">청산 추가</button></div></form></div></div>
     <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm modal-content transform scale-95"><h2 id="confirm-title" class="text-xl font-bold mb-4">확인</h2><p id="confirm-message" class="text-gray-600 mb-6"></p><div class="flex justify-end space-x-3"><button type="button" id="confirm-cancel-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">취소</button><button type="button" id="confirm-ok-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">확인</button></div></div></div>
+    
+    <div id="memo-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0">
+        <div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-lg modal-content transform scale-95">
+            <h2 class="text-2xl font-bold mb-6">매매 복기 메모</h2>
+            <form id="memo-form">
+                <input type="hidden" id="memo-journal-id">
+                <div class="space-y-4">
+                    <div>
+                        <label for="journal-memo-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">메모 내용</label>
+                        <textarea id="journal-memo-content" rows="10" class="w-full p-3 border border-gray-300 dark:border-[#4F4F4F] rounded-lg bg-white dark:bg-[#2d2d2d] focus:ring-2 focus:ring-blue-500" placeholder="이 매매에서 느낀 점, 감정 상태, 잘한 점, 개선할 점 등을 자유롭게 기록하세요."></textarea>
+                    </div>
+                </div>
+                <div class="mt-8 flex justify-end space-x-3">
+                    <button type="button" id="close-memo-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">취소</button>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">메모 저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"><p id="toast-message"></p></div>
     
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
@@ -356,12 +379,11 @@
         let unsubscribeFuturesInfo = null;
         let statsCurrency = 'KRW', exchangeRate = 1380;
         
-        // Household Ledger State
+        // Household Ledger State (수정됨)
         let unsubscribeLedger = null, unsubscribeLedgerCategories = null;
         let localLedgerEntries = [];
         let localLedgerCategories = { expense: [], income: [] };
-        let ledgerListDate = new Date();
-        let ledgerStatsDate = new Date();
+        let ledgerAnalysisDate = new Date(); // ledgerListDate와 ledgerStatsDate 통합
 
         // DOM Elements
         const loginView = document.getElementById('login-view');
@@ -420,8 +442,7 @@
                 document.getElementById('ledger-container').classList.toggle('hidden', targetId !== 'ledger-container');
                 
                 if (targetId === 'ledger-container' && currentUser) {
-                     renderLedgerListView();
-                     renderLedgerStatsView();
+                     renderLedgerAnalysisView(); // 통합 함수 호출
                 } else if (targetId === 'journal-container' && currentUser) {
                     renderJournalStats(localJournals);
                 }
@@ -452,9 +473,9 @@
             if (!docSnap.exists) {
                 // 예시 데이터
                 await docRef.set({
-                    'ES': { tickValue: 5.0, tickSize: 0.25 },
-                    'NG': { tickValue: 10.0, tickSize: 0.001 },
-                    'ZB': { tickValue: 31.25, tickSize: 0.03125 } // T-Bond 예시 (32nds)
+                    'ES': { tickValue: 5.0, tickSize: 0.25, commissionBuy: 2.5, commissionSell: 2.5 },
+                    'NG': { tickValue: 10.0, tickSize: 0.001, commissionBuy: 2.5, commissionSell: 2.5 },
+                    'ZB': { tickValue: 31.25, tickSize: 0.03125, commissionBuy: 2.5, commissionSell: 2.5 }
                 });
             }
         }
@@ -504,25 +525,26 @@
                 document.getElementById('spot-fields').classList.toggle('hidden', !isSpot);
                 document.getElementById('futures-fields').classList.toggle('hidden', isSpot);
                 
-                // Set required attribute based on type
                 document.getElementById('quantity').required = isSpot;
                 document.getElementById('contracts').required = !isSpot;
                 document.getElementById('tick-value').required = !isSpot;
                 document.getElementById('tick-size').required = !isSpot;
                 
-                // 폼 전환 시 선물 정보 필드 초기화 (선물 탭으로 돌아올 때만 제외)
                 if (isSpot) {
                      document.getElementById('futures-info-select').value = '';
                      document.getElementById('tick-value').value = '';
                      document.getElementById('tick-size').value = '';
+                     document.getElementById('commission-buy').value = '';
+                     document.getElementById('commission-sell').value = '';
                      document.getElementById('delete-futures-info-btn').disabled = true;
                 } else {
-                     // 선물 탭으로 전환 시 현재 티커 정보로 select/필드 채우기 시도
                      const currentTicker = document.getElementById('ticker').value.trim().toUpperCase();
                      if (localFuturesInfo[currentTicker]) {
                         document.getElementById('futures-info-select').value = currentTicker;
                         document.getElementById('tick-value').value = formatNumber(localFuturesInfo[currentTicker].tickValue);
                         document.getElementById('tick-size').value = formatNumber(localFuturesInfo[currentTicker].tickSize);
+                        document.getElementById('commission-buy').value = formatNumber(localFuturesInfo[currentTicker].commissionBuy || 0);
+                        document.getElementById('commission-sell').value = formatNumber(localFuturesInfo[currentTicker].commissionSell || 0);
                         document.getElementById('delete-futures-info-btn').disabled = false;
                      } else {
                         document.getElementById('futures-info-select').value = '';
@@ -532,7 +554,7 @@
             });
         });
         
-        // 선물 정보 Select 박스 렌더링 및 리스너
+        // 선물 정보 Select 박스 렌더링 및 리스너 (수정됨)
         function renderFuturesInfoSelect() {
             const select = document.getElementById('futures-info-select');
             const tickerInput = document.getElementById('ticker');
@@ -542,13 +564,13 @@
             
             select.innerHTML = '<option value="">- 종목 선택 (틱가치/단위 불러오기) -</option>';
             
-            // 현재 폼에 입력된 종목이 있다면 해당 종목의 정보를 선택하도록 설정
             const currentTicker = tickerInput.value.trim().toUpperCase();
 
             Object.entries(localFuturesInfo).sort((a,b) => a[0].localeCompare(b[0])).forEach(([ticker, info]) => {
                 const option = document.createElement('option');
                 option.value = ticker;
-                option.textContent = `${ticker} (가치: ${formatNumber(info.tickValue)}, 단위: ${formatNumber(info.tickSize)})`;
+                // 수수료 표시 추가
+                option.textContent = `${ticker} (가치: ${formatNumber(info.tickValue)}, 단위: ${formatNumber(info.tickSize)}, 수수료: ${formatNumber(info.commissionBuy || 0)}/${formatNumber(info.commissionSell || 0)})`;
                 select.appendChild(option);
                 
                 if (ticker === currentTicker && !document.getElementById('futures-fields').classList.contains('hidden')) {
@@ -568,11 +590,16 @@
                     tickerInput.value = selectedTicker;
                     document.getElementById('tick-value').value = formatNumber(info.tickValue);
                     document.getElementById('tick-size').value = formatNumber(info.tickSize);
+                    // 수수료 필드 채우기
+                    document.getElementById('commission-buy').value = formatNumber(info.commissionBuy || 0);
+                    document.getElementById('commission-sell').value = formatNumber(info.commissionSell || 0);
                     showToast(`종목 '${selectedTicker}' 정보가 채워졌습니다.`);
                 } else {
-                    // '종목 선택' 옵션을 선택한 경우 초기화
                     document.getElementById('tick-value').value = '';
                     document.getElementById('tick-size').value = '';
+                    // 수수료 필드 비우기
+                    document.getElementById('commission-buy').value = '';
+                    document.getElementById('commission-sell').value = '';
                 }
             };
             
@@ -585,17 +612,18 @@
 
                 if (isFutures && localFuturesInfo[newTicker]) {
                     select.value = newTicker;
-                    // 이미 정보가 있는 경우 틱가치/단위 필드에 값 채우기 (기존 값 보호)
                     document.getElementById('tick-value').value = formatNumber(localFuturesInfo[newTicker].tickValue);
                     document.getElementById('tick-size').value = formatNumber(localFuturesInfo[newTicker].tickSize);
+                    // 수수료 필드 채우기
+                    document.getElementById('commission-buy').value = formatNumber(localFuturesInfo[newTicker].commissionBuy || 0);
+                    document.getElementById('commission-sell').value = formatNumber(localFuturesInfo[newTicker].commissionSell || 0);
                 } else if (isFutures) {
-                     // 새로운 종목이거나 입력이 빈칸일 때
                      select.value = '';
                 }
             }
         }
         
-        // 선물 정보 저장 버튼 리스너
+        // 선물 정보 저장 버튼 리스너 (수정됨)
         document.getElementById('save-futures-info-btn').addEventListener('click', async () => {
             const ticker = document.getElementById('ticker').value.trim().toUpperCase();
             const tickValueInput = document.getElementById('tick-value');
@@ -603,6 +631,9 @@
             
             const tickValue = parseFloat(unformatNumber(tickValueInput.value));
             const tickSize = parseFloat(unformatNumber(tickSizeInput.value));
+            // 수수료 값 읽기
+            const commissionBuy = parseFloat(unformatNumber(document.getElementById('commission-buy').value)) || 0;
+            const commissionSell = parseFloat(unformatNumber(document.getElementById('commission-sell').value)) || 0;
 
             if (!ticker || isNaN(tickValue) || tickValue <= 0 || isNaN(tickSize) || tickSize <= 0) {
                 showToast("종목 이름, 틱가치, 틱단위를 올바르게 입력해주세요.", "error");
@@ -618,15 +649,18 @@
                 try {
                     const updatedInfo = {
                         ...localFuturesInfo,
-                        [ticker]: { tickValue, tickSize }
+                        // 수수료 정보 추가
+                        [ticker]: { tickValue, tickSize, commissionBuy, commissionSell }
                     };
                     await db.collection("users").doc(currentUser.uid).collection("journalData").doc("futuresInfo").set(updatedInfo);
                     
                     showToast(`선물 종목 정보가 ${action}되었습니다.`);
-                    // 저장 후 폼 필드 업데이트
                     tickValueInput.value = formatNumber(tickValue);
                     tickSizeInput.value = formatNumber(tickSize);
-                    document.getElementById('futures-info-select').value = ticker; // Select 업데이트
+                    // 수수료 필드 업데이트
+                    document.getElementById('commission-buy').value = formatNumber(commissionBuy);
+                    document.getElementById('commission-sell').value = formatNumber(commissionSell);
+                    document.getElementById('futures-info-select').value = ticker; 
                     document.getElementById('delete-futures-info-btn').disabled = false;
                 } catch(e) {
                     showToast(`정보 ${action} 실패: ${e.message}`, "error");
@@ -634,9 +668,7 @@
             }, action);
         });
         
-        // 선물 종목 정보 삭제 리스너
-        document.getElementById('delete-futures-info-btn').addEventListener('click', handleDeleteFuturesInfo);
-
+        // 선물 종목 정보 삭제 리스너 (수정됨)
         async function handleDeleteFuturesInfo() {
             const ticker = document.getElementById('futures-info-select').value;
 
@@ -645,7 +677,6 @@
                 return;
             }
 
-            // 1. 매매일지에서 사용 중인지 확인
             const isUsedInJournal = localJournals.some(journal => 
                 journal.assetType === 'futures' && 
                 journal.ticker.toUpperCase() === ticker.toUpperCase()
@@ -656,13 +687,11 @@
                 return;
             }
 
-            // 2. 삭제 확인 모달 띄우기
             showConfirmModal(`선물 종목 '${ticker}'의 저장된 틱가치/틱단위 정보를 삭제하시겠습니까?`, async () => {
                 try {
                     const updatedInfo = { ...localFuturesInfo };
                     delete updatedInfo[ticker];
                     
-                    // Firestore 업데이트
                     await db.collection("users").doc(currentUser.uid).collection("journalData").doc("futuresInfo").set(updatedInfo);
                     
                     showToast(`선물 종목 '${ticker}' 정보가 삭제되었습니다.`);
@@ -670,54 +699,99 @@
                     document.getElementById('delete-futures-info-btn').disabled = true;
                     document.getElementById('tick-value').value = '';
                     document.getElementById('tick-size').value = '';
+                    // 수수료 필드 비우기
+                    document.getElementById('commission-buy').value = '';
+                    document.getElementById('commission-sell').value = '';
                 } catch(e) {
                     showToast(`삭제 실패: ${e.message}`, "error");
                 }
             }, '삭제');
         }
 
-
+        // PnL 계산 (수정됨 - 수수료 반영)
         function calculatePnl(journal, exit) {
             const priceDiff = journal.position === 'long' ? (exit.price - journal.entryPrice) : (journal.entryPrice - exit.price);
             if (journal.assetType === 'futures') {
                 if (!journal.tickSize || !journal.tickValue) return 0;
-                return (priceDiff / journal.tickSize) * journal.tickValue * exit.quantity; // exit.quantity is contracts here
+                
+                // Gross PnL
+                const grossPnl = (priceDiff / journal.tickSize) * journal.tickValue * exit.quantity;
+                
+                // Apply commissions (per contract * exit quantity)
+                const commissionBuy = (journal.commissionBuy || 0) * exit.quantity;
+                const commissionSell = (journal.commissionSell || 0) * exit.quantity;
+                
+                // Net PnL = Gross PnL - (Buy Commission + Sell Commission)
+                return grossPnl - commissionBuy - commissionSell;
+
             } else { // spot
+                // 참고: 현물 수수료는 요청사항에 없어 미반영
                 return priceDiff * exit.quantity;
             }
         }
         
-        // Bond Price 변환 함수: 채권 선물 가격 (예: 120'16)을 소수점 가격 (예: 120.5)으로 변환
+        // Bond Price 변환 함수 (수정됨): 120'16'5 (8ths of 32nd) 형식 지원
         const bondPriceToDecimal = (bondPrice) => {
             const price = bondPrice.toString().replace(/,/g, '');
             if (!price) return null;
             
             const parts = price.split("'");
-            if (parts.length === 2) {
-                const whole = parseFloat(parts[0]);
-                const fraction = parseFloat(parts[1]);
-                if (isNaN(whole) || isNaN(fraction)) return null;
+            
+            if (parts.length === 1) { // No ' (e.g., 10000)
+                return parseFloat(parts[0]);
+            } 
+            
+            const whole = parseFloat(parts[0]);
+            if (isNaN(whole)) return null;
 
-                // 32nds 기준으로 변환: 정수 + 분수/32.0
-                return whole + fraction / 32.0;
+            if (parts.length === 2) { // 32nds (e.g., 120'16)
+                const fraction_32nds = parseFloat(parts[1]);
+                if (isNaN(fraction_32nds)) return null;
+                // 32nds 기준으로 변환
+                return whole + (fraction_32nds / 32.0);
+            } 
+            
+            if (parts.length === 3) { // 32nds + 8ths of 32nd (e.g., 120'16'5)
+                const fraction_32nds = parseFloat(parts[1]);
+                const fraction_8ths = parseFloat(parts[2]);
+                
+                if (isNaN(fraction_32nds) || isNaN(fraction_8ths)) return null;
+                
+                // 120'16'5 = 120 + 16/32 + 5/256
+                return whole + (fraction_32nds / 32.0) + (fraction_8ths / 256.0);
             }
-            // '가 없으면 일반 십진수로 간주
-            return parseFloat(price);
+            
+            // '가 3개 이상이면 파싱 실패
+            if (parts.length > 3) return null;
+
+            return parseFloat(price); // Fallback
         }
 
-        // 소수점 가격 (예: 120.5)을 채권 가격 (예: 120'16)으로 변환
+        // 소수점 가격을 채권 가격 (X'Y'Z)으로 변환 (수정됨)
         const decimalToBondPrice = (decimalPrice) => {
             if (isNaN(decimalPrice) || decimalPrice === null) return '';
             const whole = Math.floor(decimalPrice);
-            // 분수 부분을 32nds로 변환
-            const fraction = Math.round((decimalPrice - whole) * 32);
-            // 만약 분수 부분이 32를 넘어가면 (계산 오류 방지)
-            if (fraction >= 32) {
-                 return `${whole + 1}'00`;
+            const remainder = decimalPrice - whole;
+
+            // 1/256 단위로 계산
+            const total_256ths = Math.round(remainder * 256);
+            
+            if (total_256ths === 0) {
+                return `${whole}'00`; // 120.0 -> 120'00
             }
-            return `${whole}'${String(fraction).padStart(2, '0')}`;
+            
+            // 1/32 = 8/256
+            const fraction_32nds = Math.floor(total_256ths / 8);
+            const fraction_8ths = total_256ths % 8;
+
+            if (fraction_8ths === 0) {
+                // 32nds로 딱 떨어짐 (예: 120.5 -> 120'16)
+                return `${whole}'${String(fraction_32nds).padStart(2, '0')}`;
+            } else {
+                // 8ths of 32nd (예: 120.51953125 -> 120'16'5)
+                return `${whole}'${String(fraction_32nds).padStart(2, '0')}'${fraction_8ths}`;
+            }
         }
-        // **Bond Price 변환 함수 끝**
 
         function renderJournals(journals) {
             journalList.innerHTML = '';
@@ -745,15 +819,14 @@
                 
                 let holdingPeriodHtml = '';
                 if (isClosed && journal.exits.length > 0) {
-                     const lastExitDate = new Date(Math.max(...journal.exits.map(e => (e.date.toDate ? e.date.toDate() : new Date(e.date)).getTime())));
+                    const lastExitDate = new Date(Math.max(...journal.exits.map(e => (e.date.toDate ? e.date.toDate() : new Date(e.date)).getTime())));
                     const entryDate = journal.date;
                     const diffTime = Math.abs(lastExitDate - entryDate);
                     const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
                     holdingPeriodHtml = `<p><strong>보유 기간:</strong> ${diffDays}일</p>`;
                 }
                 
-                // **수정된 부분: 가격 출력 시 채권 선물 단위 적용 (틱단위 0.03125 기준)**
-                const isBond = journal.assetType === 'futures' && (journal.tickSize === 0.03125);
+                const isBond = journal.assetType === 'futures' && (journal.tickSize === 0.03125 || journal.tickSize === 0.00390625);
                 const formatPriceDisplayForJournal = (price) => isBond ? decimalToBondPrice(price) : formatPrice(price, journal.currency);
                 
                 const exitsHtml = journal.exits && journal.exits.length > 0 ? `
@@ -779,15 +852,17 @@
                             <span class="text-sm text-gray-500 ml-2">${journal.strategy}</span>
                         </div>
                         <div class="flex space-x-2">
-                             ${!isClosed ? `<button class="p-2 hover:bg-gray-100 rounded-full exit-btn" data-id="${journal.id}"><i data-lucide="log-out" class="w-5 h-5 text-blue-500"></i></button>` : ''}
-                            <button class="p-2 hover:bg-gray-100 rounded-full edit-btn" data-id="${journal.id}"><i data-lucide="edit" class="w-5 h-5 text-gray-500"></i></button>
-                            <button class="p-2 hover:bg-gray-100 rounded-full delete-btn" data-id="${journal.id}"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></button>
+                            ${!isClosed ? `<button class="p-2 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full exit-btn" data-id="${journal.id}" title="청산"><i data-lucide="log-out" class="w-5 h-5 text-blue-500"></i></button>` : ''}
+                            <button class="p-2 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full memo-btn" data-id="${journal.id}" title="메모"><i data-lucide="sticky-note" class="w-5 h-5 text-purple-500"></i></button>
+                            <button class="p-2 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full edit-btn" data-id="${journal.id}" title="수정"><i data-lucide="edit" class="w-5 h-5 text-gray-500"></i></button>
+                            <button class="p-2 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full delete-btn" data-id="${journal.id}" title="삭제"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></button>
                         </div>
                     </div>
                     <div class="space-y-2 text-sm text-gray-700 mb-3">
                         <p><strong>진입:</strong> ${formatPriceDisplayForJournal(journal.entryPrice)} / <strong>${amountLabel}:</strong> ${formatNumber(totalAmount)}</p>
                         <p><strong>목표:</strong> ${formatPriceDisplayForJournal(journal.targetPrice)} / <strong>손절:</strong> ${formatPriceDisplayForJournal(journal.stopLoss)}</p>
-                        ${ !isSpot ? `<p><strong>틱가치/단위:</strong> ${formatPrice(journal.tickValue, journal.currency)} / ${formatNumber(journal.tickSize)}</p>` : '' }
+                        ${ !isSpot ? `<p><strong>틱가치/단위:</strong> ${formatPrice(journal.tickValue, journal.currency)} / ${formatNumber(journal.tickSize)}</p>
+                                     <p><strong>수수료(매수/매도):</strong> ${formatPrice(journal.commissionBuy || 0, journal.currency)} / ${formatPrice(journal.commissionSell || 0, journal.currency)}</p>` : '' }
                         ${holdingPeriodHtml}
                         ${journal.exits && journal.exits.length > 0 ? `<p class="font-bold"><strong>총 실현 손익:</strong> <span class="${pnlClass}">${formatDualCurrency(totalPnlInKRW, journal.currency)}</span></p>` : ''}
                     </div>
@@ -814,6 +889,7 @@
             document.querySelectorAll('#journal-list .delete-btn').forEach(btn => btn.addEventListener('click', handleDeleteJournal));
             document.querySelectorAll('#journal-list .edit-btn').forEach(btn => btn.addEventListener('click', handleEditJournal));
             document.querySelectorAll('#journal-list .exit-btn').forEach(btn => btn.addEventListener('click', handleOpenExitModal));
+            document.querySelectorAll('#journal-list .memo-btn').forEach(btn => btn.addEventListener('click', handleOpenMemoModal)); // 신규 리스너
         }
         
         function renderJournalTags(tags, containerId, type) {
@@ -874,11 +950,10 @@
             const journalId = document.getElementById('journal-id').value;
             const assetType = document.querySelector('[data-group="asset-type"] .toggle-btn.selected').dataset.value;
             
-            // **수정 시작: 가격 입력 필드 통합 처리**
             const getPriceValue = (id) => {
                 const value = document.getElementById(id).value;
-                if (value.includes("'")) return bondPriceToDecimal(value); // 채권 형식 변환
-                return parseFloat(unformatNumber(value)); // 일반 숫자 형식
+                if (value.includes("'")) return bondPriceToDecimal(value);
+                return parseFloat(unformatNumber(value));
             };
             
             const entryPrice = getPriceValue('entry-price');
@@ -889,32 +964,30 @@
                 showToast("진입가, 목표가, 손절가를 올바른 형식(예: 10,000 또는 120'16)으로 입력해주세요.", "error");
                 return;
             }
-            // **수정 끝**
             
             const journalData = {
                 assetType: assetType,
-                ticker: document.getElementById('ticker').value.toUpperCase(), // 종목 이름 대문자 처리
+                ticker: document.getElementById('ticker').value.toUpperCase(),
                 date: Timestamp.fromDate(new Date(document.getElementById('date').value)),
                 position: document.querySelector('[data-group="position"] .toggle-btn.selected').dataset.value,
                 strategy: document.querySelector('[data-group="strategy"] .toggle-btn.selected').dataset.value, 
                 currency: document.querySelector('[data-group="form-currency"] .toggle-btn.selected').id.includes('usd') ? 'USD' : 'KRW',
-                // **수정: 변환된 가격 사용**
                 entryPrice: entryPrice,
                 stopLoss: stopLoss, 
                 targetPrice: targetPrice,
-                // **수정 끝**
                 entryTags: Array.from(document.querySelectorAll('.entry-tags-container .tag.selected')).map(b => b.dataset.tag),
                 psychologyTags: Array.from(document.querySelectorAll('.psychology-tags-container .tag.selected')).map(b => b.dataset.tag),
             };
 
             if (assetType === 'spot') {
                 journalData.quantity = parseFloat(unformatNumber(document.getElementById('quantity').value));
-            } else { // futures
+            } else { // futures (수정됨)
                 journalData.contracts = parseFloat(unformatNumber(document.getElementById('contracts').value));
-                // **수정 시작: 틱가치/단위 필드 값 사용**
                 journalData.tickValue = parseFloat(unformatNumber(document.getElementById('tick-value').value));
                 journalData.tickSize = parseFloat(unformatNumber(document.getElementById('tick-size').value));
-                // **수정 끝**
+                // 수수료 정보 저장
+                journalData.commissionBuy = parseFloat(unformatNumber(document.getElementById('commission-buy').value)) || 0;
+                journalData.commissionSell = parseFloat(unformatNumber(document.getElementById('commission-sell').value)) || 0;
             }
             
             try {
@@ -923,6 +996,7 @@
                     showToast("일지가 수정되었습니다.");
                 } else {
                     journalData.exits = [];
+                    journalData.memo = ''; // 메모 필드 초기화
                     await db.collection("users").doc(currentUser.uid).collection("journals").add(journalData);
                     showToast("일지가 저장되었습니다.");
                 }
@@ -946,22 +1020,26 @@
                 document.getElementById('date').value = journal.date.toISOString().split('T')[0];
                 document.getElementById('ticker').value = journal.ticker;
                 
-                // Select asset type and show correct fields
                 document.querySelector(`[data-group="asset-type"] .toggle-btn[data-value="${journal.assetType}"]`).click();
 
                 ['position', 'strategy'].forEach(group => document.querySelectorAll(`[data-group="${group}"] .toggle-btn`).forEach(b => b.classList.toggle('selected', b.dataset.value === journal[group])));
                 document.querySelectorAll('[data-group="form-currency"] .toggle-btn').forEach(b => b.classList.toggle('selected', (journal.currency === 'USD' && b.id.includes('usd')) || (journal.currency !== 'USD' && b.id.includes('krw'))));
                 
+                const isBond = journal.assetType === 'futures' && (journal.tickSize === 0.03125 || journal.tickSize === 0.00390625);
+                document.getElementById('entry-price').value = formatPriceDisplay(journal.entryPrice, isBond);
+                document.getElementById('target-price').value = formatPriceDisplay(journal.targetPrice, isBond);
+                document.getElementById('stop-loss').value = formatPriceDisplay(journal.stopLoss, isBond);
+
                 if (journal.assetType === 'spot') {
                     document.getElementById('quantity').value = formatNumber(journal.quantity);
-                } else {
+                } else { // futures (수정됨)
                     document.getElementById('contracts').value = formatNumber(journal.contracts);
-                    
-                    // 틱가치/단위 필드에 값 채움
                     document.getElementById('tick-value').value = formatNumber(journal.tickValue);
                     document.getElementById('tick-size').value = formatNumber(journal.tickSize);
+                    // 수수료 정보 불러오기
+                    document.getElementById('commission-buy').value = formatNumber(journal.commissionBuy || 0);
+                    document.getElementById('commission-sell').value = formatNumber(journal.commissionSell || 0);
                     
-                    // Select 박스에서도 해당 종목을 선택하도록 업데이트
                     const selectEl = document.getElementById('futures-info-select');
                     const ticker = journal.ticker.toUpperCase();
                     if(localFuturesInfo[ticker]) {
@@ -971,14 +1049,6 @@
                         selectEl.value = '';
                         document.getElementById('delete-futures-info-btn').disabled = true;
                     }
-                    
-                    // **수정 시작: 가격 필드에 값 채움 (틱단위 0.03125 기준 포맷팅 적용)**
-                    const isBond = journal.tickSize === 0.03125; // 저장된 틱단위로 채권인지 판단
-                    document.getElementById('entry-price').value = formatPriceDisplay(journal.entryPrice, isBond);
-                    document.getElementById('target-price').value = formatPriceDisplay(journal.targetPrice, isBond);
-                    document.getElementById('stop-loss').value = formatPriceDisplay(journal.stopLoss, isBond);
-                    // **수정 끝**
-
                 }
 
                 ['entryTags', 'psychologyTags'].forEach(type => {
@@ -1008,6 +1078,40 @@
                 openModal('exit-modal');
             }
         }
+        
+        // 신규: 메모 모달 열기
+        async function handleOpenMemoModal(e) {
+            const journalId = e.currentTarget.dataset.id;
+            const journal = await getJournalById(journalId);
+            if (journal) {
+                document.getElementById('memo-journal-id').value = journal.id;
+                document.getElementById('journal-memo-content').value = journal.memo || ''; // 저장된 메모 불러오기
+                openModal('memo-modal');
+            }
+        }
+
+        // 신규: 메모 저장 폼 리스너
+        document.getElementById('memo-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const journalId = document.getElementById('memo-journal-id').value;
+            const memoContent = document.getElementById('journal-memo-content').value;
+
+            if (!journalId) return;
+
+            try {
+                await db.collection("users").doc(currentUser.uid).collection("journals").doc(journalId).update({
+                    memo: memoContent
+                });
+                showToast("메모가 저장되었습니다.");
+                closeModal('memo-modal');
+            } catch (error) {
+                showToast("메모 저장 실패: " + error.message, "error");
+            }
+        });
+
+        // 신규: 메모 모달 닫기 리스너
+        document.getElementById('close-memo-modal-btn').addEventListener('click', () => closeModal('memo-modal'));
+        document.getElementById('memo-modal').addEventListener('click', e => { if (e.target.id === 'memo-modal') closeModal('memo-modal'); });
 
         document.getElementById('exit-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1188,13 +1292,15 @@
             document.querySelectorAll('#journal-form .number-input').forEach(el => el.value = '');
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
             
-            // 선물 정보 필드 초기화
+            // 선물 정보 필드 초기화 (수정됨)
             document.getElementById('futures-info-select').value = '';
             document.getElementById('tick-value').value = '';
             document.getElementById('tick-size').value = '';
-            document.getElementById('delete-futures-info-btn').disabled = true; // 삭제 버튼 비활성화
+            // 수수료 필드 비우기
+            document.getElementById('commission-buy').value = '';
+            document.getElementById('commission-sell').value = '';
+            document.getElementById('delete-futures-info-btn').disabled = true; 
             
-            // Set defaults
             document.querySelector('[data-group="asset-type"] .toggle-btn[data-value="spot"]').click();
             document.querySelector('[data-group="position"] .toggle-btn[data-value="long"]').classList.add('selected');
             document.querySelector('[data-group="strategy"] .toggle-btn[data-value="단타"]').classList.add('selected');
@@ -1202,7 +1308,6 @@
             
             document.querySelectorAll('.entry-tags-container .tag.selected, .psychology-tags-container .tag.selected').forEach(t => t.classList.remove('selected'));
             
-            // **가격 필드에 기본 핸들러 재연결**
             document.querySelectorAll('.price-input').forEach(input => {
                 input.removeEventListener('input', priceInputHandler);
                 input.addEventListener('input', priceInputHandler);
@@ -1230,8 +1335,7 @@
             unsubscribeLedger = db.collection("users").doc(userId).collection("ledgerEntries").orderBy("date", "desc")
                 .onSnapshot((snapshot) => {
                     localLedgerEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), date: doc.data().date.toDate() }));
-                    renderLedgerListView();
-                    renderLedgerStatsView();
+                    renderLedgerAnalysisView(); // 통합 함수 호출
                 });
 
             if (unsubscribeLedgerCategories) unsubscribeLedgerCategories();
@@ -1253,9 +1357,10 @@
         
         function switchLedgerView(tabId) {
             document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.ledgerTab === tabId));
-            ['ledger-form-view', 'ledger-list-view', 'ledger-stats-view'].forEach(viewId => document.getElementById(viewId).classList.toggle('hidden', viewId !== tabId));
-            if(tabId === 'ledger-list-view') renderLedgerListView();
-            if(tabId === 'ledger-stats-view') renderLedgerStatsView();
+            ['ledger-form-view', 'ledger-analysis-view'].forEach(viewId => document.getElementById(viewId).classList.toggle('hidden', viewId !== tabId));
+            
+            if(tabId === 'ledger-analysis-view') renderLedgerAnalysisView();
+            
             lucide.createIcons();
         }
         document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.addEventListener('click', () => switchLedgerView(btn.dataset.ledgerTab)));
@@ -1351,7 +1456,7 @@
                     showToast("내역이 저장되었습니다.");
                 }
                 resetLedgerForm();
-                switchLedgerView('ledger-list-view');
+                switchLedgerView('ledger-analysis-view');
             } catch (error) { showToast("저장 실패.", "error"); }
         });
         
@@ -1364,73 +1469,133 @@
         }
         document.getElementById('clear-ledger-form-btn').addEventListener('click', resetLedgerForm);
 
-        function renderLedgerListView() {
-            const filterType = document.getElementById('ledger-list-filter-type').value;
-            const displayEl = document.getElementById('ledger-list-period-display');
+        // [교체] renderLedgerListView 와 renderLedgerStatsView 를 통합한 새 함수
+        function renderLedgerAnalysisView() {
+            // 1. 필터 및 기간 설정
+            const filterType = document.getElementById('ledger-analysis-filter-type').value;
+            const displayEl = document.getElementById('ledger-analysis-period-display');
             
-            const { start, end, displayString } = getPeriod(ledgerListDate, filterType);
+            const { start, end, displayString } = getPeriod(ledgerAnalysisDate, filterType);
             displayEl.textContent = displayString;
             
-            const filteredEntries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
+            const entries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
             
-            // Render Expenses Summary
-            const expensesByCategory = filteredEntries
-                .filter(e => e.type === 'expense')
-                .reduce((acc, curr) => {
-                    const category = curr.category || '미분류';
-                    acc[category] = (acc[category] || 0) + curr.amount;
-                    return acc;
-                }, {});
+            // 2. 데이터 집계
+            let totalIncome = 0, totalExpense = 0;
+            const expenseByCategory = {};
+            const incomeByCategory = {};
 
+            entries.forEach(e => {
+                const category = e.category || '미분류';
+                if (e.type === 'income') {
+                    totalIncome += e.amount;
+                    incomeByCategory[category] = (incomeByCategory[category] || 0) + e.amount;
+                }
+                else {
+                    totalExpense += e.amount;
+                    expenseByCategory[category] = (expenseByCategory[category] || 0) + e.amount;
+                }
+            });
+
+            // 3. 기간 내 요약 렌더링
+            document.getElementById('ledger-total-income').textContent = formatPrice(totalIncome, 'KRW');
+            document.getElementById('ledger-total-expense').textContent = formatPrice(totalExpense, 'KRW');
+            const balance = totalIncome - totalExpense;
+            const balanceEl = document.getElementById('ledger-balance');
+            balanceEl.textContent = formatPrice(balance, 'KRW');
+            balanceEl.className = `text-3xl font-bold ${balance >= 0 ? 'text-blue-500' : 'text-red-500'}`;
+
+            // 4. 파이 차트 렌더링
+            document.getElementById('ledger-expense-chart-title').textContent = `${displayString} 지출 구성`;
+            const sortedExpense = Object.entries(expenseByCategory).sort((a,b) => b[1] - a[1]);
+            createLedgerChart('ledger-expense-chart', 'pie', 
+                sortedExpense.map(c => c[0]), 
+                [{ label: '지출', data: sortedExpense.map(c => c[1]) }]
+            );
+            document.getElementById('ledger-income-chart-title').textContent = `${displayString} 수입 구성`;
+            const sortedIncome = Object.entries(incomeByCategory).sort((a,b) => b[1] - a[1]);
+            createLedgerChart('ledger-income-chart', 'pie', 
+                sortedIncome.map(c => c[0]), 
+                [{ label: '수입', data: sortedIncome.map(c => c[1]) }]
+            );
+
+            // 5. 카테고리별 요약 렌더링
             const expenseSummaryContainer = document.getElementById('ledger-category-summary');
             expenseSummaryContainer.innerHTML = '';
-            if(Object.keys(expensesByCategory).length === 0){
+            if(Object.keys(expenseByCategory).length === 0){
                 expenseSummaryContainer.innerHTML = `<p class="text-gray-500 text-center text-sm">지출 내역 없음</p>`;
             } else {
-                Object.entries(expensesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
+                Object.entries(expenseByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
                     const div = document.createElement('div');
                     div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
                     div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-red-500">- ${formatPrice(total, 'KRW')}</span>`;
                     div.onclick = () => {
-                        document.querySelectorAll('#ledger-list-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
-                        document.querySelectorAll('#ledger-list-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
+                        document.querySelectorAll('#ledger-analysis-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
+                        document.querySelectorAll('#ledger-analysis-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
                         div.classList.add('selected');
-                        renderLedgerDetails(category, 'expense', filteredEntries);
+                        renderLedgerDetails(category, 'expense', entries);
                     };
                     expenseSummaryContainer.appendChild(div);
                 });
             }
-
-            // Render Incomes Summary
-            const incomesByCategory = filteredEntries
-                .filter(e => e.type === 'income')
-                .reduce((acc, curr) => {
-                    const category = curr.category || '미분류'; // Handle uncategorized old entries
-                    acc[category] = (acc[category] || 0) + curr.amount;
-                    return acc;
-                }, {});
-            
             const incomeSummaryContainer = document.getElementById('ledger-income-summary');
             incomeSummaryContainer.innerHTML = '';
-            if(Object.keys(incomesByCategory).length === 0) {
+            if(Object.keys(incomeByCategory).length === 0) {
                  incomeSummaryContainer.innerHTML = `<p class="text-gray-500 text-center text-sm">수입 내역 없음</p>`;
             } else {
-                Object.entries(incomesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
+                Object.entries(incomeByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
                     const div = document.createElement('div');
                     div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
                     div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-green-500">+ ${formatPrice(total, 'KRW')}</span>`;
                     div.onclick = () => {
-                        document.querySelectorAll('#ledger-list-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
-                        document.querySelectorAll('#ledger-list-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
+                        document.querySelectorAll('#ledger-analysis-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
+                        document.querySelectorAll('#ledger-analysis-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
                         div.classList.add('selected');
-                        renderLedgerDetails(category, 'income', filteredEntries);
+                        renderLedgerDetails(category, 'income', entries);
                     };
                     incomeSummaryContainer.appendChild(div);
                 });
             }
-            
             document.getElementById('ledger-entry-details').innerHTML = '';
             document.getElementById('ledger-detail-title').textContent = '내역 선택';
+
+            // 6. 추이 차트 렌더링
+            let trendLabels, trendIncomeData, trendExpenseData;
+            if(filterType === 'year') {
+                document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 월별 추이`;
+                trendLabels = Array.from({length: 12}, (_, i) => `${i + 1}월`);
+                const monthlyData = trendLabels.map(() => ({income: 0, expense: 0}));
+                entries.forEach(e => {
+                    const month = e.date.getMonth();
+                    if (e.type === 'income') monthlyData[month].income += e.amount;
+                    else monthlyData[month].expense += e.amount;
+                });
+                trendIncomeData = monthlyData.map(d => d.income);
+                trendExpenseData = monthlyData.map(d => d.expense);
+            } else { // month or quarter
+                document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 일별 추이`;
+                const days = (end - start) / (1000 * 60 * 60 * 24);
+                trendLabels = Array.from({length: Math.ceil(days) + 1}, (_, i) => {
+                    const d = new Date(start);
+                    d.setDate(d.getDate() + i);
+                    return `${d.getMonth()+1}/${d.getDate()}`;
+                });
+                const dailyData = Object.fromEntries(trendLabels.map(l => [l, {income: 0, expense: 0}]));
+                entries.forEach(e => {
+                    const dayLabel = `${e.date.getMonth()+1}/${e.date.getDate()}`;
+                    if(dailyData[dayLabel]) {
+                        if (e.type === 'income') dailyData[dayLabel].income += e.amount;
+                        else dailyData[dayLabel].expense += e.amount;
+                    }
+                });
+                trendIncomeData = Object.values(dailyData).map(d => d.income);
+                trendExpenseData = Object.values(dailyData).map(d => d.expense);
+            }
+            
+            createLedgerChart('ledger-monthly-pnl-chart', 'bar', trendLabels,
+                [{ label: '수입', data: trendIncomeData, backgroundColor: 'rgba(75, 192, 192, 0.6)' },
+                 { label: '지출', data: trendExpenseData, backgroundColor: 'rgba(255, 99, 132, 0.6)' }]
+            );
         }
         
         function renderLedgerDetails(category, type, entries) {
@@ -1438,12 +1603,7 @@
             const detailsContainer = document.getElementById('ledger-entry-details');
             detailsContainer.innerHTML = '';
 
-            let entriesToShow;
-            if (category === '미분류') {
-                entriesToShow = entries.filter(e => e.type === type && !e.category);
-            } else {
-                entriesToShow = entries.filter(e => e.type === type && e.category === category);
-            }
+            const entriesToShow = entries.filter(e => e.type === type && (e.category || '미분류') === category);
 
             if(entriesToShow.length === 0) {
                 detailsContainer.innerHTML = `<p class="text-gray-500 text-center">상세 내역이 없습니다.</p>`;
@@ -1500,121 +1660,19 @@
             }, '삭제');
         }
 
-        function updateLedgerListDate(offset) {
-            const filterType = document.getElementById('ledger-list-filter-type').value;
-            if (filterType === 'month') ledgerListDate.setMonth(ledgerListDate.getMonth() + offset);
-            else if (filterType === 'quarter') ledgerListDate.setMonth(ledgerListDate.getMonth() + offset * 3);
-            else ledgerListDate.setFullYear(ledgerListDate.getFullYear() + offset);
-            renderLedgerListView();
-        }
-        document.getElementById('ledger-list-prev-btn').addEventListener('click', () => updateLedgerListDate(-1));
-        document.getElementById('ledger-list-next-btn').addEventListener('click', () => updateLedgerListDate(1));
-        document.getElementById('ledger-list-filter-type').addEventListener('change', () => {
-            ledgerListDate = new Date(); // Reset to current date on filter type change
-            renderLedgerListView();
-        });
-
-        function renderLedgerStatsView() {
-            const filterType = document.getElementById('ledger-stats-filter-type').value;
-            const displayEl = document.getElementById('ledger-stats-period-display');
-            
-            const { start, end, displayString } = getPeriod(ledgerStatsDate, filterType);
-            displayEl.textContent = displayString;
-
-            const entries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
-            
-            let totalIncome = 0, totalExpense = 0;
-            const expenseByCategory = {};
-            const incomeByCategory = {};
-
-
-            entries.forEach(e => {
-                if (e.type === 'income') {
-                    totalIncome += e.amount;
-                    const category = e.category || '미분류';
-                    incomeByCategory[category] = (incomeByCategory[category] || 0) + e.amount;
-                }
-                else {
-                    totalExpense += e.amount;
-                    const category = e.category || '미분류';
-                    expenseByCategory[category] = (expenseByCategory[category] || 0) + e.amount;
-                }
-            });
-
-            document.getElementById('ledger-total-income').textContent = formatPrice(totalIncome, 'KRW');
-            document.getElementById('ledger-total-expense').textContent = formatPrice(totalExpense, 'KRW');
-            const balance = totalIncome - totalExpense;
-            const balanceEl = document.getElementById('ledger-balance');
-            balanceEl.textContent = formatPrice(balance, 'KRW');
-            balanceEl.className = `text-3xl font-bold ${balance >= 0 ? 'text-blue-500' : 'text-red-500'}`;
-            
-            // Trend Chart
-            let trendLabels, trendIncomeData, trendExpenseData;
-            if(filterType === 'year') {
-                document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 월별 추이`;
-                trendLabels = Array.from({length: 12}, (_, i) => `${i + 1}월`);
-                const monthlyData = trendLabels.map(() => ({income: 0, expense: 0}));
-                entries.forEach(e => {
-                    const month = e.date.getMonth();
-                    if (e.type === 'income') monthlyData[month].income += e.amount;
-                    else monthlyData[month].expense += e.amount;
-                });
-                trendIncomeData = monthlyData.map(d => d.income);
-                trendExpenseData = monthlyData.map(d => d.expense);
-            } else { // month or quarter
-                document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 일별 추이`;
-                const days = (end - start) / (1000 * 60 * 60 * 24);
-                trendLabels = Array.from({length: Math.ceil(days) + 1}, (_, i) => {
-                    const d = new Date(start);
-                    d.setDate(d.getDate() + i);
-                    return `${d.getMonth()+1}/${d.getDate()}`;
-                });
-                const dailyData = Object.fromEntries(trendLabels.map(l => [l, {income: 0, expense: 0}]));
-                entries.forEach(e => {
-                    const dayLabel = `${e.date.getMonth()+1}/${e.date.getDate()}`;
-                    if(dailyData[dayLabel]) {
-                        if (e.type === 'income') dailyData[dayLabel].income += e.amount;
-                        else dailyData[dayLabel].expense += e.amount;
-                    }
-                });
-                trendIncomeData = Object.values(dailyData).map(d => d.income);
-                trendExpenseData = Object.values(dailyData).map(d => d.expense);
-            }
-            
-            createLedgerChart('ledger-monthly-pnl-chart', 'bar', trendLabels,
-                [{ label: '수입', data: trendIncomeData, backgroundColor: 'rgba(75, 192, 192, 0.6)' },
-                 { label: '지출', data: trendExpenseData, backgroundColor: 'rgba(255, 99, 132, 0.6)' }]
-            );
-
-            // Expense Category Chart
-            document.getElementById('ledger-expense-chart-title').textContent = `${displayString} 지출 구성`;
-            const sortedExpense = Object.entries(expenseByCategory).sort((a,b) => b[1] - a[1]);
-            createLedgerChart('ledger-expense-chart', 'pie', 
-                sortedExpense.map(c => c[0]), 
-                [{ label: '지출', data: sortedExpense.map(c => c[1]) }]
-            );
-
-            // Income Category Chart
-            document.getElementById('ledger-income-chart-title').textContent = `${displayString} 수입 구성`;
-            const sortedIncome = Object.entries(incomeByCategory).sort((a,b) => b[1] - a[1]);
-            createLedgerChart('ledger-income-chart', 'pie', 
-                sortedIncome.map(c => c[0]), 
-                [{ label: '수입', data: sortedIncome.map(c => c[1]) }]
-            );
+        function updateLedgerAnalysisDate(offset) {
+            const filterType = document.getElementById('ledger-analysis-filter-type').value;
+            if (filterType === 'month') ledgerAnalysisDate.setMonth(ledgerAnalysisDate.getMonth() + offset);
+            else if (filterType === 'quarter') ledgerAnalysisDate.setMonth(ledgerAnalysisDate.getMonth() + offset * 3);
+            else ledgerAnalysisDate.setFullYear(ledgerAnalysisDate.getFullYear() + offset);
+            renderLedgerAnalysisView();
         }
         
-        function updateLedgerStatsDate(offset) {
-            const filterType = document.getElementById('ledger-stats-filter-type').value;
-            if (filterType === 'month') ledgerStatsDate.setMonth(ledgerStatsDate.getMonth() + offset);
-            else if (filterType === 'quarter') ledgerStatsDate.setMonth(ledgerStatsDate.getMonth() + offset * 3);
-            else ledgerStatsDate.setFullYear(ledgerStatsDate.getFullYear() + offset);
-            renderLedgerStatsView();
-        }
-        document.getElementById('ledger-stats-prev-btn').addEventListener('click', () => updateLedgerStatsDate(-1));
-        document.getElementById('ledger-stats-next-btn').addEventListener('click', () => updateLedgerStatsDate(1));
-        document.getElementById('ledger-stats-filter-type').addEventListener('change', () => {
-            ledgerStatsDate = new Date();
-            renderLedgerStatsView();
+        document.getElementById('ledger-analysis-prev-btn').addEventListener('click', () => updateLedgerAnalysisDate(-1));
+        document.getElementById('ledger-analysis-next-btn').addEventListener('click', () => updateLedgerAnalysisDate(1));
+        document.getElementById('ledger-analysis-filter-type').addEventListener('change', () => {
+            ledgerAnalysisDate = new Date();
+            renderLedgerAnalysisView();
         });
         
         function createLedgerChart(canvasId, type, labels, datasets) {
@@ -1690,13 +1748,10 @@
             return `₩${num.toLocaleString('en-US', {maximumFractionDigits: (num % 1 === 0) ? 0 : 6})}`;
         };
         
-        // **새로 추가된 가격 포맷팅 함수**
         const formatPriceDisplay = (price, isBond) => {
             if (price === null || price === undefined) return '';
-            // 가격 저장 시 소수점 형태로 저장되므로, 출력할 때만 채권 형식으로 변환
             return isBond ? decimalToBondPrice(price) : formatNumber(price);
         }
-        // **가격 포맷팅 함수 끝**
         
         const formatDualCurrency = (pnlInKRW, originalCurrency) => {
             const pnlInUSD = pnlInKRW / exchangeRate;
@@ -1744,23 +1799,22 @@
 
         const numberInputHandler = (e) => { e.target.value = formatNumber(e.target.value); };
         
-        // **통합된 가격 입력 핸들러**
+        // **통합된 가격 입력 핸들러 (수정됨)**
         const priceInputHandler = (e) => {
             let value = e.target.value;
             
-            // 쉼표 제거 (일반 숫자 처리)
             value = value.replace(/,/g, '');
 
             if (value.includes("'")) {
-                // 채권 형식 (120'16) 처리: 숫자와 ' 만 허용
-                value = value.replace(/[^0-9']/g, '');
-                // '가 두 개 이상 오지 않도록
-                if ((value.match(/'/g) || []).length > 1) {
+                value = value.replace(/[^0-9']/g, ''); 
+                
+                const apostrophes = (value.match(/'/g) || []).length;
+                if (apostrophes > 2) {
                     value = value.substring(0, value.lastIndexOf("'")) + value.substring(value.lastIndexOf("'") + 1);
                 }
                 e.target.value = value;
+                
             } else {
-                // 일반 숫자 형식 처리: 숫자와 소수점만 허용, 포맷팅 적용
                 let parts = value.split('.');
                 parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                 e.target.value = parts.join('.');
@@ -1814,7 +1868,7 @@
             switchJournalView('form-view');
             switchLedgerView('ledger-form-view');
             document.querySelectorAll('.exchange-rate-input').forEach(input => input.value = formatNumber(exchangeRate));
-            resetForm(); // Ensure correct initial state for journal form
+            resetForm();
         });
 
         function setTheme(theme) {
@@ -1831,7 +1885,7 @@
             Chart.defaults.color = isDark ? '#d1d5db' : '#374151';
             if (currentUser) {
                 renderJournalStats(localJournals);
-                renderLedgerStatsView();
+                renderLedgerAnalysisView();
             }
         }
         document.getElementById('theme-toggle').addEventListener('click', () => setTheme(localStorage.getItem('theme') === 'dark' ? 'light' : 'dark'));
