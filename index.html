@@ -916,68 +916,6 @@
             lucide.createIcons();
             addJournalListEventListeners();
         }
-                
-                const amountLabel = isSpot ? '수량' : '계약';
-                
-                // ========== [UI 개선 2] 카드 HTML 구조 전체 변경 ==========
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <p class="font-bold text-lg">${journal.date.toLocaleDateString()}</p>
-                            <p class="font-semibold text-md text-gray-800">${journal.ticker} <span class="text-xs font-medium text-gray-400 align-top">${isSpot ? '현물' : '선물'}</span></p>
-                            <span class="text-sm font-bold ${journal.position === 'long' ? 'text-green-500' : 'text-red-500'}">${journal.position === 'long' ? '🟢 롱' : '🔴 숏'}</span>
-                            <span class="text-sm text-gray-500 ml-2">${journal.strategy}</span>
-                        </div>
-                        <div class="flex space-x-2">
-                            ${!isClosed ? `<button class="p-2 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full exit-btn" data-id="${journal.id}" title="청산"><i data-lucide="log-out" class="w-5 h-5 text-blue-500"></i></button>` : ''}
-                            <button class="p-2 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full memo-btn" data-id="${journal.id}" title="메모"><i data-lucide="sticky-note" class="w-5 h-5 text-purple-500"></i></button>
-                            <button class="p-2 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full edit-btn" data-id="${journal.id}" title="수정"><i data-lucide="edit" class="w-5 h-5 text-gray-500"></i></button>
-                            <button class="p-2 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full delete-btn" data-id="${journal.id}" title="삭제"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2 text-sm mb-3">
-                        <p>
-                            <strong class="text-gray-500 dark:text-gray-400 font-medium w-14 inline-block">진입:</strong>
-                            <span class="text-gray-900 dark:text-gray-100 font-semibold">${formatPriceDisplayForJournal(journal.entryPrice)}</span>
-                            <strong class="text-gray-500 dark:text-gray-400 font-medium ml-3 sm:ml-4">${amountLabel}:</strong>
-                            <span class="text-gray-900 dark:text-gray-100 font-semibold">${formatNumber(totalAmount)}</span>
-                        </p>
-                        <p>
-                            <strong class="text-gray-500 dark:text-gray-400 font-medium w-14 inline-block">목표:</strong>
-                            <span class="text-gray-900 dark:text-gray-100 font-semibold">${formatPriceDisplayForJournal(journal.targetPrice)}</span>
-                        </p>
-                        <p>
-                            <strong class="text-gray-500 dark:text-gray-400 font-medium w-14 inline-block">손절:</strong>
-                            <span class="text-gray-900 dark:text-gray-100 font-semibold">${formatPriceDisplayForJournal(journal.stopLoss)}</span>
-                        </p>
-                        
-                        ${ !isSpot ? `<div class="text-xs text-gray-500 dark:text-gray-400 mt-2 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700 space-y-1">
-                                        <p><strong>틱가치/단위:</strong> ${formatPrice(journal.tickValue, journal.currency)} / ${formatNumber(journal.tickSize)}</p>
-                                        <p><strong>수수료(매수/매도):</strong> ${formatPrice(journal.commissionBuy || 0, journal.currency)} / ${formatPrice(journal.commissionSell || 0, journal.currency)}</p>
-                                     </div>` : '' }
-                        
-                        ${holdingPeriodHtml}
-                        
-                        ${journal.exits && journal.exits.length > 0 ? `
-                            <p class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                                <strong class="text-gray-500 dark:text-gray-400 font-medium">총 실현 손익:</strong>
-                                <span class="font-bold text-lg ml-2 ${pnlClass}">${formatDualCurrency(totalPnlInKRW, journal.currency)}</span>
-                            </p>` : ''}
-                    </div>
-
-                    <hr class="my-3 border-gray-200 dark:border-gray-700">
-                    
-                    <div><h4 class="font-semibold text-xs text-gray-500 mb-1">진입 근거</h4><div class="flex flex-wrap gap-1">${(journal.entryTags || []).map(tag => `<span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}</div></div>
-                    <div class="mt-2"><h4 class="font-semibold text-xs text-gray-500 mb-1">심리 상태</h4><div class="flex flex-wrap gap-1">${(journal.psychologyTags || []).map(tag => `<span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}</div></div>
-                    ${exitsHtml}`;
-                // ========== [UI 개선 2] 종료 ==========
-                
-                journalList.appendChild(card);
-            });
-            lucide.createIcons();
-            addJournalListEventListeners();
-        }
 
         async function getJournalById(id) {
             const docRef = db.collection("users").doc(currentUser.uid).collection("journals").doc(id);
