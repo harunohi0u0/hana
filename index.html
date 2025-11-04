@@ -36,7 +36,6 @@
         .tag.selected .delete-tag-span { color: white; }
         .tag.selected .delete-tag-span:hover { color: #fecaca; }
 
-        
         /* Updated Dark Mode Styles */
         .dark body { background-color: #121212; color: #E0E0E0; }
         .dark h1, .dark h2, .dark h3 { color: #FFFFFF; }
@@ -401,7 +400,7 @@
                 currentUser = user;
                 loginView.classList.add('hidden');
                 appContainer.classList.remove('hidden');
-                document.getElementById('auth-info').textContent = `${user.displayName}님 환영합니다!`;
+                document.getElementById('auth-info').textContent = ${user.displayName}님 환영합니다!;
                 initializeAppFunctionality();
             } else {
                 currentUser = null;
@@ -571,7 +570,7 @@
                 const option = document.createElement('option');
                 option.value = ticker;
                 // 수수료 표시 추가
-                option.textContent = `${ticker} (가치: ${formatNumber(info.tickValue)}, 단위: ${formatNumber(info.tickSize)}, 수수료: ${formatNumber(info.commissionBuy || 0)}/${formatNumber(info.commissionSell || 0)})`;
+                option.textContent = ${ticker} (가치: ${formatNumber(info.tickValue)}, 단위: ${formatNumber(info.tickSize)}, 수수료: ${formatNumber(info.commissionBuy || 0)}/${formatNumber(info.commissionSell || 0)});
                 select.appendChild(option);
                 
                 if (ticker === currentTicker && !document.getElementById('futures-fields').classList.contains('hidden')) {
@@ -594,7 +593,7 @@
                     // 수수료 필드 채우기
                     document.getElementById('commission-buy').value = formatNumber(info.commissionBuy || 0);
                     document.getElementById('commission-sell').value = formatNumber(info.commissionSell || 0);
-                    showToast(`종목 '${selectedTicker}' 정보가 채워졌습니다.`);
+                    showToast(종목 '${selectedTicker}' 정보가 채워졌습니다.);
                 } else {
                     document.getElementById('tick-value').value = '';
                     document.getElementById('tick-size').value = '';
@@ -643,7 +642,7 @@
 
             const currentInfo = localFuturesInfo[ticker];
             const isUpdating = currentInfo;
-            const message = isUpdating ? `'${ticker}' 종목 정보를 업데이트하시겠습니까?` : `'${ticker}' 종목 정보를 저장하시겠습니까?`;
+            const message = isUpdating ? '${ticker}' 종목 정보를 업데이트하시겠습니까? : '${ticker}' 종목 정보를 저장하시겠습니까?;
             const action = isUpdating ? '업데이트' : '저장';
 
             showConfirmModal(message, async () => {
@@ -655,7 +654,7 @@
                     };
                     await db.collection("users").doc(currentUser.uid).collection("journalData").doc("futuresInfo").set(updatedInfo);
                     
-                    showToast(`선물 종목 정보가 ${action}되었습니다.`);
+                    showToast(선물 종목 정보가 ${action}되었습니다.);
                     tickValueInput.value = formatNumber(tickValue);
                     tickSizeInput.value = formatNumber(tickSize);
                     // 수수료 필드 업데이트
@@ -664,7 +663,7 @@
                     document.getElementById('futures-info-select').value = ticker; 
                     document.getElementById('delete-futures-info-btn').disabled = false;
                 } catch(e) {
-                    showToast(`정보 ${action} 실패: ${e.message}`, "error");
+                    showToast(정보 ${action} 실패: ${e.message}, "error");
                 }
             }, action);
         });
@@ -684,18 +683,18 @@
             );
 
             if (isUsedInJournal) {
-                showToast(`'${ticker}' 종목은 현재 매매일지(${localJournals.filter(j => j.assetType === 'futures' && j.ticker.toUpperCase() === ticker.toUpperCase()).length}개)에 사용 중이므로 삭제할 수 없습니다.`, "error");
+                showToast('${ticker}' 종목은 현재 매매일지(${localJournals.filter(j => j.assetType === 'futures' && j.ticker.toUpperCase() === ticker.toUpperCase()).length}개)에 사용 중이므로 삭제할 수 없습니다., "error");
                 return;
             }
 
-            showConfirmModal(`선물 종목 '${ticker}'의 저장된 틱가치/틱단위 정보를 삭제하시겠습니까?`, async () => {
+            showConfirmModal(선물 종목 '${ticker}'의 저장된 틱가치/틱단위 정보를 삭제하시겠습니까?, async () => {
                 try {
                     const updatedInfo = { ...localFuturesInfo };
                     delete updatedInfo[ticker];
                     
                     await db.collection("users").doc(currentUser.uid).collection("journalData").doc("futuresInfo").set(updatedInfo);
                     
-                    showToast(`선물 종목 '${ticker}' 정보가 삭제되었습니다.`);
+                    showToast(선물 종목 '${ticker}' 정보가 삭제되었습니다.);
                     document.getElementById('futures-info-select').value = '';
                     document.getElementById('delete-futures-info-btn').disabled = true;
                     document.getElementById('tick-value').value = '';
@@ -704,7 +703,7 @@
                     document.getElementById('commission-buy').value = '';
                     document.getElementById('commission-sell').value = '';
                 } catch(e) {
-                    showToast(`삭제 실패: ${e.message}`, "error");
+                    showToast(삭제 실패: ${e.message}, "error");
                 }
             }, '삭제');
         }
@@ -778,7 +777,7 @@
             const total_256ths = Math.round(remainder * 256);
             
             if (total_256ths === 0) {
-                return `${whole}'00`; // 120.0 -> 120'00
+                return ${whole}'00; // 120.0 -> 120'00
             }
             
             // 1/32 = 8/256
@@ -787,17 +786,18 @@
 
             if (fraction_8ths === 0) {
                 // 32nds로 딱 떨어짐 (예: 120.5 -> 120'16)
-                return `${whole}'${String(fraction_32nds).padStart(2, '0')}`;
+                return ${whole}'${String(fraction_32nds).padStart(2, '0')};
             } else {
                 // 8ths of 32nd (예: 120.51953125 -> 120'16'5)
-                return `${whole}'${String(fraction_32nds).padStart(2, '0')}'${fraction_8ths}`;
+                return ${whole}'${String(fraction_32nds).padStart(2, '0')}'${fraction_8ths};
             }
         }
 
         function renderJournals(journals) {
             journalList.innerHTML = '';
+
             if (journals.length === 0) { [cite: 243]
-                journalList.innerHTML = `<div class="bg-white col-span-full text-center text-gray-500 p-10 rounded-2xl shadow-md"><i data-lucide="folder-x" class="mx-auto w-16 h-16 text-gray-400 mb-4"></i><p class="text-xl">작성된 매매일지가 없습니다.</p></div>`;
+                journalList.innerHTML = <div class="bg-white col-span-full text-center text-gray-500 p-10 rounded-2xl shadow-md"><i data-lucide="folder-x" class="mx-auto w-16 h-16 text-gray-400 mb-4"></i><p class="text-xl">작성된 매매일지가 없습니다.</p></div>;
                 lucide.createIcons(); return; [cite: 244]
             }
 
@@ -816,7 +816,7 @@
                 
                 const borderColor = isClosed ? (totalPnlInKRW > 0 ? 'border-green-500' : 'border-red-500') : 'border-yellow-500'; [cite: 247]
                 const card = document.createElement('div'); [cite: 248]
-                card.className = `bg-white p-5 rounded-xl shadow-md border-l-4 ${borderColor}`;
+                card.className = bg-white p-5 rounded-xl shadow-md border-l-4 ${borderColor};
                 
                 // ========== [UI 개선 1] '보유 기간' Key-Value 스타일 적용 ========== [cite: 249]
                 let holdingPeriodHtml = '';
@@ -826,10 +826,10 @@
                     const diffTime = Math.abs(lastExitDate - entryDate);
                     const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24))); [cite: 252]
                     // Key-Value 스타일을 여기서 미리 적용합니다.
-                    holdingPeriodHtml = `<p class="text-sm">
+                    holdingPeriodHtml = <p class="text-sm">
                                             <strong class="text-gray-500 dark:text-gray-400 font-medium">보유 기간:</strong>
                                             <span class="text-gray-800 dark:text-gray-200 font-semibold">${diffDays}일</span>
-                                         </p>`; [cite: 253, 254]
+                                         </p>; [cite: 253, 254]
                 } [cite: 255]
                 
                 // ★★★ 수정된 부분 ★★★
@@ -843,7 +843,7 @@
                 
                 const formatPriceDisplayForJournal = (price) => isBond ? decimalToBondPrice(price) : formatPrice(price, journal.currency); [cite: 256]
                 
-                const exitsHtml = journal.exits && journal.exits.length > 0 ? `
+                const exitsHtml = journal.exits && journal.exits.length > 0 ? 
                     <div class="mt-3 pt-3 border-t border-gray-200 space-y-1 text-xs">
                         <h5 class="font-semibold mb-1">청산 내역</h5>
                         ${journal.exits.map(exit => {
@@ -851,14 +851,14 @@
                             const exitPnlClass = exitPnl > 0 ? 'text-green-500' : exitPnl < 0 ? 'text-red-500' : 'text-gray-500';
                             const exitDate = exit.date.toDate ? exit.date.toDate() : new Date(exit.date);
                             const amountLabel = isSpot ? '주' : '계약'; [cite: 259]
-                            return `<div class="flex justify-between items-center p-1 rounded bg-gray-50 dark:bg-[#2d2d2d]"><span>${exitDate.toLocaleDateString()} @ ${formatPriceDisplayForJournal(exit.price)} (${formatNumber(exit.quantity)} ${amountLabel})</span><span class="${exitPnlClass} font-medium">${formatPrice(exitPnl, journal.currency)}</span></div>`
+                            return <div class="flex justify-between items-center p-1 rounded bg-gray-50 dark:bg-[#2d2d2d]"><span>${exitDate.toLocaleDateString()} @ ${formatPriceDisplayForJournal(exit.price)} (${formatNumber(exit.quantity)} ${amountLabel})</span><span class="${exitPnlClass} font-medium">${formatPrice(exitPnl, journal.currency)}</span></div>
                         }).join('')}
-                    </div>` : ''; [cite: 257, 260]
+                    </div> : ''; [cite: 257, 260]
                 
                 const amountLabel = isSpot ? '수량' : '계약'; [cite: 261]
                 
                 // ========== [UI 개선 2] 카드 HTML 구조 전체 변경 ==========
-                card.innerHTML = `
+                card.innerHTML = 
                     <div class="flex justify-between items-start mb-3">
                         <div>
                             <p class="font-bold text-lg">${journal.date.toLocaleDateString()}</p> [cite: 262]
@@ -867,7 +867,7 @@
                             <span class="text-sm text-gray-500 ml-2">${journal.strategy}</span>
                         </div>
                         <div class="flex space-x-2">
-                            ${!isClosed ? `<button class="p-2 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full exit-btn" data-id="${journal.id}" title="청산"><i data-lucide="log-out" class="w-5 h-5 text-blue-500"></i></button>` : ''} [cite: 265, 266]
+                            ${!isClosed ? <button class="p-2 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full exit-btn" data-id="${journal.id}" title="청산"><i data-lucide="log-out" class="w-5 h-5 text-blue-500"></i></button> : ''} [cite: 265, 266]
                             <button class="p-2 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full memo-btn" data-id="${journal.id}" title="메모"><i data-lucide="sticky-note" class="w-5 h-5 text-purple-500"></i></button>
                             <button class="p-2 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full edit-btn" data-id="${journal.id}" title="수정"><i data-lucide="edit" class="w-5 h-5 text-gray-500"></i></button>
                             <button class="p-2 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full delete-btn" data-id="${journal.id}" title="삭제"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></button> [cite: 267]
@@ -891,25 +891,25 @@
                         </p> [cite: 271]
                         
                         [cite: 272]
-                        ${ !isSpot ? `<div class="text-xs text-gray-500 dark:text-gray-400 mt-2 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700 space-y-1">
+                        ${ !isSpot ? <div class="text-xs text-gray-500 dark:text-gray-400 mt-2 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700 space-y-1">
                                         <p><strong>틱가치/단위:</strong> ${formatPrice(journal.tickValue, journal.currency)} / ${formatNumber(journal.tickSize)}</p>
                                         <p><strong>수수료(매수/매도):</strong> ${formatPrice(journal.commissionBuy || 0, journal.currency)} / ${formatPrice(journal.commissionSell || 0, journal.currency)}</p>
-                                     </div>` : '' } [cite: 273, 274]
+                                     </div> : '' } [cite: 273, 274]
                         
                         ${holdingPeriodHtml} [cite: 275]
                         
-                        ${journal.exits && journal.exits.length > 0 ? `
+                        ${journal.exits && journal.exits.length > 0 ? 
                             <p class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                                 <strong class="text-gray-500 dark:text-gray-400 font-medium">총 실현 손익:</strong> [cite: 276]
                                 <span class="font-bold text-lg ml-2 ${pnlClass}">${formatDualCurrency(totalPnlInKRW, journal.currency)}</span>
-                            </p>` : ''} [cite: 277]
+                            </p> : ''} [cite: 277]
                     </div>
 
                     <hr class="my-3 border-gray-200 dark:border-gray-700">
                     
-                    <div><h4 class="font-semibold text-xs text-gray-500 mb-1">진입 근거</h4><div class="flex flex-wrap gap-1">${(journal.entryTags || []).map(tag => `<span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}</div></div> [cite: 278]
-                    <div class="mt-2"><h4 class="font-semibold text-xs text-gray-500 mb-1">심리 상태</h4><div class="flex flex-wrap gap-1">${(journal.psychologyTags || []).map(tag => `<span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}</div></div>
-                    ${exitsHtml}`;
+                    <div><h4 class="font-semibold text-xs text-gray-500 mb-1">진입 근거</h4><div class="flex flex-wrap gap-1">${(journal.entryTags || []).map(tag => <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>).join('')}</div></div> [cite: 278]
+                    <div class="mt-2"><h4 class="font-semibold text-xs text-gray-500 mb-1">심리 상태</h4><div class="flex flex-wrap gap-1">${(journal.psychologyTags || []).map(tag => <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>).join('')}</div></div>
+                    ${exitsHtml};
                 // ========== [UI 개선 2] 종료 ========== [cite: 279]
                 
                 journalList.appendChild(card);
@@ -943,7 +943,7 @@
                 button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center';
                 button.dataset.tag = tag;
                 
-                button.innerHTML = `<span class="pl-3 pr-2 py-1">${tag}</span><span class="delete-tag-span pr-2 text-gray-500 hover:text-red-500"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
+                button.innerHTML = <span class="pl-3 pr-2 py-1">${tag}</span><span class="delete-tag-span pr-2 text-gray-500 hover:text-red-500"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>;
 
                 button.addEventListener('click', (e) => e.currentTarget.classList.toggle('selected'));
                 button.querySelector('.delete-tag-span').addEventListener('click', (e) => {
@@ -961,11 +961,11 @@
                 showToast("사용 중인 태그는 삭제할 수 없습니다.", "error");
                 return;
             }
-            showConfirmModal(`'${tag}' 태그를 삭제하시겠습니까?`, async () => {
+            showConfirmModal('${tag}' 태그를 삭제하시겠습니까?, async () => {
                 const newTags = localTags[type].filter(t => t !== tag);
                 try {
                     await db.collection("users").doc(currentUser.uid).collection("journalTags").doc("all").update({ [type]: newTags });
-                    showToast(`'${tag}' 태그가 삭제되었습니다.`);
+                    showToast('${tag}' 태그가 삭제되었습니다.);
                 } catch(e) { showToast("태그 삭제 실패.", "error"); }
             }, '삭제');
         }
@@ -975,7 +975,7 @@
             const currentTags = localTags[type] || [];
             if (!currentTags.includes(tag)) {
                 await tagsDocRef.update({ [type]: [...currentTags, tag] });
-                showToast(`'${tag}' 태그가 추가되었습니다.`);
+                showToast('${tag}' 태그가 추가되었습니다.);
             } else { showToast("이미 존재하는 태그입니다.", "error"); }
         }
         document.querySelector('.add-entry-tag-btn').addEventListener('click', () => {
@@ -1062,9 +1062,9 @@
                 document.getElementById('date').value = journal.date.toISOString().split('T')[0]; [cite: 316]
                 document.getElementById('ticker').value = journal.ticker;
                 
-                document.querySelector(`[data-group="asset-type"] .toggle-btn[data-value="${journal.assetType}"]`).click();
+                document.querySelector([data-group="asset-type"] .toggle-btn[data-value="${journal.assetType}"]).click();
 
-                ['position', 'strategy'].forEach(group => document.querySelectorAll(`[data-group="${group}"] .toggle-btn`).forEach(b => b.classList.toggle('selected', b.dataset.value === journal[group])));
+                ['position', 'strategy'].forEach(group => document.querySelectorAll([data-group="${group}"] .toggle-btn).forEach(b => b.classList.toggle('selected', b.dataset.value === journal[group])));
                 document.querySelectorAll('[data-group="form-currency"] .toggle-btn').forEach(b => b.classList.toggle('selected', (journal.currency === 'USD' && b.id.includes('usd')) || (journal.currency !== 'USD' && b.id.includes('krw')))); [cite: 317]
                 
                 // ★★★ 수정된 부분 ★★★
@@ -1102,9 +1102,9 @@
                 }
 
                 ['entryTags', 'psychologyTags'].forEach(type => {
-                    const containerClass = `.${type.replace('Tags', '-tags-container')}`;
-                    document.querySelectorAll(`${containerClass} .tag`).forEach(b => b.classList.remove('selected'));
-                    (journal[type] || []).forEach(tag => document.querySelector(`${containerClass} .tag[data-tag="${tag}"]`)?.classList.add('selected')); [cite: 326]
+                    const containerClass = .${type.replace('Tags', '-tags-container')};
+                    document.querySelectorAll(${containerClass} .tag).forEach(b => b.classList.remove('selected'));
+                    (journal[type] || []).forEach(tag => document.querySelector(${containerClass} .tag[data-tag="${tag}"])?.classList.add('selected')); [cite: 326]
                 });
 
                 switchJournalView('form-view'); window.scrollTo(0, 0); [cite: 327]
@@ -1174,7 +1174,7 @@
             const maxQuantity = parseFloat(document.getElementById('exit-quantity').dataset.max);
 
             if (isNaN(quantity) || quantity <= 0 || quantity > maxQuantity + 1e-9) {
-                showToast(`청산 수량/계약 수는 0보다 크고 ${formatNumber(maxQuantity)} 이하여야 합니다.`, "error"); return;
+                showToast(청산 수량/계약 수는 0보다 크고 ${formatNumber(maxQuantity)} 이하여야 합니다., "error"); return;
             }
             
             const exitData = { price, quantity, date };
@@ -1221,8 +1221,8 @@
                 });
             });
             const winRate = (winningTrades / journals.length) * 100;
-            winRateEl.textContent = `${winRate.toFixed(2)}%`;
-            winRateEl.className = `text-4xl font-bold ${winRate >= 50 ? 'text-blue-500' : 'text-red-500'}`;
+            winRateEl.textContent = ${winRate.toFixed(2)}%;
+            winRateEl.className = text-4xl font-bold ${winRate >= 50 ? 'text-blue-500' : 'text-red-500'};
 
              if (journals.length > 0) {
                 const Ratios = journals.map(j => {
@@ -1233,8 +1233,8 @@
                 
                 if (Ratios.length > 0) {
                     const averagePlRatio = Ratios.reduce((sum, r) => sum + r, 0) / Ratios.length;
-                    plRatioEl.textContent = `${averagePlRatio.toFixed(2)} : 1`;
-                    plRatioEl.className = `text-4xl font-bold ${averagePlRatio >= 1 ? 'text-green-500' : 'text-yellow-500'}`;
+                    plRatioEl.textContent = ${averagePlRatio.toFixed(2)} : 1;
+                    plRatioEl.className = text-4xl font-bold ${averagePlRatio >= 1 ? 'text-green-500' : 'text-yellow-500'};
                 } else {
                     plRatioEl.textContent = 'N/A';
                 }
@@ -1257,8 +1257,8 @@
             const monthlyPnl = {}; const quarterlyPnl = {};
             journals.forEach(j => {
                 const date = j.date;
-                const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                const quarter = `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`;
+                const month = ${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')};
+                const quarter = ${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1};
                 const pnl = j.exits.reduce((s, e) => s + calculatePnl(j,e), 0);
                 const pnlInKRW = j.currency === 'USD' ? pnl * exchangeRate : pnl;
                 monthlyPnl[month] = (monthlyPnl[month] || 0) + pnlInKRW;
@@ -1283,7 +1283,7 @@
             const summaryHtml = labels.map((label, index) => {
                 const value = data[index] * (statsCurrency === 'USD' ? 1 / exchangeRate : 1);
                 const colorClass = value >= 0 ? 'text-green-500' : 'text-red-500';
-                return `<span class="inline-block mx-2">${label}: <strong class="${colorClass}">${formatPrice(value, statsCurrency)}</strong></span>`;
+                return <span class="inline-block mx-2">${label}: <strong class="${colorClass}">${formatPrice(value, statsCurrency)}</strong></span>;
             }).join('');
             container.innerHTML = summaryHtml;
         }
@@ -1320,7 +1320,7 @@
                 responsive: true, maintainAspectRatio: false,
                 plugins: { 
                     legend: { display: type === 'doughnut', position: 'bottom' }, 
-                    tooltip: { callbacks: { label: c => isWinRate ? `${c.label}: ${c.parsed.toFixed(2)}%` : `${c.label}: ${formatPrice(c.raw, statsCurrency)}` } } 
+                    tooltip: { callbacks: { label: c => isWinRate ? ${c.label}: ${c.parsed.toFixed(2)}% : ${c.label}: ${formatPrice(c.raw, statsCurrency)} } } 
                 }
             };
 
@@ -1332,7 +1332,7 @@
                 }]}, options: commonOptions });
             } else { // bar
                  charts[canvasId] = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label, data: chartData, backgroundColor: chartData.map(d => d >= (isWinRate ? 50 : 0) ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'), borderWidth: 1 }] }, 
-                 options: { ...commonOptions, scales: { y: { beginAtZero: !isWinRate, ticks: { callback: v => isWinRate ? `${v.toFixed(0)}%` : formatPrice(v, statsCurrency) } } } } });
+                 options: { ...commonOptions, scales: { y: { beginAtZero: !isWinRate, ticks: { callback: v => isWinRate ? ${v.toFixed(0)}% : formatPrice(v, statsCurrency) } } } } });
             }
         }
         
@@ -1417,7 +1417,7 @@
         document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.addEventListener('click', () => switchLedgerView(btn.dataset.ledgerTab)));
 
         function renderLedgerCategoryTags(categories, type) {
-            const container = document.getElementById(`ledger-${type}-category-tags-container`);
+            const container = document.getElementById(ledger-${type}-category-tags-container);
             container.innerHTML = '';
             categories.forEach(cat => {
                 const button = document.createElement('button');
@@ -1425,7 +1425,7 @@
                 button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center';
                 button.dataset.tag = cat;
                 
-                button.innerHTML = `<span class="pl-3 pr-2 py-1">${cat}</span><span class="delete-tag-span pr-2 text-gray-500 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
+                button.innerHTML = <span class="pl-3 pr-2 py-1">${cat}</span><span class="delete-tag-span pr-2 text-gray-500 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>;
 
                 button.addEventListener('click', () => {
                     container.querySelectorAll('.tag.selected').forEach(t => t.classList.remove('selected'));
@@ -1441,7 +1441,7 @@
         }
         
         async function addLedgerCategory(type) {
-            const input = document.getElementById(`new-ledger-${type}-category`);
+            const input = document.getElementById(new-ledger-${type}-category);
             const newCategory = input.value.trim();
             if (newCategory && !localLedgerCategories[type].includes(newCategory)) {
                 const updatedCategories = { ...localLedgerCategories };
@@ -1449,7 +1449,7 @@
 
                 try {
                     await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(updatedCategories);
-                    showToast(`'${newCategory}' 카테고리가 추가되었습니다.`);
+                    showToast('${newCategory}' 카테고리가 추가되었습니다.);
                     input.value = '';
                 } catch(e) {
                     showToast("카테고리 추가 실패", "error");
@@ -1467,12 +1467,12 @@
             if (isCategoryInUse) {
                 showToast("사용 중인 카테고리는 삭제할 수 없습니다.", "error"); return;
             }
-            showConfirmModal(`'${category}' 카테고리를 삭제하시겠습니까?`, async () => {
+            showConfirmModal('${category}' 카테고리를 삭제하시겠습니까?, async () => {
                 const updatedCategories = { ...localLedgerCategories };
                 updatedCategories[type] = updatedCategories[type].filter(c => c !== category);
                 try {
                     await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(updatedCategories);
-                    showToast(`'${category}' 카테고리가 삭제되었습니다.`);
+                    showToast('${category}' 카테고리가 삭제되었습니다.);
                 } catch(e) {
                      showToast("카테고리 삭제 실패", "error");
                 }
@@ -1483,7 +1483,7 @@
             e.preventDefault();
             const id = document.getElementById('ledger-id').value;
             const type = document.querySelector('[data-group="ledger-type"] .toggle-btn.selected').dataset.value;
-            const selectedCategoryTag = document.querySelector(`#ledger-${type}-category-tags-container .tag.selected`);
+            const selectedCategoryTag = document.querySelector(#ledger-${type}-category-tags-container .tag.selected);
             const amount = parseFloat(unformatNumber(document.getElementById('ledger-amount').value));
 
             if(!selectedCategoryTag) { showToast("카테고리를 선택해주세요.", "error"); return; }
@@ -1554,16 +1554,16 @@
             const balance = totalIncome - totalExpense;
             const balanceEl = document.getElementById('ledger-balance');
             balanceEl.textContent = formatPrice(balance, 'KRW');
-            balanceEl.className = `text-3xl font-bold ${balance >= 0 ? 'text-blue-500' : 'text-red-500'}`;
+            balanceEl.className = text-3xl font-bold ${balance >= 0 ? 'text-blue-500' : 'text-red-500'};
 
             // 4. 파이 차트 렌더링
-            document.getElementById('ledger-expense-chart-title').textContent = `${displayString} 지출 구성`;
+            document.getElementById('ledger-expense-chart-title').textContent = ${displayString} 지출 구성;
             const sortedExpense = Object.entries(expenseByCategory).sort((a,b) => b[1] - a[1]);
             createLedgerChart('ledger-expense-chart', 'pie', 
                 sortedExpense.map(c => c[0]), 
                 [{ label: '지출', data: sortedExpense.map(c => c[1]) }]
             );
-            document.getElementById('ledger-income-chart-title').textContent = `${displayString} 수입 구성`;
+            document.getElementById('ledger-income-chart-title').textContent = ${displayString} 수입 구성;
             const sortedIncome = Object.entries(incomeByCategory).sort((a,b) => b[1] - a[1]);
             createLedgerChart('ledger-income-chart', 'pie', 
                 sortedIncome.map(c => c[0]), 
@@ -1574,12 +1574,12 @@
             const expenseSummaryContainer = document.getElementById('ledger-category-summary');
             expenseSummaryContainer.innerHTML = '';
             if(Object.keys(expenseByCategory).length === 0){
-                expenseSummaryContainer.innerHTML = `<p class="text-gray-500 text-center text-sm">지출 내역 없음</p>`;
+                expenseSummaryContainer.innerHTML = <p class="text-gray-500 text-center text-sm">지출 내역 없음</p>;
             } else {
                 Object.entries(expenseByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
                     const div = document.createElement('div');
                     div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
-                    div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-red-500">- ${formatPrice(total, 'KRW')}</span>`;
+                    div.innerHTML = <span class="font-medium">${category}</span><span class="font-bold text-red-500">- ${formatPrice(total, 'KRW')}</span>;
                     div.onclick = () => {
                         document.querySelectorAll('#ledger-analysis-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
                         document.querySelectorAll('#ledger-analysis-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
@@ -1592,12 +1592,12 @@
             const incomeSummaryContainer = document.getElementById('ledger-income-summary');
             incomeSummaryContainer.innerHTML = '';
             if(Object.keys(incomeByCategory).length === 0) {
-                 incomeSummaryContainer.innerHTML = `<p class="text-gray-500 text-center text-sm">수입 내역 없음</p>`;
+                 incomeSummaryContainer.innerHTML = <p class="text-gray-500 text-center text-sm">수입 내역 없음</p>;
             } else {
                 Object.entries(incomeByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
                     const div = document.createElement('div');
                     div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
-                    div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-green-500">+ ${formatPrice(total, 'KRW')}</span>`;
+                    div.innerHTML = <span class="font-medium">${category}</span><span class="font-bold text-green-500">+ ${formatPrice(total, 'KRW')}</span>;
                     div.onclick = () => {
                         document.querySelectorAll('#ledger-analysis-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
                         document.querySelectorAll('#ledger-analysis-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
@@ -1613,8 +1613,8 @@
             // 6. 추이 차트 렌더링
             let trendLabels, trendIncomeData, trendExpenseData;
             if(filterType === 'year') {
-                document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 월별 추이`;
-                trendLabels = Array.from({length: 12}, (_, i) => `${i + 1}월`);
+                document.getElementById('ledger-trend-chart-title').textContent = ${displayString} 월별 추이;
+                trendLabels = Array.from({length: 12}, (_, i) => ${i + 1}월);
                 const monthlyData = trendLabels.map(() => ({income: 0, expense: 0}));
                 entries.forEach(e => {
                     const month = e.date.getMonth();
@@ -1624,16 +1624,16 @@
                 trendIncomeData = monthlyData.map(d => d.income);
                 trendExpenseData = monthlyData.map(d => d.expense);
             } else { // month or quarter
-                document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 일별 추이`;
+                document.getElementById('ledger-trend-chart-title').textContent = ${displayString} 일별 추이;
                 const days = (end - start) / (1000 * 60 * 60 * 24);
                 trendLabels = Array.from({length: Math.ceil(days) + 1}, (_, i) => {
                     const d = new Date(start);
                     d.setDate(d.getDate() + i);
-                    return `${d.getMonth()+1}/${d.getDate()}`;
+                    return ${d.getMonth()+1}/${d.getDate()};
                 });
                 const dailyData = Object.fromEntries(trendLabels.map(l => [l, {income: 0, expense: 0}]));
                 entries.forEach(e => {
-                    const dayLabel = `${e.date.getMonth()+1}/${e.date.getDate()}`;
+                    const dayLabel = ${e.date.getMonth()+1}/${e.date.getDate()};
                     if(dailyData[dayLabel]) {
                         if (e.type === 'income') dailyData[dayLabel].income += e.amount;
                         else dailyData[dayLabel].expense += e.amount;
@@ -1657,7 +1657,7 @@
             const entriesToShow = entries.filter(e => e.type === type && (e.category || '미분류') === category);
 
             if(entriesToShow.length === 0) {
-                detailsContainer.innerHTML = `<p class="text-gray-500 text-center">상세 내역이 없습니다.</p>`;
+                detailsContainer.innerHTML = <p class="text-gray-500 text-center">상세 내역이 없습니다.</p>;
                 return;
             }
 
@@ -1667,7 +1667,7 @@
                     div.className = 'p-3 rounded-lg border border-gray-200 dark:border-[#4F4F4F] flex justify-between items-center bg-gray-50 dark:bg-[#1E1E1E]';
                     const amountClass = type === 'income' ? 'text-green-500' : 'text-red-500';
                     const sign = type === 'income' ? '+' : '-';
-                    div.innerHTML = `
+                    div.innerHTML = 
                         <div>
                             <p class="font-medium">${entry.date.toLocaleDateString()}</p>
                             <p class="text-sm text-gray-500">${entry.memo || (type === 'income' ? '수입' : '메모 없음')}</p>
@@ -1678,7 +1678,7 @@
                                 <button class="p-1 hover:text-blue-500 edit-ledger-btn" data-id="${entry.id}"><i data-lucide="edit" class="w-4 h-4"></i></button>
                                 <button class="p-1 hover:text-red-500 delete-ledger-btn" data-id="${entry.id}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                             </div>
-                        </div>`;
+                        </div>;
                     detailsContainer.appendChild(div);
                 });
             lucide.createIcons();
@@ -1695,9 +1695,9 @@
                 document.getElementById('ledger-date').value = entry.date.toISOString().split('T')[0];
                 document.getElementById('ledger-amount').value = formatNumber(entry.amount);
                 document.getElementById('ledger-memo').value = entry.memo;
-                document.querySelector(`.toggle-btn[data-value="${entry.type}"]`).click();
+                document.querySelector(.toggle-btn[data-value="${entry.type}"]).click();
                 if(entry.category) {
-                    document.querySelector(`#ledger-${entry.type}-category-tags-container .tag[data-tag="${entry.category}"]`)?.click();
+                    document.querySelector(#ledger-${entry.type}-category-tags-container .tag[data-tag="${entry.category}"])?.click();
                 }
             }
         }
@@ -1752,7 +1752,7 @@
                     responsive: true, maintainAspectRatio: false,
                     plugins: { 
                         legend: { display: type !== 'bar', position: 'bottom' },
-                        tooltip: { callbacks: { label: c => `${c.label}: ${formatPrice(c.raw, 'KRW')}` } } 
+                        tooltip: { callbacks: { label: c => ${c.label}: ${formatPrice(c.raw, 'KRW')} } } 
                     },
                     scales: (type === 'bar') ? { y: { beginAtZero: true, ticks: { callback: v => formatPrice(v, 'KRW') } } } : {}
                 }
@@ -1767,16 +1767,16 @@
             const month = date.getMonth();
             let start, end, displayString;
             if (filterType === 'month') {
-                displayString = `${year}년 ${month + 1}월`;
+                displayString = ${year}년 ${month + 1}월;
                 start = new Date(year, month, 1);
                 end = new Date(year, month + 1, 0, 23, 59, 59);
             } else if (filterType === 'quarter') {
                 const quarter = Math.floor(month / 3) + 1;
-                displayString = `${year}년 ${quarter}분기`;
+                displayString = ${year}년 ${quarter}분기;
                 start = new Date(year, (quarter - 1) * 3, 1);
                 end = new Date(year, quarter * 3, 0, 23, 59, 59);
             } else { // year
-                displayString = `${year}년`;
+                displayString = ${year}년;
                 start = new Date(year, 0, 1);
                 end = new Date(year, 11, 31, 23, 59, 59);
             }
@@ -1795,8 +1795,8 @@
             if (isNaN(price) || price === null) return '';
             const options = { maximumFractionDigits: 6 };
             const num = parseFloat(price);
-            if(currency === 'USD') return `$${num.toLocaleString('en-US', options)}`;
-            return `₩${num.toLocaleString('en-US', {maximumFractionDigits: (num % 1 === 0) ? 0 : 6})}`;
+            if(currency === 'USD') return $${num.toLocaleString('en-US', options)};
+            return ₩${num.toLocaleString('en-US', {maximumFractionDigits: (num % 1 === 0) ? 0 : 6})};
         };
         
         const formatPriceDisplay = (price, isBond) => {
@@ -1806,7 +1806,7 @@
         
         const formatDualCurrency = (pnlInKRW, originalCurrency) => {
             const pnlInUSD = pnlInKRW / exchangeRate;
-            return originalCurrency === 'KRW' ? `${formatPrice(pnlInKRW, 'KRW')} (${formatPrice(pnlInUSD, 'USD')})` : `${formatPrice(pnlInUSD, 'USD')} (${formatPrice(pnlInKRW, 'KRW')})`;
+            return originalCurrency === 'KRW' ? ${formatPrice(pnlInKRW, 'KRW')} (${formatPrice(pnlInUSD, 'USD')}) : ${formatPrice(pnlInUSD, 'USD')} (${formatPrice(pnlInKRW, 'KRW')});
         }
         
         function unformatPrice(value, isBond) {
@@ -1832,7 +1832,7 @@
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             toast.firstElementChild.textContent = message;
-            toast.className = `fixed bottom-5 right-5 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+            toast.className = fixed bottom-5 right-5 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'};
             toast.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
@@ -1841,7 +1841,7 @@
             document.getElementById('confirm-message').textContent = message;
             const okBtn = document.getElementById('confirm-ok-btn');
             okBtn.textContent = type;
-            okBtn.className = `text-white px-4 py-2 rounded-lg ${type === '삭제' ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`;
+            okBtn.className = text-white px-4 py-2 rounded-lg ${type === '삭제' ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'};
             confirmCallback = callback;
             openModal('confirm-modal');
         }
@@ -1944,6 +1944,3 @@
     </script>
 </body>
 </html>
-
-
-
