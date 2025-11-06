@@ -311,6 +311,10 @@
     </div>
     
     <div id="exit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md modal-content transform scale-95"><h2 class="text-2xl font-bold mb-6">청산 기록</h2><form id="exit-form"><input type="hidden" id="exit-journal-id"><div class="space-y-4"><div><label for="exit-date">청산 날짜</label><input type="date" id="exit-date" required class="mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg"></div><div><label for="exit-price">청산가</label><input type="text" inputmode="decimal" id="exit-price" required class="number-input mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg"></div><div><label for="exit-quantity" id="exit-quantity-label">청산 수량</label><input type="text" inputmode="numeric" id="exit-quantity" required class="number-input mt-1 w-full p-2 border border-gray-300 bg-white rounded-lg"><p class="text-xs text-gray-500 mt-1">남은 수량: <span id="remaining-quantity"></span></p></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">청산 추가</button></div></form></div></div>
+    
+    <!-- 메모/복기 모달 추가 -->
+    <div id="memo-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-xl modal-content transform scale-95"><h2 class="text-2xl font-bold mb-4 flex items-center"><i data-lucide="book-open-text" class="mr-3 text-blue-500"></i> 매매 복기 및 소감</h2><form id="memo-form"><input type="hidden" id="memo-journal-id"><div class="space-y-4"><div><label for="memo-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">복기 내용 (당시 소감, 감정 등)</label><textarea id="memo-content" rows="8" class="mt-1 w-full p-3 border border-gray-300 dark:border-[#4F4F4F] bg-white dark:bg-[#2d2d2d] rounded-lg resize-none text-sm" placeholder="매매를 복기하며 느낀 소감이나 당시 감정, 차트 분석 내용 등을 자유롭게 기록하세요."></textarea></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-memo-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">메모 저장</button></div></form></div></div>
+    
     <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm modal-content transform scale-95"><h2 id="confirm-title" class="text-xl font-bold mb-4">확인</h2><p id="confirm-message" class="text-gray-600 mb-6"></p><div class="flex justify-end space-x-3"><button type="button" id="confirm-cancel-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">취소</button><button type="button" id="confirm-ok-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">확인</button></div></div></div>
     <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"><p id="toast-message"></p></div>
     
@@ -704,19 +708,29 @@
                 
                 const borderColor = isClosed ? (totalPnlInKRW > 0 ? 'border-green-500' : 'border-red-500') : 'border-yellow-500';
                 const card = document.createElement('div');
-                card.className = `bg-white p-5 rounded-xl shadow-md border-l-4 ${borderColor}`;
+                card.className = `bg-white dark:bg-[#1E1E1E] p-5 rounded-xl shadow-md border-l-4 ${borderColor}`;
                 
                 let holdingPeriodHtml = '';
-                if (isClosed && journal.exits.length > 0) {
+                let holdingPeriodDays = 0;
+
+                if (journal.exits && journal.exits.length > 0) {
                      const lastExitDate = new Date(Math.max(...journal.exits.map(e => (e.date.toDate ? e.date.toDate() : new Date(e.date)).getTime())));
                     const entryDate = journal.date;
                     const diffTime = Math.abs(lastExitDate - entryDate);
-                    const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-                    holdingPeriodHtml = `<p><strong>보유 기간:</strong> ${diffDays}일</p>`;
+                    holdingPeriodDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+                    if (isClosed) {
+                        holdingPeriodHtml = `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><strong>보유 기간:</strong> ${holdingPeriodDays}일</p>`;
+                    }
+                }
+                
+                // 요청하신대로 날짜 옆에 보유일수 표시
+                let dateDisplay = journal.date.toLocaleDateString();
+                if (holdingPeriodDays > 0) {
+                    dateDisplay += ` <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(${holdingPeriodDays}일)</span>`;
                 }
 
                 const exitsHtml = journal.exits && journal.exits.length > 0 ? `
-                    <div class="mt-3 pt-3 border-t border-gray-200 space-y-1 text-xs">
+                    <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-1 text-xs">
                         <h5 class="font-semibold mb-1">청산 내역</h5>
                         ${journal.exits.map(exit => {
                             const exitPnl = calculatePnl(journal, exit);
@@ -729,29 +743,36 @@
                 
                 const amountLabel = isSpot ? '수량' : '계약';
                 
+                // 틱가치/틱단위 폰트 크기 및 색상 조정
+                const futuresInfoHtml = !isSpot ? 
+                    `<p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><strong>틱가치/단위:</strong> ${formatPrice(journal.tickValue, journal.currency)} / ${formatNumber(journal.tickSize)}</p>` : '';
+                
+                // 메모 버튼 추가
+                const memoIndicator = journal.memo ? `<i data-lucide="message-square" class="w-4 h-4 text-blue-500"></i>` : '';
+
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-3">
                         <div>
-                            <p class="font-bold text-lg">${journal.date.toLocaleDateString()}</p>
-                            <p class="font-semibold text-md text-gray-800">${journal.ticker} <span class="text-xs font-medium text-gray-400 align-top">${isSpot ? '현물' : '선물'}</span></p>
+                            <p class="font-bold text-lg">${dateDisplay}</p>
+                            <p class="font-semibold text-xl text-gray-800 dark:text-white">${journal.ticker} <span class="text-xs font-medium text-gray-400 align-top">${isSpot ? '현물' : '선물'}</span></p>
                             <span class="text-sm font-bold ${journal.position === 'long' ? 'text-green-500' : 'text-red-500'}">${journal.position === 'long' ? '🟢 롱' : '🔴 숏'}</span>
                             <span class="text-sm text-gray-500 ml-2">${journal.strategy}</span>
                         </div>
-                        <div class="flex space-x-2">
-                             ${!isClosed ? `<button class="p-2 hover:bg-gray-100 rounded-full exit-btn" data-id="${journal.id}"><i data-lucide="log-out" class="w-5 h-5 text-blue-500"></i></button>` : ''}
-                            <button class="p-2 hover:bg-gray-100 rounded-full edit-btn" data-id="${journal.id}"><i data-lucide="edit" class="w-5 h-5 text-gray-500"></i></button>
-                            <button class="p-2 hover:bg-gray-100 rounded-full delete-btn" data-id="${journal.id}"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></button>
+                        <div class="flex space-x-1">
+                             <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full memo-btn" data-id="${journal.id}" title="매매 복기 및 소감">${memoIndicator}<i data-lucide="file-text" class="w-5 h-5 text-gray-500"></i></button>
+                             ${!isClosed ? `<button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full exit-btn" data-id="${journal.id}" title="청산 기록"><i data-lucide="log-out" class="w-5 h-5 text-blue-500"></i></button>` : ''}
+                            <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full edit-btn" data-id="${journal.id}" title="수정"><i data-lucide="edit" class="w-5 h-5 text-gray-500"></i></button>
+                            <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full delete-btn" data-id="${journal.id}" title="삭제"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></button>
                         </div>
                     </div>
-                    <div class="space-y-2 text-sm text-gray-700 mb-3">
+                    <div class="space-y-1 text-sm text-gray-700 dark:text-gray-300 mb-3">
                         <p><strong>진입:</strong> ${formatPrice(journal.entryPrice, journal.currency)} / <strong>${amountLabel}:</strong> ${formatNumber(totalAmount)}</p>
                         <p><strong>목표:</strong> ${formatPrice(journal.targetPrice, journal.currency)} / <strong>손절:</strong> ${formatPrice(journal.stopLoss, journal.currency)}</p>
-                        ${ !isSpot ? `<p><strong>틱가치/단위:</strong> ${formatPrice(journal.tickValue, journal.currency)} / ${formatNumber(journal.tickSize)}</p>` : '' }
-                        ${holdingPeriodHtml}
-                        ${journal.exits && journal.exits.length > 0 ? `<p class="font-bold"><strong>총 실현 손익:</strong> <span class="${pnlClass}">${formatDualCurrency(totalPnlInKRW, journal.currency)}</span></p>` : ''}
+                        ${futuresInfoHtml}
+                        ${journal.exits && journal.exits.length > 0 ? `<p class="font-bold pt-2"><strong>총 실현 손익:</strong> <span class="${pnlClass}">${formatDualCurrency(totalPnlInKRW, journal.currency)}</span></p>` : ''}
                     </div>
-                    <div><h4 class="font-semibold text-xs text-gray-500 mb-1">진입 근거</h4><div class="flex flex-wrap gap-1">${(journal.entryTags || []).map(tag => `<span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}</div></div>
-                    <div class="mt-2"><h4 class="font-semibold text-xs text-gray-500 mb-1">심리 상태</h4><div class="flex flex-wrap gap-1">${(journal.psychologyTags || []).map(tag => `<span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}</div></div>
+                    <div><h4 class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">진입 근거</h4><div class="flex flex-wrap gap-1">${(journal.entryTags || []).map(tag => `<span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}</div></div>
+                    <div class="mt-2"><h4 class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">심리 상태</h4><div class="flex flex-wrap gap-1">${(journal.psychologyTags || []).map(tag => `<span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}</div></div>
                     ${exitsHtml}`;
                 journalList.appendChild(card);
             });
@@ -773,6 +794,8 @@
             document.querySelectorAll('#journal-list .delete-btn').forEach(btn => btn.addEventListener('click', handleDeleteJournal));
             document.querySelectorAll('#journal-list .edit-btn').forEach(btn => btn.addEventListener('click', handleEditJournal));
             document.querySelectorAll('#journal-list .exit-btn').forEach(btn => btn.addEventListener('click', handleOpenExitModal));
+            // 메모 버튼 이벤트 리스너 추가
+            document.querySelectorAll('#journal-list .memo-btn').forEach(btn => btn.addEventListener('click', handleOpenMemoModal));
         }
         
         function renderJournalTags(tags, containerId, type) {
@@ -781,10 +804,10 @@
             tags.forEach(tag => {
                 const button = document.createElement('button');
                 button.type = 'button';
-                button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center';
+                button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center dark:bg-[#4F4F4F] dark:text-gray-200';
                 button.dataset.tag = tag;
                 
-                button.innerHTML = `<span class="pl-3 pr-2 py-1">${tag}</span><span class="delete-tag-span pr-2 text-gray-500 hover:text-red-500"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
+                button.innerHTML = `<span class="pl-3 pr-2 py-1">${tag}</span><span class="delete-tag-span pr-2 text-gray-500 dark:text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
 
                 button.addEventListener('click', (e) => e.currentTarget.classList.toggle('selected'));
                 button.querySelector('.delete-tag-span').addEventListener('click', (e) => {
@@ -845,6 +868,8 @@
                 targetPrice: parseFloat(unformatNumber(document.getElementById('target-price').value)),
                 entryTags: Array.from(document.querySelectorAll('.entry-tags-container .tag.selected')).map(b => b.dataset.tag),
                 psychologyTags: Array.from(document.querySelectorAll('.psychology-tags-container .tag.selected')).map(b => b.dataset.tag),
+                // 기존 일지 수정 시 메모 필드를 유지해야 함.
+                memo: (journalId ? localJournals.find(j => j.id === journalId)?.memo : '') || '', 
             };
 
             if (assetType === 'spot') {
@@ -921,6 +946,36 @@
                 switchJournalView('form-view'); window.scrollTo(0, 0);
             }
         }
+
+        // 메모 모달 열기 함수
+        async function handleOpenMemoModal(e) {
+            const journalId = e.currentTarget.dataset.id;
+            const journal = await getJournalById(journalId);
+            if(journal) {
+                document.getElementById('memo-journal-id').value = journalId;
+                document.getElementById('memo-content').value = journal.memo || '';
+                openModal('memo-modal');
+            }
+        }
+
+        // 메모 모달 닫기 버튼 이벤트 리스너
+        document.getElementById('close-memo-modal-btn').addEventListener('click', () => closeModal('memo-modal'));
+        document.getElementById('memo-modal').addEventListener('click', e => { if (e.target.id === 'memo-modal') closeModal('memo-modal'); });
+
+        // 메모 폼 제출 처리
+        document.getElementById('memo-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const journalId = document.getElementById('memo-journal-id').value;
+            const memoContent = document.getElementById('memo-content').value.trim();
+
+            try {
+                await db.collection("users").doc(currentUser.uid).collection("journals").doc(journalId).update({ memo: memoContent });
+                showToast("매매 복기 내용이 저장되었습니다.");
+                closeModal('memo-modal');
+            } catch(error) {
+                showToast("메모 저장 실패: " + error.message, "error");
+            }
+        });
 
         async function handleOpenExitModal(e) {
             const journal = await getJournalById(e.currentTarget.dataset.id);
@@ -1177,7 +1232,7 @@
         }
         
         function switchLedgerView(tabId) {
-            document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.ledgerTab === tabId));
+            document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.ledger-tab === tabId));
             ['ledger-form-view', 'ledger-list-view', 'ledger-stats-view'].forEach(viewId => document.getElementById(viewId).classList.toggle('hidden', viewId !== tabId));
             if(tabId === 'ledger-list-view') renderLedgerListView();
             if(tabId === 'ledger-stats-view') renderLedgerStatsView();
@@ -1191,10 +1246,10 @@
             categories.forEach(cat => {
                 const button = document.createElement('button');
                 button.type = 'button';
-                button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center';
+                button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center dark:bg-[#4F4F4F] dark:text-gray-200';
                 button.dataset.tag = cat;
                 
-                button.innerHTML = `<span class="pl-3 pr-2 py-1">${cat}</span><span class="delete-tag-span pr-2 text-gray-500 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
+                button.innerHTML = `<span class="pl-3 pr-2 py-1">${cat}</span><span class="delete-tag-span pr-2 text-gray-500 dark:text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
 
                 button.addEventListener('click', () => {
                     container.querySelectorAll('.tag.selected').forEach(t => t.classList.remove('selected'));
@@ -1378,7 +1433,7 @@
             entriesToShow.sort((a,b) => b.date - a.date)
                 .forEach(entry => {
                     const div = document.createElement('div');
-                    div.className = 'p-3 rounded-lg border border-gray-200 dark:border-[#4F4F4F] flex justify-between items-center bg-gray-50 dark:bg-[#1E1E1E]';
+                    div.className = 'p-3 rounded-lg border border-gray-200 dark:border-[#4F4F4F] flex justify-between items-center bg-gray-50 dark:bg-[#2d2d2d]';
                     const amountClass = type === 'income' ? 'text-green-500' : 'text-red-500';
                     const sign = type === 'income' ? '+' : '-';
                     div.innerHTML = `
