@@ -23,87 +23,76 @@
         }
         .tab-btn { transition: all 0.3s ease; }
         .tab-btn.active { background-color: #4a90e2; color: white; font-weight: 700; }
-        .tag { transition: all 0.2s; }
-        .tag.selected {
+        .tag { transition: all 0.2s ease; cursor: pointer; }
+        .tag.selected { background-color: #4a90e2; color: white; }
+        .modal-backdrop { background-color: rgba(0,0,0,0.5); transition: opacity 0.3s ease; }
+        .modal-content { transition: transform 0.3s ease; }
+        
+        .toggle-group { display: flex; border-radius: 0.75rem; padding: 0.25rem; background-color: #e5e7eb; }
+        .toggle-btn { flex: 1; padding: 0.5rem 0; border-radius: 0.5rem; border: none; background-color: transparent; font-weight: 500; transition: all 0.2s ease-in-out; cursor: pointer; }
+        .toggle-btn.selected { background-color: white; color: #3b82f6; font-weight: 700; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); }
+        
+        .chart-container { position: relative; height: 300px; width: 100%; }
+        .tag.selected .delete-tag-span { color: white; }
+        .tag.selected .delete-tag-span:hover { color: #fecaca; }
+
+        /* Updated Dark Mode Styles */
+        .dark body { background-color: #121212; color: #E0E0E0; }
+        .dark h1, .dark h2, .dark h3 { color: #FFFFFF; }
+        .dark p, .dark label, .dark span, .dark strong { color: #E0E0E0; }
+        .dark header p, .dark .text-gray-500, .dark .main-tab-btn { color: #BDBDBD; }
+        .dark .main-tab-btn.active { color: #3b82f6; border-color: #3b82f6;}
+        .dark #auth-info { color: #828282; }
+        .dark #theme-toggle:hover, .dark #logout-btn:hover { background-color: #2d2d2d; }
+        .dark nav, .dark form, .dark .bg-white { background-color: #1E1E1E; }
+        .dark .tab-btn { color: #E0E0E0; }
+        .dark .tab-btn.active { background-color: #3b82f6; color: white; }
+        .dark input, .dark .toggle-group, .dark select, .dark textarea { background-color: #2d2d2d; border-color: #4F4F4F; color: #E0E0E0; }
+        .dark input::placeholder, .dark textarea::placeholder { color: #828282; }
+        .dark .toggle-btn { color: #BDBDBD; }
+        .dark .toggle-btn.selected { background-color: #4F4F4F; color: #FFFFFF; font-weight: 700; box-shadow: none; }
+        .dark .tag.selected { background-color: #3b82f6; color: #ffffff; }
+        .dark .entry-tags-container .tag.selected { background-color: #16a34a; }
+        .dark .psychology-tags-container .tag.selected { background-color: #9333ea; }
+        .dark .border-blue-200 { border-color: #3b82f6; }
+        .dark .border-green-200 { border-color: #16a34a; }
+        .dark .border-purple-200 { border-color: #9333ea; }
+        .dark .bg-blue-50 { background-color: #2d2d2d; border-color: #4F4F4F; }
+        .dark .text-blue-800 { color: #E0E0E0; }
+        .dark .bg-gray-200 { background-color: #333333; }
+        .dark .text-gray-700 { color: #E0E0E0; }
+        .dark .text-gray-600 { color: #BDBDBD; }
+        .dark .text-gray-800 { color: #FFFFFF; }
+        .dark .bg-green-100 { background-color: rgba(22, 163, 74, 0.2); }
+        .dark .text-green-800 { color: #4ade80; }
+        .dark .bg-purple-100 { background-color: rgba(147, 51, 234, 0.2); }
+        .dark .text-purple-800 { color: #c084fc; }
+        .dark .border-gray-200 { border-color: #4F4F4F; }
+        .dark .bg-gray-50 { background-color: #2d2d2d; }
+        .dark .hover\:bg-gray-100:hover { background-color: #2d2d2d; }
+        .dark .bg-gray-300 { background-color: #4F4F4F; }
+        .dark .hover\:bg-gray-400:hover { background-color: #666666; }
+        .dark #ledger-category-summary > div:hover, .dark #ledger-income-summary > div:hover { background-color: #2d2d2d; }
+        .dark .bg-gray-50 { background-color: #2d2d2d; }
+        .dark .bg-gray-50 .text-gray-700 { color: #E0E0E0; }
+        .dark .bg-gray-50 .text-gray-500 { color: #BDBDBD; }
+        
+        /* Category selection highlight */
+        #ledger-category-summary > div.selected, #ledger-income-summary > div.selected { background-color: #dbeafe; /* blue-100 */ }
+        .dark #ledger-category-summary > div.selected, .dark #ledger-income-summary > div.selected { background-color: #2563eb; /* blue-600 */ }
+
+        /* Quick-Edit Tag & Memo */
+        .quick-edit-btn { transition: all 0.2s; }
+        .quick-edit-btn:hover { transform: scale(1.05); }
+
+        /* Custom Styles for Timeframe Selector - START */
+        .entry-tags-container .tag { position: relative; }
+        .tag.selected.entry-tags-container { 
              /* Increased padding for selected tag to accommodate the hidden selector */
              padding: 8px 12px; 
              font-size: 1rem;
         }
-        .tag.selected .tag-text {
-            /* Adjust text alignment when the tag is enlarged */
-            line-height: 1; 
-        }
-
-        .toggle-group .toggle-btn { transition: all 0.2s ease; }
-        .toggle-group .toggle-btn.selected {
-            background-color: #3b82f6; /* Blue-500 */
-            color: white;
-            font-weight: 700;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-        }
-
-        /* Dark Mode Styles */
-        html.dark {
-            background-color: #121212;
-        }
-        html.dark .bg-white {
-            background-color: #1E1E1E;
-        }
-        html.dark .text-gray-800 {
-            color: #E0E0E0;
-        }
-        html.dark .text-gray-700 {
-            color: #B0B0B0;
-        }
-        html.dark .text-gray-500 {
-            color: #A0A0A0;
-        }
-        html.dark .border-gray-200 {
-            border-color: #333333;
-        }
-        html.dark .hover\:bg-gray-100:hover {
-            background-color: #2D2D2D;
-        }
-        html.dark .bg-gray-50 {
-            background-color: #2D2D2D;
-        }
-        html.dark .bg-gray-200 {
-            background-color: #4F4F4F;
-        }
-        html.dark .hover\:bg-gray-300:hover {
-            background-color: #666666;
-        }
-        html.dark .bg-gray-300 {
-            background-color: #424242;
-        }
-        html.dark .border-gray-100 {
-            border-color: #333;
-        }
-        html.dark .bg-green-100 {
-            background-color: #104C10;
-        }
-        html.dark .text-green-800 {
-            color: #A7F3D0;
-        }
-        html.dark .border-green-300 {
-            border-color: #34D399;
-        }
-        html.dark .bg-purple-100 {
-            background-color: #4C1D95;
-        }
-        html.dark .text-purple-800 {
-            color: #C4B5FD;
-        }
-        html.dark .modal-content {
-            border: 1px solid #333;
-        }
-
-        /* New: Timeframe Selector Styles */
-        .tag.selected .timeframe-selector { 
-            display: flex !important;
-            /* Override the default hidden state when selected */
-        }
-
+        
         .tag .timeframe-selector {
             position: absolute;
             z-index: 20; 
@@ -114,523 +103,373 @@
             /* Initially hidden, controlled by JS and .selected class */
             display: none; 
         }
+        .tag.selected .timeframe-selector { 
+            display: flex !important;
+            /* Override the default hidden state when selected */
+        }
 
         .timeframe-button.selected {
             background-color: #2563eb; /* Blue-600 */
             color: white;
             font-weight: 700;
         }
+        .dark .timeframe-button.selected {
+            background-color: #3b82f6; /* Blue-500 in dark mode */
+        }
+
+        /* Custom Styles for Timeframe Selector - END */
+
     </style>
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 </head>
-<body class="bg-gray-50 dark:bg-[#121212] transition-colors duration-300">
-    <div id="login-view" class="h-screen flex items-center justify-center p-4 hidden">
-        <div class="bg-white dark:bg-[#1E1E1E] p-10 rounded-xl shadow-2xl text-center w-full max-w-md">
-            <h1 class="text-3xl font-extrabold mb-4 text-gray-800 dark:text-white">매매일지 & 가계부</h1>
-            <p class="text-gray-600 dark:text-gray-400 mb-6">데이터 저장을 위해 Google 로그인이 필요합니다.</p>
-            <button id="login-btn" class="bg-blue-600 text-white px-6 py-3 rounded-xl shadow-lg hover:bg-blue-700 transition-colors font-bold flex items-center justify-center w-full">
-                <i data-lucide="log-in" class="w-5 h-5 mr-2"></i>
+<body class="bg-gray-100">
+
+    <div id="login-view" class="flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">나의 매매일지 & 가계부 📝</h1>
+            <p class="text-lg md:text-xl text-gray-500 mb-8">당신의 모든 기록을 통해 성장하세요!</p>
+            <button id="login-btn" class="bg-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center justify-center">
+           
+                 <svg class="w-6 h-6 mr-3" viewBox="0 0 48 48"><defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath><path clip-path="url(#b)" fill="#FBBC05" d="M0 37V11l17 13z"/><path clip-path="url(#b)" fill="#EA4335" d="M0 11l17 13 7-6.1L48 14V0H0z"/><path clip-path="url(#b)" fill="#34A853" d="M0 37l30-23 7.9 1L48 0v48H0z"/><path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/></svg>
                 Google 계정으로 로그인
-            </button>
+         
+           </button>
         </div>
     </div>
 
-    <div id="app-container" class="min-h-screen p-4 sm:p-8 hidden">
+    <div id="app-container" class="max-w-7xl mx-auto p-4 md:p-8 hidden">
         
-        <header class="flex justify-between items-center mb-6">
-            <div class="flex items-center space-x-4">
-                <h1 class="text-3xl font-extrabold text-gray-800 dark:text-white">나의 자산 기록</h1>
-                <p id="auth-info" class="text-sm text-gray-500 dark:text-gray-400"></p>
+        <header class="mb-6 relative flex items-center justify-center">
+            <div class="text-center px-16 sm:px-20">
+                <h1 class="text-3xl md:text-4xl font-bold text-center mb-2">나의 기록 관리</h1>
+                
+ <p class="text-center text-gray-500">매매일지 & 가계부</p>
+                <div id="auth-info" class="text-center text-xs mt-2"></div>
             </div>
-            <div class="flex items-center space-x-3">
-                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-300" title="테마 전환">
-                    <i id="sun-icon" data-lucide="sun" class="w-6 h-6"></i>
-                    <i id="moon-icon" data-lucide="moon" class="w-6 h-6 hidden"></i>
-                </button>
-                <button id="logout-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-xl hover:bg-gray-400 font-semibold dark:bg-[#4F4F4F] dark:text-white dark:hover:bg-[#666]">
-                    로그아웃
-                </button>
+            <div class="absolute top-0 right-0 flex items-center h-full space-x-2">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 transition-colors"><i id="sun-icon" data-lucide="sun" class="h-6 w-6"></i><i id="moon-icon" data-lucide="moon" class="h-6 w-6"></i></button>
+                
+ <button id="logout-btn" title="로그아웃" class="text-sm font-semibold hover:text-red-500 transition-colors p-2 rounded-md hover:bg-gray-200"><i data-lucide="log-out" class="h-5 w-5"></i></button>
             </div>
         </header>
-        
-        <div class="flex border-b border-gray-200 dark:border-gray-700 mb-6 sticky top-0 z-10 bg-gray-50 dark:bg-[#121212] transition-colors duration-300">
-            <button data-main-tab="journal-container" class="main-tab-btn py-3 px-6 text-gray-600 dark:text-gray-300 active" title="트레이딩 일지 기록 및 분석">
-                <i data-lucide="clipboard-list" class="w-5 h-5 inline-block mr-2 align-text-bottom"></i>
-                매매일지
-            </button>
-            <button data-main-tab="ledger-container" class="main-tab-btn py-3 px-6 text-gray-600 dark:text-gray-300" title="가계부 기록 및 분석">
-                <i data-lucide="wallet" class="w-5 h-5 inline-block mr-2 align-text-bottom"></i>
-                가계부
-            </button>
+
+        <div class="border-b-2 border-gray-200 dark:border-gray-700 mb-8">
+            <nav class="-mb-0.5 flex justify-center space-x-6">
+                <button data-main-tab="journal-container" class="main-tab-btn py-4 px-1 inline-flex items-center gap-2 text-base whitespace-nowrap text-gray-500 hover:text-blue-600 active"><i data-lucide="book-marked" class="w-5 h-5"></i>매매일지</button>
+         
+               <button data-main-tab="ledger-container" class="main-tab-btn py-4 px-1 inline-flex items-center gap-2 text-base whitespace-nowrap text-gray-500 hover:text-blue-600"><i data-lucide="piggy-bank" class="w-5 h-5"></i>가계부</button>
+            </nav>
         </div>
 
         <div id="journal-container">
-            <div class="flex space-x-3 mb-6">
-                <button data-tab="form-view" class="tab-btn active px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300" title="새 일지 작성">일지 작성</button>
-                <button data-tab="list-view" class="tab-btn px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300" title="기록된 일지 목록 보기">일지 목록</button>
-                <button data-tab="stats-view" class="tab-btn px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300" title="매매 통계 분석">매매 통계</button>
-            </div>
+            <nav class="flex justify-center bg-white rounded-xl shadow-md p-2 mb-8 space-x-1 sm:space-x-2 dark:bg-[#1E1E1E]">
+                <button data-tab="form-view" class="tab-btn text-gray-600 active w-full md:w-auto px-3 sm:px-4 md:px-6 py-3 rounded-lg 
+ text-sm md:text-base"><i data-lucide="plus-circle" class="inline-block w-4 h-4 sm:w-5 sm:h-5 mr-1 md:mr-2"></i>일지 작성</button>
+                <button data-tab="list-view" class="tab-btn text-gray-600 w-full md:w-auto px-3 sm:px-4 md:px-6 py-3 rounded-lg text-sm md:text-base"><i data-lucide="book-open" class="inline-block w-4 h-4 sm:w-5 sm:h-5 mr-1 md:mr-2"></i>내 일지</button>
+                <button data-tab="stats-view" class="tab-btn text-gray-600 w-full md:w-auto px-3 sm:px-4 md:px-6 py-3 rounded-lg text-sm md:text-base"><i data-lucide="bar-chart-2" class="inline-block w-4 h-4 sm:w-5 sm:h-5 mr-1 md:mr-2"></i>성과 분석</button>
+            </nav>
+    
+             <main id="journal-main-content">
+                <div id="form-view">
+                    <form id="journal-form" class="bg-white dark:bg-[#1E1E1E] p-6 md:p-8 rounded-2xl shadow-lg space-y-6 md:space-y-8">
+                        <input type="hidden" id="journal-id">
+                   
+         
+                        <div class="space-y-6">
+                            <h2 class="text-2xl font-bold mb-4 border-b-2 border-blue-200 pb-2 flex items-center"><i data-lucide="clipboard-list" class="mr-3 text-blue-500"></i>기본 정보</h2>
+                            
+  
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                                <div class="sm:col-span-2 space-y-3">
+                                   
+  <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">자산 유형</span>
+                                    <div class="toggle-group text-gray-600" data-group="asset-type"><button type="button" data-value="spot" class="toggle-btn selected">현물</button><button type="button" data-value="futures" class="toggle-btn">선물</button></div>
+                                </div>
+
+              
+                    <div class="sm:col-span-2 space-y-3">
+                                    <label for="ticker" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">종목 이름</label>
+                                    
+ <input type="text" id="ticker" placeholder="예: 삼성전자, NG" required class="w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d] text-base">
+                                </div>
+                            </div>
+
+                          
+   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div><label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">날짜</label><input type="date" id="date" required class="w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
+                                
             
-            <div id="form-view" class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-xl">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">매매일지 작성 / 수정</h2>
-                <form id="journal-form" class="space-y-6">
-                    <input type="hidden" id="journal-id">
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                            <label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">날짜</label>
-                            <input type="date" id="date" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
-                        </div>
-                        <div>
-                            <label for="ticker" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">종목명/티커</label>
-                            <input type="text" id="ticker" required placeholder="BTC, ES, 삼성전자 등" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200 uppercase">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">자산 구분</label>
-                            <div class="toggle-group flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden" data-group="asset-type">
-                                <button type="button" data-value="spot" class="toggle-btn selected flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="주식, 코인 등 현물">현물</button>
-                                <button type="button" data-value="futures" class="toggle-btn flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="해외/국내 선물">선물</button>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">통화</label>
-                            <div class="toggle-group flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden" data-group="form-currency">
-                                <button type="button" id="form-currency-krw-btn" class="toggle-btn flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="원화">₩ KRW</button>
-                                <button type="button" id="form-currency-usd-btn" class="toggle-btn selected flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="달러">＄ USD</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">매매 방향</label>
-                            <div class="toggle-group flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden" data-group="position">
-                                <button type="button" data-value="long" class="toggle-btn selected flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="매수 후 매도">롱 (Long)</button>
-                                <button type="button" data-value="short" class="toggle-btn flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="매도 후 매수">숏 (Short)</button>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">매매 전략</label>
-                            <div class="toggle-group flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden" data-group="strategy">
-                                <button type="button" data-value="단타" class="toggle-btn selected flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">단타</button>
-                                <button type="button" data-value="스윙" class="toggle-btn flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">스윙</button>
-                                <button type="button" data-value="장투" class="toggle-btn flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">장투</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                            <label for="entry-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">진입 가격</label>
-                            <input type="text" id="entry-price" required placeholder="가격" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
-                        </div>
-                        <div>
-                            <label for="target-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">목표 가격</label>
-                            <input type="text" id="target-price" required placeholder="가격" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
-                        </div>
-                        <div>
-                            <label for="stop-loss" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">손절 가격</label>
-                            <input type="text" id="stop-loss" required placeholder="가격" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
-                        </div>
-                        <div>
-                            <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" id="quantity-label">수량/계약 수</label>
-                            <input type="text" id="quantity" required placeholder="수량 또는 계약 수" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
-                        </div>
-                    </div>
-                    
-                    <div id="futures-fields" class="space-y-4 hidden border-t border-gray-200 dark:border-gray-700 pt-4">
-                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">선물 정보 (틱가치/틱단위)</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="col-span-full">
-                                <label for="futures-info-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">저장된 종목 정보 불러오기</label>
-                                <select id="futures-info-select" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200"></select>
-                            </div>
-                            <div>
-                                <label for="tick-value" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">틱 가치 (Tick Value)</label>
-                                <input type="text" id="tick-value" placeholder="예: 12.50" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
-                            </div>
-                            <div>
-                                <label for="tick-size" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">틱 단위 (Tick Size)</label>
-                                <input type="text" id="tick-size" placeholder="예: 0.25" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
-                            </div>
-                            <div class="flex items-end space-x-2">
-                                <button type="button" id="save-futures-info-btn" class="flex-1 bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 font-semibold text-sm">정보 저장</button>
-                                <button type="button" id="delete-futures-info-btn" class="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 font-semibold text-sm disabled:opacity-50" disabled>정보 삭제</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4 entry-tags-container">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">진입 근거 태그 (시간봉 필수 선택)</h3>
-                            <div id="entry-tags-container" class="flex flex-wrap gap-2 mb-3">
-                                </div>
-                            <div class="flex space-x-2">
-                                <input type="text" id="new-entry-tag" placeholder="새 진입 근거 태그 추가" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200 text-sm">
-                                <button type="button" class="add-entry-tag-btn bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 font-semibold text-sm" title="새 태그 추가">추가</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4 psychology-tags-container">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">심리 상태 태그</h3>
-                            <div id="psychology-tags-container" class="flex flex-wrap gap-2 mb-3">
-                                </div>
-                            <div class="flex space-x-2">
-                                <input type="text" id="new-psychology-tag" placeholder="새 심리 태그 추가" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200 text-sm">
-                                <button type="button" class="add-psychology-tag-btn bg-purple-500 text-white px-3 py-2 rounded-lg hover:bg-purple-600 font-semibold text-sm" title="새 태그 추가">추가</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <button type="button" id="clear-form-btn" class="bg-gray-300 text-gray-800 px-6 py-3 rounded-xl hover:bg-gray-400 font-bold dark:bg-[#4F4F4F] dark:text-white dark:hover:bg-[#666]">초기화</button>
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl shadow-lg hover:bg-blue-700 transition-colors font-bold">저장 / 수정</button>
-                    </div>
-                </form>
-            </div>
-
-            <div id="list-view" class="hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="journal-list">
-                    </div>
-            </div>
-
-            <div id="stats-view" class="hidden">
-                <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">매매 통계 분석</h2>
-                
-                <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-xl mb-6 flex items-center space-x-4">
-                    <div class="flex items-center space-x-2">
-                        <label for="exchange-rate-input" class="text-sm font-medium text-gray-700 dark:text-gray-300">현재 환율 (1 USD = KRW)</label>
-                        <input type="text" id="exchange-rate-input" class="exchange-rate-input number-input w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200 text-sm text-right">
-                    </div>
-                    <div class="flex items-center space-x-2">
-                         <label class="text-sm font-medium text-gray-700 dark:text-gray-300">통계 표시 통화</label>
-                        <div class="toggle-group flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden" data-group="stats-currency">
-                            <button type="button" id="stats-currency-krw-btn" class="toggle-btn selected px-3 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">₩ KRW</button>
-                            <button type="button" id="stats-currency-usd-btn" class="toggle-btn px-3 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">＄ USD</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md text-center">
-                        <p class="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">총 승률 (Win Rate)</p>
-                        <p id="total-win-rate" class="text-4xl font-extrabold text-blue-500">N/A</p>
-                        <p id="win-rate-context" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
-                    </div>
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md text-center">
-                        <p class="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">평균 손익비 (R:R Ratio)</p>
-                        <p id="average-pl-ratio" class="text-4xl font-extrabold text-green-500">N/A</p>
-                        <p id="pl-ratio-context" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
-                    </div>
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md text-center">
-                        <p class="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">총 실현 손익</p>
-                        <p id="total-realized-pnl" class="text-4xl font-extrabold text-gray-500">N/A</p>
-                        <p id="pnl-context" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md lg:col-span-1">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">손익 구성 (총 수익 vs. 총 손실)</h3>
-                        <div class="h-64 flex justify-center items-center">
-                            <canvas id="pnl-composition-chart"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md lg:col-span-2">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">월별 손익 추이</h3>
-                        <div class="h-64">
-                            <canvas id="monthly-pnl-chart"></canvas>
-                        </div>
-                        <div id="monthly-pnl-summary" class="flex flex-wrap justify-center text-sm mt-4 text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700 pt-3"></div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md my-6">
-                    <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">분기별 손익 추이</h3>
-                    <div class="h-64">
-                        <canvas id="quarterly-pnl-chart"></canvas>
-                    </div>
-                    <div id="quarterly-pnl-summary" class="flex flex-wrap justify-center text-sm mt-4 text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700 pt-3"></div>
-                </div>
-
-                <h3 class="text-2xl font-bold my-6 text-gray-800 dark:text-white">승률 분석</h3>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">진입 근거별 승률</h3>
-                        <div class="h-64">
-                            <canvas id="entry-win-rate-chart"></canvas>
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">심리 상태별 승률</h3>
-                        <div class="h-64">
-                            <canvas id="psychology-win-rate-chart"></canvas>
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">전략별 승률</h3>
-                        <div class="h-64">
-                            <canvas id="strategy-win-rate-chart"></canvas>
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">포지션별 승률</h3>
-                        <div class="h-64">
-                            <canvas id="position-win-rate-chart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                      <div><span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">포지션</span>
+                                    <div class="toggle-group text-gray-600" data-group="position"><button type="button" data-value="long" class="toggle-btn selected">🟢 롱</button><button type="button" data-value="short" class="toggle-btn">🔴 숏</button></div>
+                          
         </div>
-
-        <div id="ledger-container" class="hidden">
-            <div class="flex space-x-3 mb-6">
-                <button data-ledger-tab="ledger-form-view" class="tab-btn active px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300" title="새 내역 작성">내역 작성</button>
-                <button data-ledger-tab="ledger-list-view" class="tab-btn px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300" title="가계부 내역 목록 보기">내역 목록</button>
-                <button data-ledger-tab="ledger-stats-view" class="tab-btn px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300" title="가계부 통계 분석">가계부 통계</button>
-            </div>
-
-            <div id="ledger-form-view" class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-xl">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">가계부 내역 작성 / 수정</h2>
-                <form id="ledger-form" class="space-y-6">
-                    <input type="hidden" id="ledger-id">
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                            <label for="ledger-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">날짜</label>
-                            <input type="date" id="ledger-date" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
-                        </div>
-                        <div>
-                            <label for="ledger-amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">금액 (KRW)</label>
-                            <input type="text" id="ledger-amount" required placeholder="금액" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200 text-right">
-                        </div>
-                        <div class="col-span-1 sm:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">구분</label>
-                            <div class="toggle-group flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden" data-group="ledger-type">
-                                <button type="button" data-value="expense" class="toggle-btn selected flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="지출 내역">지출</button>
-                                <button type="button" data-value="income" class="toggle-btn flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="수입 내역">수입</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-                        <div id="ledger-expense-category-section">
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">지출 카테고리 (필수 선택)</h3>
-                            <div id="ledger-expense-category-tags-container" class="flex flex-wrap gap-2 mb-3">
+                                
+                                <div><span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">매매 전략</span>
+                       
+               <div class="toggle-group text-gray-600" data-group="strategy"><button type="button" data-value="단타" class="toggle-btn selected">단타</button><button type="button" data-value="스윙" class="toggle-btn">스윙</button><button type="button" data-value="장기" class="toggle-btn">장기</button></div>
                                 </div>
-                            <div class="flex space-x-2">
-                                <input type="text" id="new-ledger-expense-category" placeholder="새 지출 카테고리 추가" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200 text-sm">
-                                <button type="button" id="add-ledger-expense-category-btn" class="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 font-semibold text-sm">추가</button>
+                            </div>
+              
+               
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                                <div id="spot-fields" class="space-y-3">
+                   
+                   <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">수량</label>
+                                    <input type="text" inputmode="numeric" id="quantity" placeholder="예: 100" class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]">
+                           
+        </div>
+                                
+                                <div class="space-y-3">
+                              
+        <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">입력 통화</span>
+                                    <div class="toggle-group text-gray-600" data-group="form-currency"><button type="button" id="form-currency-krw-btn" class="toggle-btn">원 (₩)</button><button type="button" id="form-currency-usd-btn" class="toggle-btn selected">달러 ($)</button></div>
+                                </div>
+
+       
+                          <div><label for="entry-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">진입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="예: 10,000" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
+                                <div><label for="target-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">목표가</label><input type="text" inputmode="decimal" id="target-price" placeholder="예: 11,000" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
+ 
+                                <div class="sm:col-span-2"><label for="stop-loss" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="예: 9,500" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
+                            </div>
+                   
+                   
+                            <div id="futures-fields" class="hidden sm:col-span-2 space-y-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                       
+                      <div class="sm:col-span-3 bg-gray-50 dark:bg-[#2d2d2d] p-4 rounded-xl border border-gray-200 dark:border-[#4F4F4F]">
+                                        <h3 class="text-base font-semibold mb-3 flex justify-between items-center">
+                                 
+               선물 종목 정보 관리 (틱가치/단위)
+                                            <button type="button" id="delete-futures-info-btn" class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition text-xs flex items-center disabled:opacity-50 disabled:cursor-not-allowed" title="선택된 종목 정보를 삭제합니다.
+ (매매일지에서 사용 중이면 삭제 불가)">
+                                                <i data-lucide="trash-2" class="w-3 h-3 mr-1"></i> 삭제
+                                           
+   </button>
+                                        </h3>
+                                        <div class="flex flex-col sm:flex-row gap-2 mb-4">
+              
+                               <select id="futures-info-select" class="flex-grow p-3 border border-gray-300 dark:border-[#4F4F4F] rounded-lg bg-white dark:bg-[#1E1E1E] text-base">
+                                                <option value="">- 종목 선택 (틱가치/단위 불러오기) -</option>
+      
+                                       </select>
+                                            <button type="button" id="save-futures-info-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition text-sm font-semibold">정보 저장</button>
+      
+                                       </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                       
+                      <div><label for="tick-value" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">틱가치 ($)</label><input type="text" inputmode="decimal" id="tick-value" placeholder="예: 1" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]"></div>
+                                            <div><label for="tick-size" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">틱단위</label><input type="text" inputmode="decimal" id="tick-size" placeholder="예: 0.001" 
+ required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]"></div>
+                                        </div>
+                                    </div>
+                
+                 </div>
                             </div>
                         </div>
                         
-                        <div id="ledger-income-category-section" class="hidden">
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">수입 카테고리 (필수 선택)</h3>
-                            <div id="ledger-income-category-tags-container" class="flex flex-wrap gap-2 mb-3">
-                                </div>
-                            <div class="flex space-x-2">
-                                <input type="text" id="new-ledger-income-category" placeholder="새 수입 카테고리 추가" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200 text-sm">
-                                <button type="button" id="add-ledger-income-category-btn" class="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 font-semibold text-sm">추가</button>
+        
+                         <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <h2 class="text-2xl font-bold border-b-2 border-green-200 pb-2 flex items-center"><i data-lucide="siren" class="mr-3 text-green-500"></i>진입 근거 (환경/기술적 분석 태그)</h2>
+                            <div id="entry-tags-container" class="flex flex-wrap gap-2 mb-2 entry-tags-container"></div>
+   
+                           <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-entry-tag" placeholder="새로운 태그 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" class="add-entry-tag-btn bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition">추가</button></div>
+                        </div>
+                        
+ 
+                        <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <h2 class="text-2xl font-bold border-b-2 border-purple-200 pb-2 flex items-center"><i data-lucide="brain-circuit" class="mr-3 text-purple-500"></i>심리 상태 (감정/태도 태그)</h2>
+                            <div id="psychology-tags-container" class="flex 
+ flex-wrap gap-2 mb-2 psychology-tags-container"></div>
+                            <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-psychology-tag" placeholder="새로운 태그 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" class="add-psychology-tag-btn bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-600 transition">추가</button></div>
+                        </div>
+                   
+         
+                        <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <button type="button" id="clear-form-btn" class="bg-gray-400 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-500 transition">새로 작성</button>
+                         
+               <button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-600 transition"><i data-lucide="save" class="inline-block w-5 h-5 mr-2"></i>일지 저장</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="list-view" class="hidden">
+    
+                  <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl shadow-lg mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
+                        <div class="flex items-center space-x-2"><label for="list-exchange-rate" class="font-medium text-sm text-gray-600 dark:text-gray-300">환율:</label><input type="text" inputmode="numeric" id="list-exchange-rate" value="1,380" class="exchange-rate-input number-input w-28 p-2 border border-gray-300 bg-white dark:bg-[#2d2d2d] rounded-lg text-center"></div>
+                    </div>
+      
+                <div class="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-4 rounded-xl mb-6 flex items-center gap-3 dark:bg-[#2d2d2d] dark:border-[#4F4F4F] dark:text-gray-300"><i data-lucide="info" class="w-5 h-5 flex-shrink-0"></i><p>일지 우측의 <i data-lucide="log-out" class="inline-block w-4 h-4 mx-1"></i>(청산), <i data-lucide="edit" class="inline-block w-4 h-4 mx-1"></i>(수정), <i data-lucide="trash-2" class="inline-block w-4 h-4 mx-1"></i>(삭제) 아이콘으로 관리하세요.</p></div>
+                    <div id="journal-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+                </div>
+     
+               <div id="stats-view" class="hidden space-y-8">
+                    <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl shadow-lg mb-6 flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-4">
+                        <div class="flex items-center space-x-2"><label for="stats-exchange-rate" class="font-medium text-sm text-gray-600 dark:text-gray-300">환율:</label><input type="text" inputmode="numeric" id="stats-exchange-rate" value="1,380" class="exchange-rate-input number-input w-28 p-2 border border-gray-300 bg-white dark:bg-[#2d2d2d] rounded-lg text-center"></div>
+       
+                  <div class="toggle-group text-gray-600 w-full sm:w-auto" data-group="stats-currency"><button id="stats-currency-krw-btn" class="toggle-btn selected">원 (₩)</button><button id="stats-currency-usd-btn" class="toggle-btn">달러 ($)</button></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="bg-white dark:bg-[#1E1E1E] 
+ p-6 rounded-2xl shadow-lg text-center space-y-2"><h3 class="text-xl font-bold mb-1">총 승률</h3><p id="total-win-rate" class="text-4xl font-extrabold text-blue-500">N/A</p><p id="win-rate-context" class="text-sm text-gray-500 dark:text-gray-400 min-h-[20px]"></p></div>
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg text-center space-y-2"><h3 class="text-xl font-bold mb-1">평균 손익비</h3><p id="average-pl-ratio" class="text-4xl font-extrabold text-green-500">N/A</p><p id="pl-ratio-context" class="text-sm text-gray-500 dark:text-gray-400 min-h-[20px]"></p></div>
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg text-center space-y-2"><h3 class="text-xl font-bold mb-1">총 실현 손익</h3><p id="total-realized-pnl" class="text-4xl 
+ font-extrabold text-gray-500">N/A</p><p id="pnl-context" class="text-sm text-gray-500 dark:text-gray-400 min-h-[20px]"></p></div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg lg:col-span-1"><h3 class="text-xl font-bold mb-4">총 손익 구성</h3><div class="chart-container"><canvas id="pnl-composition-chart"></canvas></div></div>
+             
+               <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg lg:col-span-2"><h3 class="text-xl font-bold mb-4">월별 손익</h3><div class="chart-container"><canvas id="monthly-pnl-chart"></canvas></div><div id="monthly-pnl-summary" class="mt-4 text-sm text-center"></div></div>
+                    </div>
+                    <div class="grid grid-cols-1"><div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">분기별 손익</h3><div class="chart-container"><canvas id="quarterly-pnl-chart"></canvas></div><div id="quarterly-pnl-summary" class="mt-4 text-sm text-center"></div></div></div>
+                
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">진입 근거별 승률</h3><div class="chart-container"><canvas id="entry-win-rate-chart"></canvas></div></div>
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">심리 상태별 승률</h3><div class="chart-container"><canvas id="psychology-win-rate-chart"></canvas></div></div>
+                   
+             <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">매매 전략별 승률</h3><div class="chart-container"><canvas id="strategy-win-rate-chart"></canvas></div></div>
+                    </div>
+                    <div class="grid grid-cols-1"><div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">롱/숏 포지션 승률</h3><div class="chart-container"><canvas id="position-win-rate-chart"></canvas></div></div></div>
+                </div>
+            </main>
+ 
+        </div>
+
+        <div id="ledger-container" class="hidden">
+            <nav class="flex justify-center bg-white dark:bg-[#1E1E1E] rounded-xl shadow-md p-2 mb-8 space-x-1 sm:space-x-2">
+                <button data-ledger-tab="ledger-form-view" class="tab-btn text-gray-600 active w-full md:w-auto px-4 md:px-6 py-3 rounded-lg"><i data-lucide="plus-circle" class="inline-block w-5 h-5 mr-2"></i>내역 입력</button>
+                <button data-ledger-tab="ledger-list-view" class="tab-btn text-gray-600 w-full md:w-auto px-4 md:px-6 py-3 rounded-lg"><i data-lucide="list" class="inline-block w-5 
+ h-5 mr-2"></i>상세 내역</button>
+                <button data-ledger-tab="ledger-stats-view" class="tab-btn text-gray-600 w-full md:w-auto px-4 md:px-6 py-3 rounded-lg"><i data-lucide="pie-chart" class="inline-block w-5 h-5 mr-2"></i>통계 분석</button>
+            </nav>
+            <main id="ledger-main-content">
+                <div id="ledger-form-view">
+                    <form id="ledger-form" class="bg-white dark:bg-[#1E1E1E] p-6 
+ md:p-8 rounded-2xl shadow-lg space-y-6 md:space-y-8">
+                        <input type="hidden" id="ledger-id">
+                        
+                        <div class="space-y-6">
+                     
+               <h2 class="text-2xl font-bold mb-4 flex items-center border-b-2 border-blue-200 pb-2"><i data-lucide="edit-3" class="mr-3 text-blue-500"></i>가계부 내역 입력</h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                                <div class="sm:col-span-2 space-y-3">
+             
+                         <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">내역 유형</span>
+                                    <div class="toggle-group text-gray-600" data-group="ledger-type"><button type="button" data-value="expense" class="toggle-btn selected">💸 지출</button><button type="button" data-value="income" class="toggle-btn">💰 수입</button></div>
+                      
+                    </div>
+
+                                <div><label for="ledger-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">날짜</label><input type="date" id="ledger-date" required class="w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
+                                <div><label for="ledger-amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">금액</label><input type="text" 
+ inputmode="numeric" id="ledger-amount" placeholder="금액 입력" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
+                            </div>
+                                
+                            
+ <div class="sm:col-span-2 space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700" id="ledger-expense-category-section">
+                                <h3 class="text-xl font-bold mb-2">지출 카테고리</h3>
+                                <div id="ledger-expense-category-tags-container" class="flex flex-wrap gap-2 mb-3"></div>
+                    
+              <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-ledger-expense-category" placeholder="새로운 지출 카테고리 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" id="add-ledger-expense-category-btn" class="bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition">추가</button></div>
+                            </div>
+
+                            <div class="sm:col-span-2 hidden space-y-4 pt-4 
+ border-t border-gray-200 dark:border-gray-700" id="ledger-income-category-section">
+                                <h3 class="text-xl font-bold mb-2">수입 카테고리</h3>
+                                <div id="ledger-income-category-tags-container" class="flex flex-wrap gap-2 mb-3"></div>
+                        
+                          <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-ledger-income-category" placeholder="새로운 수입 카테고리 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" id="add-ledger-income-category-btn" class="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition">추가</button></div>
+                            </div>
+
+                            <div class="sm:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700"><label for="ledger-memo" class="block text-sm 
+ font-medium text-gray-700 dark:text-gray-300 mb-1">메모</label><input type="text" id="ledger-memo" placeholder="메모 내용 (선택)" class="w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+      
+                       <button type="button" id="clear-ledger-form-btn" class="bg-gray-400 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-500 transition">새로 작성</button><button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-600 transition"><i data-lucide="save" class="inline-block w-5 h-5 mr-2"></i>내역 저장</button>
+                        </div>
+                    </form>
+        
+         </div>
+                <div id="ledger-list-view" class="hidden space-y-6">
+                    <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl shadow-lg flex flex-wrap items-center justify-center gap-4">
+                        <select id="ledger-list-filter-type" class="p-2 border border-gray-300 rounded-lg dark:bg-[#2d2d2d] dark:border-[#4F4F4F]"><option value="month">월별</option><option value="quarter">분기별</option><option value="year">연도별</option></select>
+         
+                 <div class="flex items-center gap-2">
+                            <button id="ledger-list-prev-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#2d2d2d]"><i data-lucide="chevron-left"></i></button>
+                            <span id="ledger-list-period-display" class="font-bold text-lg w-40 text-center"></span>
+               
+              <button id="ledger-list-next-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#2d2d2d]"><i data-lucide="chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+             
+               <div class="lg:col-span-1 bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg space-y-4">
+                            <div>
+                                <h3 class="text-xl font-bold mb-4">카테고리별 지출</h3>
+                  
+                <div id="ledger-category-summary" class="space-y-2"></div>
+                            </div>
+                             <div class="border-t pt-4 dark:border-gray-700">
+                        
+          <h3 class="text-xl font-bold mb-4">카테고리별 수입</h3>
+                                <div id="ledger-income-summary" class="space-y-2"></div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div>
-                        <label for="ledger-memo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">메모/내용</label>
-                        <textarea id="ledger-memo" rows="2" placeholder="구입 품목이나 상세 내용을 적어주세요." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200"></textarea>
-                    </div>
-
-                    <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <button type="button" id="clear-ledger-form-btn" class="bg-gray-300 text-gray-800 px-6 py-3 rounded-xl hover:bg-gray-400 font-bold dark:bg-[#4F4F4F] dark:text-white dark:hover:bg-[#666]">초기화</button>
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl shadow-lg hover:bg-blue-700 transition-colors font-bold">저장 / 수정</button>
-                    </div>
-                </form>
-            </div>
-
-            <div id="ledger-list-view" class="hidden">
-                <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">기간별 내역 목록</h2>
-                
-                <div class="flex items-center space-x-4 mb-6">
-                    <select id="ledger-list-filter-type" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-[#2d2d2d] dark:text-gray-200 text-sm">
-                        <option value="month">월별</option>
-                        <option value="quarter">분기별</option>
-                        <option value="year">연도별</option>
-                    </select>
-                    <div class="flex items-center space-x-2">
-                        <button id="ledger-list-prev-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
-                        <span id="ledger-list-period-display" class="font-semibold text-lg text-gray-800 dark:text-white">YYYY년 MM월</span>
-                        <button id="ledger-list-next-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+  
+                       <div class="lg:col-span-2 bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg">
+                            <h3 class="text-xl font-bold mb-4">상세 내역: <span id="ledger-detail-title">내역 선택</span></h3>
+                            <div id="ledger-entry-details" class="space-y-2"></div>
+       
+                  </div>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-1 space-y-6">
-                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-xl shadow-md">
-                            <h3 class="text-xl font-semibold mb-3 text-gray-800 dark:text-white border-b border-red-500 pb-2">지출 요약</h3>
-                            <div id="ledger-category-summary" class="space-y-1">
-                                </div>
+                <div id="ledger-stats-view" class="hidden space-y-8">
+                    <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl shadow-lg flex flex-wrap 
+ items-center justify-center gap-4">
+                        <select id="ledger-stats-filter-type" class="p-2 border border-gray-300 rounded-lg dark:bg-[#2d2d2d] dark:border-[#4F4F4F]"><option value="month">월별</option><option value="quarter">분기별</option><option value="year">연도별</option></select>
+                        <div class="flex items-center gap-2">
+                            <button id="ledger-stats-prev-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#2d2d2d]"><i data-lucide="chevron-left"></i></button>
+   
+                          <span id="ledger-stats-period-display" class="font-bold text-lg w-40 text-center"></span>
+                            <button id="ledger-stats-next-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#2d2d2d]"><i data-lucide="chevron-right"></i></button>
                         </div>
-                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-xl shadow-md">
-                            <h3 class="text-xl font-semibold mb-3 text-gray-800 dark:text-white border-b border-green-500 pb-2">수입 요약</h3>
-                            <div id="ledger-income-summary" class="space-y-1">
-                                </div>
-                        </div>
+            
+         </div>
+                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2 text-green-500">기간 내 수입</h3><p id="ledger-total-income" class="text-3xl font-bold">₩0</p></div>
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 
+ rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2 text-red-500">기간 내 지출</h3><p id="ledger-total-expense" class="text-3xl font-bold">₩0</p></div>
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2">합계</h3><p id="ledger-balance" class="text-3xl font-bold">₩0</p></div>
                     </div>
-
-                    <div class="lg:col-span-2 bg-white dark:bg-[#1E1E1E] p-6 rounded-xl shadow-md space-y-4">
-                        <h3 id="ledger-detail-title" class="text-xl font-bold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">내역 선택</h3>
-                        <div id="ledger-entry-details" class="space-y-3">
-                            </div>
-                    </div>
+                    <div class="grid grid-cols-1"><div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 id="ledger-trend-chart-title" class="text-xl font-bold mb-4">수입/지출 추이</h3><div 
+ class="chart-container"><canvas id="ledger-monthly-pnl-chart"></canvas></div></div></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 id="ledger-expense-chart-title" class="text-xl font-bold mb-4">카테고리별 지출</h3><div class="chart-container"><canvas id="ledger-expense-chart"></canvas></div></div>
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 id="ledger-income-chart-title" class="text-xl font-bold mb-4">카테고리별 수입</h3><div class="chart-container"><canvas id="ledger-income-chart"></canvas></div></div>
+   
+                  </div>
                 </div>
-            </div>
-
-            <div id="ledger-stats-view" class="hidden">
-                 <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">가계부 통계</h2>
-
-                <div class="flex items-center space-x-4 mb-6">
-                    <select id="ledger-stats-filter-type" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-[#2d2d2d] dark:text-gray-200 text-sm">
-                        <option value="month">월별</option>
-                        <option value="quarter">분기별</option>
-                        <option value="year">연도별</option>
-                    </select>
-                    <div class="flex items-center space-x-2">
-                        <button id="ledger-stats-prev-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
-                        <span id="ledger-stats-period-display" class="font-semibold text-lg text-gray-800 dark:text-white">YYYY년 MM월</span>
-                        <button id="ledger-stats-next-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md text-center">
-                        <p class="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">총 수입</p>
-                        <p id="ledger-total-income" class="text-4xl font-extrabold text-green-500">₩ 0</p>
-                    </div>
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md text-center">
-                        <p class="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">총 지출</p>
-                        <p id="ledger-total-expense" class="text-4xl font-extrabold text-red-500">₩ 0</p>
-                    </div>
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md text-center">
-                        <p class="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">순 자산 변화 (수입 - 지출)</p>
-                        <p id="ledger-balance" class="text-4xl font-extrabold text-blue-500">₩ 0</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md lg:col-span-2">
-                        <h3 id="ledger-trend-chart-title" class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">월별 수입/지출 추이</h3>
-                        <div class="h-80">
-                            <canvas id="ledger-monthly-pnl-chart"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md">
-                        <h3 id="ledger-expense-chart-title" class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">지출 구성</h3>
-                        <div class="h-64 flex justify-center items-center">
-                            <canvas id="ledger-expense-chart"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md">
-                        <h3 id="ledger-income-chart-title" class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">수입 구성</h3>
-                        <div class="h-64 flex justify-center items-center">
-                            <canvas id="ledger-income-chart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <footer class="text-center py-6 text-sm text-gray-500 dark:text-gray-600 mt-10 border-t border-gray-200 dark:border-gray-800">
-            Powered by Gemini & Firebase Firestore
-        </footer>
-
-    </div>
-    
-    <div id="exit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0">
-        <div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-sm modal-content transform scale-95">
-            <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">청산 기록</h2>
-            <form id="exit-form" class="space-y-4">
-                <input type="hidden" id="exit-journal-id">
-                <div class="text-sm text-gray-600 dark:text-gray-400">잔여 수량/계약 수: <strong id="remaining-quantity" class="text-lg font-bold text-blue-500"></strong></div>
-                <div>
-                    <label for="exit-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">청산 가격</label>
-                    <input type="text" id="exit-price" required placeholder="청산 가격" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
-                </div>
-                <div>
-                    <label for="exit-quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" id="exit-quantity-label">청산 수량</label>
-                    <input type="text" id="exit-quantity" required placeholder="청산 수량" data-max="0" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
-                </div>
-                <div>
-                    <label for="exit-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">청산 날짜</label>
-                    <input type="date" id="exit-date" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
-                </div>
-                <div class="flex justify-end space-x-3 pt-2">
-                    <button type="button" id="close-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 font-semibold dark:bg-[#4F4F4F] dark:text-white dark:hover:bg-[#666]">취소</button>
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold">청산 기록</button>
-                </div>
-            </form>
+            </main>
         </div>
     </div>
     
-    <div id="memo-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0">
-        <div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-lg modal-content transform scale-95">
-            <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">매매 복기 및 소감</h2>
-            <form id="memo-form" class="space-y-4">
-                <input type="hidden" id="memo-journal-id">
-                <div>
-                    <textarea id="memo-content" rows="8" placeholder="매매를 복기하고 느낀 점을 기록해 주세요." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200"></textarea>
-                </div>
-                <div class="flex justify-end space-x-3 pt-2">
-                    <button type="button" id="close-memo-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 font-semibold dark:bg-[#4F4F4F] dark:text-white dark:hover:bg-[#666]">취소</button>
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold">저장</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="tag-edit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0">
-        <div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-xl modal-content transform scale-95">
-            <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">매매일지 태그 수정</h2>
-            <form id="tag-edit-form" class="space-y-4">
-                <input type="hidden" id="tag-edit-journal-id">
-                
-                <div>
-                    <h3 class="font-semibold text-gray-800 dark:text-white mb-2 border-b border-gray-200 dark:border-gray-700 pb-1">진입 근거 태그 (시간봉 선택 기능은 작성 폼에서만 가능)</h3>
-                    <div id="tag-edit-entry-tags" class="flex flex-wrap gap-2">
-                        </div>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-gray-800 dark:text-white mb-2 border-b border-gray-200 dark:border-gray-700 pb-1">심리 상태 태그</h3>
-                    <div id="tag-edit-psychology-tags" class="flex flex-wrap gap-2">
-                        </div>
-                </div>
-
-                <div class="flex justify-end space-x-3 pt-2">
-                    <button type="button" id="close-tag-edit-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 font-semibold dark:bg-[#4F4F4F] dark:text-white dark:hover:bg-[#666]">취소</button>
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold">저장</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <div id="exit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-md modal-content transform scale-95"><h2 class="text-2xl font-bold mb-6">청산 기록</h2><form id="exit-form"><input type="hidden" id="exit-journal-id"><div class="space-y-4"><div><label for="exit-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 
+ mb-1">청산 날짜</label><input type="date" id="exit-date" required class="mt-1 w-full p-3 border border-gray-300 bg-white dark:bg-[#2d2d2d] rounded-lg"></div><div><label for="exit-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">청산가</label><input type="text" inputmode="decimal" id="exit-price" required class="number-input mt-1 w-full p-3 border border-gray-300 bg-white dark:bg-[#2d2d2d] rounded-lg"></div><div><label for="exit-quantity" id="exit-quantity-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">청산 수량</label><input type="text" inputmode="numeric" id="exit-quantity" required class="number-input mt-1 w-full p-3 border border-gray-300 bg-white dark:bg-[#2d2d2d] rounded-lg"><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">남은 수량: <span id="remaining-quantity"></span></p></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">청산 추가</button></div></form></div></div>
     
-    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0">
-        <div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-sm modal-content transform scale-95">
-            <h2 id="confirm-title" class="text-xl font-bold mb-4 text-gray-800 dark:text-white">확인</h2>
-            <p id="confirm-message" class="text-gray-600 dark:text-gray-300 mb-6"></p>
-            <div class="flex justify-end space-x-3">
-                <button type="button" id="confirm-cancel-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 font-semibold dark:bg-[#4F4F4F] dark:text-white dark:hover:bg-[#666]">취소</button>
-                <button type="button" id="confirm-ok-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 font-semibold">확인</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300">
-        <p id="toast-message"></p>
-    </div>
+    <div id="memo-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden 
+ modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-xl modal-content transform scale-95"><h2 class="text-2xl font-bold mb-4 flex items-center"><i data-lucide="book-open-text" class="mr-3 text-blue-500"></i> 매매 복기 및 소감</h2><form id="memo-form"><input type="hidden" id="memo-journal-id"><div class="space-y-4"><div><label for="memo-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">복기 내용 (당시 소감, 감정 등)</label><textarea id="memo-content" rows="8" class="mt-1 w-full p-3 border border-gray-300 dark:border-[#4F4F4F] bg-white dark:bg-[#2d2d2d] rounded-lg resize-none text-base" placeholder="매매를 복기하며 느낀 소감이나 당시 감정, 차트 분석 내용 등을 자유롭게 기록하세요."></textarea></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-memo-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">메모 저장</button></div></form></div></div>
+    
+    <div id="tag-edit-modal" class="fixed inset-0 z-50 flex 
+ items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-xl modal-content transform scale-95"><h2 class="text-2xl font-bold mb-6 flex items-center"><i data-lucide="tag" class="mr-3 text-purple-500"></i> 태그 수정</h2><form id="tag-edit-form"><input type="hidden" id="tag-edit-journal-id"><div class="space-y-6"><div id="tag-edit-entry-container"><h3 class="text-xl font-bold mb-3 border-b border-green-200 dark:border-green-700 pb-2 flex items-center text-green-600"><i data-lucide="siren" class="mr-2 w-5 h-5"></i> 진입 근거 (환경/기술적 분석)</h3><div id="tag-edit-entry-tags" class="flex flex-wrap gap-2"></div></div><div id="tag-edit-psychology-container"><h3 class="text-xl font-bold mb-3 border-b border-purple-200 dark:border-purple-700 pb-2 flex items-center text-purple-600"><i data-lucide="brain-circuit" class="mr-2 w-5 h-5"></i> 심리 상태 (감정/태도)</h3><div id="tag-edit-psychology-tags" class="flex flex-wrap gap-2"></div></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-tag-edit-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">태그 저장</button></div></form></div></div>
+    
+ 
+    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-sm modal-content transform scale-95"><h2 id="confirm-title" class="text-xl font-bold mb-4">확인</h2><p id="confirm-message" class="text-gray-600 dark:text-gray-300 mb-6"></p><div class="flex justify-end space-x-3"><button type="button" id="confirm-cancel-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 font-semibold">취소</button><button type="button" id="confirm-ok-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 font-semibold">확인</button></div></div></div>
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"><p id="toast-message"></p></div>
     
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
@@ -1076,8 +915,9 @@
                 const visibleTags = entryTagsWithTimeframes.slice(0, 4);
                 const hiddenTagsCount = Math.max(0, entryTagsWithTimeframes.length - 4);
                 
+                // Final Markup for Tag + Timeframe display (Restored original style classes)
                 const tagHtml = `<div class="flex flex-wrap gap-1">${visibleTags.map(tagData => `
-                                    <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 text-xs font-medium px-2.5 py-0.5 rounded-xl flex flex-col items-center border border-green-300 dark:border-green-700">
+                                    <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 text-xs font-medium px-2.5 py-0.5 rounded-full flex flex-col items-center">
                                         <span class="text-xs font-extrabold text-blue-500 dark:text-blue-300 leading-none mb-0.5">${tagData.timeframe}</span>
                                         <span class="leading-none">${tagData.tag}</span>
                                     </span>
@@ -1262,8 +1102,8 @@
                 const tag = isEntryTag ? tagData.tag : tagData;
                 const button = document.createElement('button');
                 button.type = 'button';
-                // Add 'relative' for dropdown positioning
-                button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center dark:bg-[#4F4F4F] dark:text-gray-200 relative entry-tags-container';
+                // Use original classes + 'relative' for positioning
+                button.className = `tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center dark:bg-[#4F4F4F] dark:text-gray-200 relative ${isEntryTag ? 'entry-tags-container' : 'psychology-tags-container'}`;
                 button.dataset.tag = tag;
                 if(isEntryTag) {
                     // Store available timeframes data for the tag (if available)
@@ -1318,7 +1158,7 @@
                 // New: Add Timeframe Selector UI for Entry Tags
                 if (isEntryTag) {
                     const tfSelector = document.createElement('div');
-                    // Add 'hidden' class by default, removed when the tag is selected by main click handler
+                    // Use standard tailwind classes
                     tfSelector.className = 'timeframe-selector hidden absolute z-20 top-full left-0 mt-1 p-2 bg-white dark:bg-[#2d2d2d] rounded-lg shadow-xl flex flex-wrap gap-1 border border-gray-300 dark:border-[#4F4F4F]';
                     
                     const availableTf = tagData.timeframes || TIME_FRAMES;
@@ -1791,479 +1631,6 @@
             }
         }
         
-        function resetForm() {
-            journalForm.reset();
-            document.getElementById('journal-id').value = '';
-            document.querySelectorAll('#journal-main-content .toggle-btn.selected').forEach(el => el.classList.remove('selected'));
-            document.querySelectorAll('#journal-form .number-input').forEach(el => el.value = '');
-            document.getElementById('date').value = new Date().toISOString().split('T')[0];
-            // quantity input 값 초기화
-            document.getElementById('quantity').value = '';
-            // 선물 정보 필드 초기화
-            document.getElementById('futures-info-select').value = '';
-            document.getElementById('tick-value').value = '';
-            document.getElementById('tick-size').value = '';
-            document.getElementById('delete-futures-info-btn').disabled = true; 
-            
-            // Set defaults
-            document.querySelector('[data-group="asset-type"] .toggle-btn[data-value="spot"]').click();
-            document.querySelector('[data-group="position"] .toggle-btn[data-value="long"]').classList.add('selected');
-            document.querySelector('[data-group="strategy"] .toggle-btn[data-value="단타"]').classList.add('selected');
-            document.getElementById('form-currency-usd-btn').classList.add('selected');
-            
-            // Fix: Clear all timeframe data attributes and classes
-            document.querySelectorAll('.entry-tags-container .tag, .psychology-tags-container .tag').forEach(t => {
-                t.classList.remove('selected');
-                if (t.dataset.timeframe) t.dataset.timeframe = '';
-                t.querySelector('.timeframe-selector')?.classList.add('hidden');
-                t.querySelectorAll('.timeframe-button.selected').forEach(tfb => tfb.classList.remove('selected'));
-            });
-        }
-        document.getElementById('clear-form-btn').addEventListener('click', resetForm);
-        // =======================================================
-        // ================== HOUSEHOLD LEDGER LOGIC =============
-        // =======================================================
-
-        async function initializeLedgerDefaults(userId) {
-            const categoriesDocRef = db.collection("users").doc(userId).collection("ledgerData").doc("categories");
-            const docSnap = await categoriesDocRef.get();
-            if (!docSnap.exists) {
-                await categoriesDocRef.set({
-                    expense: ['식비', '교통비', '공과금', '구독료', '자기개발비', '오락/여가', '선물'],
-                    income: ['월급', '부수입', '용돈', '금융소득']
-                });
-            }
-        }
-
-        function attachLedgerListeners(userId) {
-            if (unsubscribeLedger) unsubscribeLedger();
-            unsubscribeLedger = db.collection("users").doc(userId).collection("ledgerEntries").orderBy("date", "desc")
-                .onSnapshot((snapshot) => {
-                    localLedgerEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), date: doc.data().date.toDate() }));
-                    renderLedgerListView();
-                    renderLedgerStatsView();
-                });
-
-            if (unsubscribeLedgerCategories) unsubscribeLedgerCategories();
-            unsubscribeLedgerCategories = db.collection("users").doc(userId).collection("ledgerData").doc("categories")
-                .onSnapshot((doc) => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        localLedgerCategories = {
-                            expense: data.expense || data.list || [], 
-                            income: data.income || []
-                        };
-                    } else {
-                        localLedgerCategories = { expense: [], income: [] };
-                    }
-                    renderLedgerCategoryTags(localLedgerCategories.expense, 'expense');
-                    renderLedgerCategoryTags(localLedgerCategories.income, 'income');
-                });
-        }
-        
-        function switchLedgerView(tabId) {
-            document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.ledgerTab === tabId));
-            ['ledger-form-view', 'ledger-list-view', 'ledger-stats-view'].forEach(viewId => document.getElementById(viewId).classList.toggle('hidden', viewId !== tabId));
-            if(tabId === 'ledger-list-view') renderLedgerListView();
-            if(tabId === 'ledger-stats-view') renderLedgerStatsView();
-            lucide.createIcons();
-        }
-        document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(b => b.addEventListener('click', () => switchLedgerView(b.dataset.ledgerTab)));
-        
-        function renderLedgerCategoryTags(categories, type) {
-            const container = document.getElementById(`ledger-${type}-category-tags-container`);
-            container.innerHTML = '';
-            categories.forEach(cat => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center dark:bg-[#4F4F4F] dark:text-gray-200';
-                button.dataset.tag = cat;
-              
-                button.innerHTML = `<span class="pl-3 pr-2 py-1">${cat}</span><span class="delete-tag-span pr-2 text-gray-500 dark:text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
-
-                button.addEventListener('click', (e) => {
-                    if (e.target.closest('.delete-tag-span')) return;
-                    container.querySelectorAll('.tag.selected').forEach(t => t.classList.remove('selected'));
-                    button.classList.add('selected');
-                });
-                button.querySelector('.delete-tag-span').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    handleDeleteLedgerCategory(cat, type);
-                });
-                container.appendChild(button);
-            });
-            lucide.createIcons();
-        }
-        
-        async function addLedgerCategory(type) {
-            const input = document.getElementById(`new-ledger-${type}-category`);
-            const newCategory = input.value.trim();
-            if (newCategory && !localLedgerCategories[type].includes(newCategory)) {
-                const updatedCategories = { ...localLedgerCategories };
-                updatedCategories[type] = [...updatedCategories[type], newCategory].sort((a,b) => a.localeCompare(b));
-
-                try {
-                    await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(updatedCategories);
-                    showToast(`'${newCategory}' 카테고리가 추가되었습니다.`);
-                    input.value = '';
-                } catch(e) {
-                    showToast("카테고리 추가 실패", "error");
-                }
-            } else if (localLedgerCategories[type].includes(newCategory)) {
-                showToast("이미 존재하는 카테고리입니다.", "error");
-            }
-        }
-        document.getElementById('add-ledger-expense-category-btn').addEventListener('click', () => addLedgerCategory('expense'));
-        document.getElementById('add-ledger-income-category-btn').addEventListener('click', () => addLedgerCategory('income'));
-
-        
-        function handleDeleteLedgerCategory(category, type) {
-            const isCategoryInUse = localLedgerEntries.some(entry => entry.type === type && entry.category === category);
-            if (isCategoryInUse) {
-                showToast("사용 중인 카테고리는 삭제할 수 없습니다.", "error");
-                return;
-            }
-            showConfirmModal(`'${category}' 카테고리를 삭제하시겠습니까?`, async () => {
-                const updatedCategories = { ...localLedgerCategories };
-                updatedCategories[type] = updatedCategories[type].filter(c => c !== category);
-                try {
-                    await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(updatedCategories);
-                    showToast(`'${category}' 카테고리가 삭제되었습니다.`);
-                } catch(e) {
-                     showToast("카테고리 삭제 실패", "error");
-                }
-            }, '삭제');
-        }
-
-        document.getElementById('ledger-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('ledger-id').value;
-            const type = document.querySelector('[data-group="ledger-type"] .toggle-btn.selected').dataset.value;
-            const selectedCategoryTag = document.querySelector(`#ledger-${type}-category-tags-container .tag.selected`);
-            const amount = parseFloat(unformatNumber(document.getElementById('ledger-amount').value));
-
-            if(!selectedCategoryTag) { 
-                showToast("카테고리를 선택해주세요.", "error"); return; }
-            if(isNaN(amount) || amount <= 0) { showToast("올바른 금액을 입력해주세요.", "error"); return; }
-
-            const entryData = {
-                type: type,
-                date: Timestamp.fromDate(new Date(document.getElementById('ledger-date').value)),
-                amount: amount,
-                category: selectedCategoryTag.dataset.tag,
-                memo: document.getElementById('ledger-memo').value.trim()
-            };
-            try {
-                const collectionRef = db.collection("users").doc(currentUser.uid).collection("ledgerEntries");
-                if (id) {
-                    await collectionRef.doc(id).update(entryData);
-                    showToast("내역이 수정되었습니다.");
-                } else {
-                    await collectionRef.add(entryData);
-                    showToast("내역이 저장되었습니다.");
-                }
-                resetLedgerForm();
-                switchLedgerView('ledger-list-view');
-            } catch (error) { showToast("저장 실패.", "error"); }
-        });
-
-        function resetLedgerForm() {
-            document.getElementById('ledger-form').reset();
-            document.getElementById('ledger-id').value = '';
-            document.getElementById('ledger-date').value = new Date().toISOString().split('T')[0];
-            document.querySelectorAll('#ledger-form .tag.selected').forEach(t => t.classList.remove('selected'));
-            document.querySelector('#ledger-form .toggle-btn[data-value="expense"]').click();
-        }
-        document.getElementById('clear-ledger-form-btn').addEventListener('click', resetLedgerForm);
-
-        function renderLedgerListView() {
-            const filterType = document.getElementById('ledger-list-filter-type').value;
-            const displayEl = document.getElementById('ledger-list-period-display');
-            
-            const { start, end, displayString } = getPeriod(ledgerListDate, filterType);
-            displayEl.textContent = displayString;
-            const filteredEntries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
-
-            // Render Expenses Summary
-            const expensesByCategory = filteredEntries
-                .filter(e => e.type === 'expense')
-                .reduce((acc, curr) => {
-                    const category = curr.category || '미분류';
-                    acc[category] = (acc[category] || 0) + curr.amount;
-                    return acc;
-                }, {});
-            const expenseSummaryContainer = document.getElementById('ledger-category-summary');
-            expenseSummaryContainer.innerHTML = '';
-            if(Object.keys(expensesByCategory).length === 0){
-                expenseSummaryContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-center text-sm">지출 내역 없음</p>`;
-            } else {
-                Object.entries(expensesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
-                    const div = document.createElement('div');
-                    div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
-                    div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-red-500">- ${formatPrice(total, 'KRW')}</span>`;
-                    div.onclick = () => {
-                        document.querySelectorAll('#ledger-list-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
-                        document.querySelectorAll('#ledger-list-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
-                
-                        div.classList.add('selected');
-                        renderLedgerDetails(category, 'expense', filteredEntries);
-                    };
-                    expenseSummaryContainer.appendChild(div);
-                });
-            }
-
-            // Render Incomes Summary
-            const incomesByCategory = filteredEntries
-                .filter(e => e.type === 'income')
-                .reduce((acc, curr) => {
-                    const category = curr.category || '미분류'; // Handle uncategorized old entries
-                    acc[category] = (acc[category] || 0) + curr.amount;
-                    return acc;
-                }, {});
-            const incomeSummaryContainer = document.getElementById('ledger-income-summary');
-            incomeSummaryContainer.innerHTML = '';
-            if(Object.keys(incomesByCategory).length === 0) {
-                 incomeSummaryContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-center text-sm">수입 내역 없음</p>`;
-            } else {
-                Object.entries(incomesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
-                    const div = document.createElement('div');
-                    div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
-                    div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-green-500">+ ${formatPrice(total, 'KRW')}</span>`;
-                    div.onclick = () => {
-                        document.querySelectorAll('#ledger-list-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
-                        document.querySelectorAll('#ledger-list-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
-                
-                        div.classList.add('selected');
-                        renderLedgerDetails(category, 'income', filteredEntries);
-                    };
-                    incomeSummaryContainer.appendChild(div);
-                });
-            }
-            
-            document.getElementById('ledger-entry-details').innerHTML = '';
-            document.getElementById('ledger-detail-title').textContent = '내역 선택';
-        }
-        
-        function renderLedgerDetails(category, type, entries) {
-            document.getElementById('ledger-detail-title').textContent = category;
-            const detailsContainer = document.getElementById('ledger-entry-details');
-            detailsContainer.innerHTML = '';
-
-            let entriesToShow;
-            if (category === '미분류') {
-                entriesToShow = entries.filter(e => e.type === type && !e.category);
-            } else {
-                entriesToShow = entries.filter(e => e.type === type && e.category === category);
-            }
-
-            if(entriesToShow.length === 0) {
-                detailsContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-center">상세 내역이 없습니다.</p>`;
-                return;
-            }
-
-            entriesToShow.sort((a,b) => b.date - a.date)
-                .forEach(entry => {
-                    const div = document.createElement('div');
-                    div.className = 'p-3 rounded-lg border border-gray-200 dark:border-[#4F4F4F] flex justify-between items-center bg-gray-50 dark:bg-[#2d2d2d]';
-                    const amountClass = type === 'income' ? 'text-green-500' : 'text-red-500';
-                    const sign = type === 'income' ? '+' : '-';
-                    div.innerHTML = `
-                        <div>
-                            <p class="font-medium">${entry.date.toLocaleDateString()}</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">${entry.memo || (type === 'income' ? '수입' : '메모 없음')}</p>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <span class="font-bold ${amountClass}">${sign} ${formatPrice(entry.amount, 'KRW')}</span>
-                            <div>
-                                <button class="p-1 hover:text-blue-500 edit-ledger-btn" data-id="${entry.id}"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                                <button class="p-1 hover:text-red-500 delete-ledger-btn" data-id="${entry.id}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                            </div>
-                        </div>`;
-                    detailsContainer.appendChild(div);
-                });
-            lucide.createIcons();
-            document.querySelectorAll('.edit-ledger-btn').forEach(b => b.addEventListener('click', handleEditLedgerEntry));
-            document.querySelectorAll('.delete-ledger-btn').forEach(b => b.addEventListener('click', handleDeleteLedgerEntry));
-        }
-        
-        function handleEditLedgerEntry(e) {
-            const id = e.currentTarget.dataset.id;
-            const entry = localLedgerEntries.find(item => item.id === id);
-            if (entry) {
-                switchLedgerView('ledger-form-view');
-                document.getElementById('ledger-id').value = entry.id;
-                document.getElementById('ledger-date').value = entry.date.toISOString().split('T')[0];
-                document.getElementById('ledger-amount').value = formatNumber(entry.amount);
-                document.getElementById('ledger-memo').value = entry.memo;
-                
-                // Toggle type button
-                document.querySelector(`.toggle-btn[data-value="${entry.type}"]`).click();
-                
-                // Select category tag
-                if(entry.category) {
-                    // Timeout is needed because the toggle-group click (above) redraws the category tags
-                    setTimeout(() => {
-                        document.querySelector(`#ledger-${entry.type}-category-tags-container .tag[data-tag="${entry.category}"]`)?.click();
-                    }, 50); 
-                }
-            }
-        }
-        
-        function handleDeleteLedgerEntry(e) {
-            const id = e.currentTarget.dataset.id;
-            showConfirmModal('정말로 이 내역을 삭제하시겠습니까?', () => {
-                db.collection("users").doc(currentUser.uid).collection("ledgerEntries").doc(id).delete()
-                  .then(() => showToast("내역이 삭제되었습니다."))
-                  .catch(() => showToast("삭제 실패", "error"));
-            }, '삭제');
-        }
-
-        function updateLedgerListDate(offset) {
-            const filterType = document.getElementById('ledger-list-filter-type').value;
-            if (filterType === 'month') ledgerListDate.setMonth(ledgerListDate.getMonth() + offset);
-            else if (filterType === 'quarter') ledgerListDate.setMonth(ledgerListDate.getMonth() + offset * 3);
-            else ledgerListDate.setFullYear(ledgerListDate.getFullYear() + offset);
-            renderLedgerListView();
-        }
-        document.getElementById('ledger-list-prev-btn').addEventListener('click', () => updateLedgerListDate(-1));
-        document.getElementById('ledger-list-next-btn').addEventListener('click', () => updateLedgerListDate(1));
-        document.getElementById('ledger-list-filter-type').addEventListener('change', () => {
-            ledgerListDate = new Date(); 
-            renderLedgerListView();
-        });
-        
-        function renderLedgerStatsView() {
-            const filterType = document.getElementById('ledger-stats-filter-type').value;
-            const displayEl = document.getElementById('ledger-stats-period-display');
-            
-            const { start, end, displayString } = getPeriod(ledgerStatsDate, filterType);
-            displayEl.textContent = displayString;
-            const entries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
-            
-            let totalIncome = 0, totalExpense = 0;
-            const expenseByCategory = {};
-            const incomeByCategory = {};
-
-
-            entries.forEach(e => {
-                if (e.type === 'income') {
-                    totalIncome += e.amount;
-                    const category = e.category || '미분류';
-                    incomeByCategory[category] = (incomeByCategory[category] || 0) + e.amount;
-                }
-                else {
-                    totalExpense += e.amount;
-                    const category = e.category || '미분류';
-                    expenseByCategory[category] = (expenseByCategory[category] || 0) + e.amount;
-                }
-            });
-            document.getElementById('ledger-total-income').textContent = formatPrice(totalIncome, 'KRW');
-            document.getElementById('ledger-total-expense').textContent = formatPrice(totalExpense, 'KRW');
-            const balance = totalIncome - totalExpense;
-            const balanceEl = document.getElementById('ledger-balance');
-            balanceEl.textContent = formatPrice(balance, 'KRW');
-            balanceEl.className = `text-3xl font-bold ${balance >= 0 ? 'text-blue-500' : 'text-red-500'}`;
-            // Trend Chart
-            let trendLabels, trendIncomeData, trendExpenseData;
-            if(filterType === 'year') {
-                document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 월별 추이`;
-                trendLabels = Array.from({length: 12}, (_, i) => `${i + 1}월`);
-                const monthlyData = trendLabels.map(() => ({income: 0, expense: 0}));
-                entries.forEach(e => {
-                    const month = e.date.getMonth();
-                    if (e.type === 'income') monthlyData[month].income += e.amount;
-                    else monthlyData[month].expense += e.amount;
-                });
-                trendIncomeData = monthlyData.map(d => d.income);
-                trendExpenseData = monthlyData.map(d => d.expense);
-            } else { // month or quarter
-                document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 일별 추이`;
-                const days = (end - start) / (1000 * 60 * 60 * 24);
-                trendLabels = Array.from({length: Math.ceil(days) + 1}, (_, i) => {
-                    const d = new Date(start);
-                    d.setDate(d.getDate() + i);
-                    return `${d.getMonth()+1}/${d.getDate()}`;
-                });
-                const dailyData = Object.fromEntries(trendLabels.map(l => [l, {income: 0, expense: 0}]));
-                entries.forEach(e => {
-                    const dayLabel = `${e.date.getMonth()+1}/${e.date.getDate()}`;
-                    if(dailyData[dayLabel]) {
-                        if (e.type === 'income') dailyData[dayLabel].income += e.amount;
-                        else dailyData[dayLabel].expense += e.amount;
-                    }
-                });
-                trendIncomeData = Object.values(dailyData).map(d => d.income);
-                trendExpenseData = Object.values(dailyData).map(d => d.expense);
-            }
-            
-            createLedgerChart('ledger-monthly-pnl-chart', 'bar', trendLabels,
-                [{ label: '수입', data: trendIncomeData, backgroundColor: 'rgba(75, 192, 192, 0.6)' },
-                 { label: '지출', data: trendExpenseData, backgroundColor: 'rgba(255, 99, 132, 0.6)' }]
-            );
-            // Expense Category Chart
-            document.getElementById('ledger-expense-chart-title').textContent = `${displayString} 지출 구성`;
-            const sortedExpense = Object.entries(expenseByCategory).sort((a,b) => b[1] - a[1]);
-            createLedgerChart('ledger-expense-chart', 'pie', 
-                sortedExpense.map(c => c[0]), 
-                [{ label: '지출', data: sortedExpense.map(c => c[1]) }]
-            );
-            // Income Category Chart
-            document.getElementById('ledger-income-chart-title').textContent = `${displayString} 수입 구성`;
-            const sortedIncome = Object.entries(incomeByCategory).sort((a,b) => b[1] - a[1]);
-            createLedgerChart('ledger-income-chart', 'pie', 
-                sortedIncome.map(c => c[0]), 
-                [{ label: '수입', data: sortedIncome.map(c => c[1]) }]
-            );
-        }
-        
-        function updateLedgerStatsDate(offset) {
-            const filterType = document.getElementById('ledger-stats-filter-type').value;
-            if (filterType === 'month') ledgerStatsDate.setMonth(ledgerStatsDate.getMonth() + offset);
-            else if (filterType === 'quarter') ledgerStatsDate.setMonth(ledgerStatsDate.getMonth() + offset * 3);
-            else ledgerStatsDate.setFullYear(ledgerStatsDate.getFullYear() + offset);
-            renderLedgerStatsView();
-        }
-        document.getElementById('ledger-stats-prev-btn').addEventListener('click', () => updateLedgerStatsDate(-1));
-        document.getElementById('ledger-stats-next-btn').addEventListener('click', () => updateLedgerStatsDate(1));
-        document.getElementById('ledger-stats-filter-type').addEventListener('change', () => {
-            ledgerStatsDate = new Date();
-            renderLedgerStatsView();
-        });
-
-        function createJournalChart(canvasId, type, labels, data, label, isWinRate = false) {
-            if (charts[canvasId]) charts[canvasId].destroy();
-            const ctx = document.getElementById(canvasId)?.getContext('2d');
-            if(!ctx) return;
-
-            const pnlMultiplier = statsCurrency === 'USD' ? 1 / exchangeRate : 1;
-            const chartData = isWinRate ? data : data.map(d => d * pnlMultiplier);
-            const isDark = document.documentElement.classList.contains('dark');
-            const commonOptions = {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { 
-                    legend: { display: type === 'doughnut', position: 'bottom' }, 
-                    tooltip: { callbacks: { label: c => isWinRate ?
-            `${c.label}: ${c.parsed.toFixed(2)}%` : `${c.label}: ${formatPrice(c.raw, statsCurrency)}` } } 
-                },
-                scales: {
-                    x: { ticks: { color: isDark ? '#d1d5db' : '#374151' } },
-                    y: { ticks: { color: isDark ? '#d1d5db' : '#374151' } }
-                }
-            };
-            if (type === 'doughnut') {
-                 charts[canvasId] = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ 
-                    label, data: chartData, 
-                    backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 99, 132, 0.7)'],
-                    borderColor: [isDark ? '#1E1E1E' : '#fff'], borderWidth: 4
-                }]}, options: commonOptions });
-            } else { // bar
-                 charts[canvasId] = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label, data: chartData, backgroundColor: chartData.map(d => d >= (isWinRate ? 50 : 0) ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'), borderWidth: 1 }] }, 
-                 options: { ...commonOptions, scales: { 
-                    x: { ...commonOptions.scales.x, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } }, 
-                    y: { ...commonOptions.scales.y, beginAtZero: !isWinRate, ticks: { callback: v => isWinRate ? `${v.toFixed(0)}%` : formatPrice(v, statsCurrency) }, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } } } } });
-            }
-        }
-        
         function createLedgerChart(canvasId, type, labels, datasets) {
             if (charts[canvasId]) charts[canvasId].destroy();
             const ctx = document.getElementById(canvasId)?.getContext('2d');
@@ -2428,7 +1795,17 @@
         });
 
         window.addEventListener('DOMContentLoaded', () => {
-            setTheme(localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+            // Apply initial theme setting based on localStorage or system preference
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+            
+            // Check if login view should be visible on load
+            if (document.getElementById('login-view').classList.contains('hidden') && !currentUser) {
+                 document.getElementById('login-view').classList.remove('hidden');
+            }
+
+            setTheme(initialTheme);
             lucide.createIcons();
             switchJournalView('form-view');
             switchLedgerView('ledger-form-view');
