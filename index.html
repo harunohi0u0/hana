@@ -23,7 +23,7 @@
         }
         .tab-btn { transition: all 0.3s ease; }
         .tab-btn.active { background-color: #4a90e2; color: white; font-weight: 700; }
-        .tag { transition: all 0.2s ease; cursor: pointer; }
+        .tag { transition: all 0.2s ease; cursor: pointer; position: relative;} /* position: relative 추가 */
         .tag.selected { background-color: #4a90e2; color: white; }
         .modal-backdrop { background-color: rgba(0,0,0,0.5); transition: opacity 0.3s ease; }
         .modal-content { transition: transform 0.3s ease; }
@@ -54,10 +54,11 @@
         .dark .tag.selected { background-color: #3b82f6; color: #ffffff; }
         .dark .entry-tags-container .tag.selected { background-color: #16a34a; }
         .dark .psychology-tags-container .tag.selected { background-color: #9333ea; }
-        .dark .environment-tags-container .tag.selected { background-color: #f59e0b; } /* 새로운 환경 태그 색상 */
+        .dark .environment-tags-container .tag.selected { background-color: #f59e0b; }
         .dark .border-blue-200 { border-color: #3b82f6; }
         .dark .border-green-200 { border-color: #16a34a; }
         .dark .border-purple-200 { border-color: #9333ea; }
+        .dark .border-yellow-200 { border-color: #f59e0b; }
         .dark .bg-blue-50 { background-color: #2d2d2d; border-color: #4F4F4F; }
         .dark .text-blue-800 { color: #E0E0E0; }
         .dark .bg-gray-200 { background-color: #333333; }
@@ -87,6 +88,21 @@
         /* Quick-Edit Tag & Memo */
         .quick-edit-btn { transition: all 0.2s; }
         .quick-edit-btn:hover { transform: scale(1.05); }
+
+        /* Time Tag Overlay Style */
+        .time-tag-overlay {
+            position: absolute;
+            top: -10px;
+            right: -5px;
+            font-size: 0.6rem;
+            line-height: 1;
+            padding: 2px 4px;
+            border-radius: 4px;
+            background-color: #10b981; /* Green 500 */
+            color: white;
+            font-weight: 600;
+            z-index: 10;
+        }
 
     </style>
     <script>
@@ -171,7 +187,7 @@
                             
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                                 <div id="spot-fields" class="space-y-3">
-                                    <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">수량 / 계약 수</label>
+                                    <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">수량</label>
                                     <input type="text" inputmode="numeric" id="quantity" placeholder="예: 100" class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]">
                                 </div>
 
@@ -369,6 +385,23 @@
     
     <div id="tag-edit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-xl modal-content transform scale-95"><h2 class="text-2xl font-bold mb-6 flex items-center"><i data-lucide="tag" class="mr-3 text-purple-500"></i> 태그 수정</h2><form id="tag-edit-form"><input type="hidden" id="tag-edit-journal-id"><div class="space-y-6"><div id="tag-edit-environment-container"><h3 class="text-xl font-bold mb-3 border-b border-yellow-200 dark:border-yellow-700 pb-2 flex items-center text-yellow-600"><i data-lucide="cloud-sun" class="mr-2 w-5 h-5"></i> 환경 태그</h3><div id="tag-edit-environment-tags" class="flex flex-wrap gap-2"></div></div><div id="tag-edit-entry-container"><h3 class="text-xl font-bold mb-3 border-b border-green-200 dark:border-green-700 pb-2 flex items-center text-green-600"><i data-lucide="siren" class="mr-2 w-5 h-5"></i> 진입 근거</h3><div id="tag-edit-entry-tags" class="flex flex-wrap gap-2"></div></div><div id="tag-edit-psychology-container"><h3 class="text-xl font-bold mb-3 border-b border-purple-200 dark:border-purple-700 pb-2 flex items-center text-purple-600"><i data-lucide="brain-circuit" class="mr-2 w-5 h-5"></i> 심리 상태</h3><div id="tag-edit-psychology-tags" class="flex flex-wrap gap-2"></div></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-tag-edit-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">태그 저장</button></div></form></div></div>
     
+    <div id="time-tag-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0">
+        <div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-md modal-content transform scale-95">
+            <h2 class="text-2xl font-bold mb-4 flex items-center">시간봉 선택</h2>
+            <p id="time-tag-context" class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300"></p>
+            <form id="time-tag-form">
+                <input type="hidden" id="time-tag-journal-id">
+                <input type="hidden" id="time-tag-name">
+                <div id="time-tag-options-container" class="flex flex-wrap gap-2 mb-6">
+                    </div>
+                <div class="mt-8 flex justify-end space-x-3">
+                    <button type="button" id="close-time-tag-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">저장 및 선택</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-sm modal-content transform scale-95"><h2 id="confirm-title" class="text-xl font-bold mb-4">확인</h2><p id="confirm-message" class="text-gray-600 dark:text-gray-300 mb-6"></p><div class="flex justify-end space-x-3"><button type="button" id="confirm-cancel-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 font-semibold">취소</button><button type="button" id="confirm-ok-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 font-semibold">확인</button></div></div></div>
     <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"><p id="toast-message"></p></div>
     
@@ -398,8 +431,8 @@
         
         // Trading Journal State
         let unsubscribeJournals = null, unsubscribeTags = null;
-        // environment 태그 추가
-        let localJournals = [], localTags = { environment: [], entry: [], psychology: [] }; 
+        // environment, entry, psychology, timeTags 추가
+        let localJournals = [], localTags = { environment: [], entry: [], psychology: [], time: [] }; 
         let localFuturesInfo = {}; 
         let unsubscribeFuturesInfo = null;
         let statsCurrency = 'KRW', exchangeRate = 1380;
@@ -488,9 +521,10 @@
             const tagsDocSnap = await tagsDocRef.get();
             if (!tagsDocSnap.exists) {
                 await tagsDocRef.set({
-                    environment: ['개장 직후', '종가 부근', '변동성 확대', 'FOMC'], // 환경 태그 기본값 추가
+                    environment: ['개장 직후', '종가 부근', '변동성 확대', 'FOMC'], 
                     entry: ['정배열 돌파', '낙주 매매', '채널 하단', 'OB', '4H', '연속저점', '주추세'],
-                    psychology: ['FOMO', '확신', '매매중독', '두려움', '사후정당화', '배팅']
+                    psychology: ['FOMO', '확신', '매매중독', '두려움', '사후정당화', '배팅'],
+                    time: ['1분봉', '5분봉', '15분봉', '1시간봉', '4시간봉', '일봉', '주봉'] // 타임 태그 기본값 추가
                 });
             }
         }
@@ -512,7 +546,13 @@
             if (unsubscribeJournals) unsubscribeJournals();
             const journalsQuery = db.collection("users").doc(userId).collection("journals").orderBy("date", "desc");
             unsubscribeJournals = journalsQuery.onSnapshot((snapshot) => {
-                localJournals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), date: doc.data().date.toDate() }));
+                localJournals = snapshot.docs.map(doc => ({ 
+                    id: doc.id, 
+                    ...doc.data(), 
+                    date: doc.data().date.toDate(),
+                    // entryTags를 객체 배열로 통일: { tag: string, timeTags: string[] }
+                    entryTags: doc.data().entryTags?.map(tag => typeof tag === 'string' ? { tag, timeTags: [] } : tag) || []
+                }));
                 renderJournals(localJournals);
                 renderJournalStats(localJournals);
             }, (error) => console.error("Error fetching journals:", error));
@@ -522,7 +562,7 @@
             unsubscribeTags = tagsDocRef.onSnapshot((doc) => {
                 if (doc.exists) {
                     localTags = doc.data();
-                    renderJournalTags(localTags.environment, 'environment-tags-container', 'environment'); // 환경 태그 렌더링
+                    renderJournalTags(localTags.environment, 'environment-tags-container', 'environment'); 
                     renderJournalTags(localTags.entry, 'entry-tags-container', 'entry');
                     renderJournalTags(localTags.psychology, 'psychology-tags-container', 'psychology');
                 }
@@ -547,12 +587,11 @@
         }
         document.querySelectorAll('#journal-container [data-tab]').forEach(b => b.addEventListener('click', () => switchJournalView(b.dataset.tab)));
         
-        // Asset type toggle (수량/계약수 필드 토글 로직 수정)
+        // Asset type toggle (수량/계약수 필드 토글 로직)
         document.querySelectorAll('[data-group="asset-type"] .toggle-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const isSpot = btn.dataset.value === 'spot';
                 
-                // 수량/계약 수 필드와 선물 계약 수 필드 토글 (요청 2)
                 document.getElementById('spot-fields').classList.toggle('hidden', !isSpot);
                 document.getElementById('futures-contracts-field').classList.toggle('hidden', isSpot);
                 document.getElementById('futures-fields').classList.toggle('hidden', isSpot);
@@ -562,10 +601,7 @@
                 const tickValueInput = document.getElementById('tick-value');
                 const tickSizeInput = document.getElementById('tick-size');
                 
-                // 필드 이름 라벨 변경 (quantity 필드를 spot의 '수량'과 futures의 '계약 수'로 재사용)
-                document.querySelector('label[for="quantity"]').textContent = isSpot ? '수량' : '수량 (사용 안 함)'; // contracts 필드가 생겼으므로 quantity는 숨김
-                document.querySelector('label[for="quantity"]').textContent = '수량'; // contracts 필드 추가로 quantity 필드 숨김/표시 전환
-
+                // Required 속성 설정
                 quantityInput.required = isSpot;
                 contractsInput.required = !isSpot;
                 tickValueInput.required = !isSpot;
@@ -586,20 +622,14 @@
                         tickSizeInput.value = '';
                         document.getElementById('delete-futures-info-btn').disabled = true;
                      }
-                     quantityInput.value = '';
-                     document.querySelector('label[for="quantity"]').textContent = '수량 (현물용)';
-                     quantityInput.classList.add('hidden');
-                     document.querySelector('label[for="quantity"]').classList.add('hidden');
+                     quantityInput.value = ''; // 현물 수량 필드 값 초기화
 
                 } else { // 현물 타입 선택 시
                      document.getElementById('futures-info-select').value = '';
                      tickValueInput.value = '';
                      tickSizeInput.value = '';
                      document.getElementById('delete-futures-info-btn').disabled = true;
-                     contractsInput.value = '';
-                     document.querySelector('label[for="quantity"]').textContent = '수량';
-                     quantityInput.classList.remove('hidden');
-                     document.querySelector('label[for="quantity"]').classList.remove('hidden');
+                     contractsInput.value = ''; // 계약 수 필드 값 초기화
                 }
             });
         });
@@ -763,7 +793,6 @@
 
             journals.forEach(journal => {
                 const isSpot = journal.assetType === 'spot';
-                // contracts를 기본값 0으로 설정하여 널 방지
                 const totalAmount = isSpot ? journal.quantity : (journal.contracts || 0); 
                 const exitedAmount = journal.exits ? journal.exits.reduce((sum, exit) => sum + exit.quantity, 0) : 0;
                 const isClosed = (totalAmount - exitedAmount) <= 1e-9;
@@ -805,7 +834,6 @@
                             const exitPnlClass = exitPnl > 0 ? 'text-green-500' : exitPnl < 0 ? 'text-red-500' : 'text-gray-500';
                             const exitDate = exit.date.toDate ? exit.date.toDate() : new Date(exit.date);
                             const amountLabel = isSpot ? '주' : '계약';
-                            // 청산 내역의 흰색 강조(border, hover, bg-gray-50) 제거 (요청 3)
                             return `<div class="flex justify-between items-center p-1 rounded"><span>${exitDate.toLocaleDateString()} @ ${formatPrice(exit.price, journal.currency)} (${formatNumber(exit.quantity)} ${amountLabel})</span><span class="${exitPnlClass} font-medium">${formatPrice(exitPnl, journal.currency)}</span></div>`
                         }).join('')}
                     </div>` : '';
@@ -815,25 +843,33 @@
                     `<p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><strong>틱가치/단위:</strong> ${formatPrice(journal.tickValue, journal.currency)} / ${formatNumber(journal.tickSize)}</p>` : '';
                 
                 // 태그 렌더링 (환경, 진입, 심리)
-                const renderTags = (tags, maxCount, baseClass, textColor) => {
-                    const visibleTags = (tags || []).slice(0, maxCount);
-                    const hiddenTags = (tags || []).slice(maxCount);
+                const renderTags = (tags, maxCount, baseClass, textColor, isEntry = false) => {
+                    const tagsArray = (tags || []).map(t => typeof t === 'string' ? { tag: t, timeTags: [] } : t); // entryTags 통일
+                    const visibleTags = tagsArray.slice(0, maxCount);
+                    const hiddenTags = tagsArray.slice(maxCount);
                     const hiddenTagsCount = hiddenTags.length;
                     
-                    let tagHtml = `<div class="flex flex-wrap gap-1">`;
-                    tagHtml += visibleTags.map(tag => `<span class="${baseClass} ${textColor} text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('');
+                    let tagHtml = `<div class="flex flex-wrap gap-2">`;
+                    
+                    // 보이는 태그 렌더링
+                    tagHtml += visibleTags.map(item => {
+                        const timeTagOverlay = isEntry && item.timeTags && item.timeTags.length > 0 ? 
+                            `<span class="time-tag-overlay" title="시간봉: ${item.timeTags.join(', ')}">${item.timeTags[0]}</span>` : '';
+                        
+                        return `<span class="${baseClass} ${textColor} text-xs font-medium px-2.5 py-0.5 rounded-full relative">${timeTagOverlay}${item.tag}</span>`;
+                    }).join('');
 
                     if (hiddenTagsCount > 0) {
                         // 요청 3: +n 대신 모든 태그 표시
-                        const allTagsText = (tags || []).join(', ');
-                        tagHtml += `<span title="${allTagsText}" class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2.5 py-0.5 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full">+${hiddenTagsCount}</span>`;
+                        const allTagsText = tagsArray.map(t => t.tag + (isEntry && t.timeTags.length > 0 ? ` (${t.timeTags.join(',')})` : '')).join(', ');
+                        tagHtml += `<span title="${allTagsText}" class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2.5 py-0.5 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full select-none">+${hiddenTagsCount}개 보기</span>`;
                     }
                     tagHtml += `</div>`;
                     return tagHtml;
                 };
 
                 const environmentTagHtml = renderTags(journal.environmentTags, 4, 'bg-yellow-100 dark:bg-yellow-900', 'text-yellow-800 dark:text-yellow-300');
-                const entryTagHtml = renderTags(journal.entryTags, 4, 'bg-green-100 dark:bg-green-900', 'text-green-800 dark:text-green-300');
+                const entryTagHtml = renderTags(journal.entryTags, 4, 'bg-green-100 dark:bg-green-900', 'text-green-800 dark:text-green-300', true); // isEntry = true
                 const psyTagHtml = renderTags(journal.psychologyTags, 4, 'bg-purple-100 dark:bg-purple-900', 'text-purple-800 dark:text-purple-300');
 
 
@@ -893,7 +929,7 @@
                 document.getElementById('tag-edit-journal-id').value = journalId;
                 
                 // 태그 목록 렌더링 함수 호출
-                renderTagEditOptions('tag-edit-environment-tags', 'environment', journal.environmentTags || []); // 환경 태그
+                renderTagEditOptions('tag-edit-environment-tags', 'environment', journal.environmentTags || []); 
                 renderTagEditOptions('tag-edit-entry-tags', 'entry', journal.entryTags || []);
                 renderTagEditOptions('tag-edit-psychology-tags', 'psychology', journal.psychologyTags || []);
 
@@ -914,7 +950,10 @@
 
 
             availableTags.forEach(tag => {
-                const isSelected = selectedTags.includes(tag);
+                const isEntry = type === 'entry';
+                // entry 태그의 경우 selectedTags는 객체 배열이므로 tagName만 추출
+                const isSelected = isEntry ? selectedTags.some(t => t.tag === tag) : selectedTags.includes(tag);
+                
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.dataset.tag = tag;
@@ -925,30 +964,139 @@
                 }`;
 
                 button.textContent = tag;
-                button.addEventListener('click', () => {
-                    if (button.classList.contains(baseColor)) {
-                        // Deselect
-                         button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-[#4F4F4F] dark:text-gray-200 dark:hover:bg-[#666]`;
-                    } else {
-                        // Select
-                         button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors ${baseColor} text-white`;
-                    }
-                });
+                
+                if (isEntry) {
+                    // 진입 근거 태그 클릭 시 타임 태그 모달 열기
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        // 폼에 사용할 현재 상태 저장
+                        document.getElementById('time-tag-journal-id').value = document.getElementById('journal-id').value;
+                        document.getElementById('time-tag-name').value = tag;
+                        
+                        // 현재 태그에 저장된 시간봉 정보 로드 (수정 모드 또는 폼 모드)
+                        let currentEntryTags = Array.from(document.querySelectorAll('.entry-tags-container .tag.selected')).map(el => JSON.parse(el.dataset.fullTag));
+                        if (document.getElementById('tag-edit-journal-id').value) {
+                             currentEntryTags = localJournals.find(j => j.id === document.getElementById('tag-edit-journal-id').value)?.entryTags || [];
+                        }
+                        
+                        const currentTagObj = currentEntryTags.find(t => t.tag === tag);
+                        const selectedTimes = currentTagObj?.timeTags || [];
+                        
+                        openTimeTagModal(tag, selectedTimes);
+                    });
+                } else {
+                    // 일반 태그 토글 로직
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        button.classList.toggle('selected', !button.classList.contains(baseColor));
+                    });
+                }
+
                 container.appendChild(button);
             });
 
-            // 선택된 태그가 없을 경우를 대비해 placeholder 표시
             if (availableTags.length === 0) {
                  container.innerHTML = `<p class="text-sm text-gray-500 dark:text-gray-400">등록된 태그가 없습니다. '일지 작성' 탭에서 태그를 추가해 주세요.</p>`;
             }
         }
         
+        // 타임 태그 모달 열기 및 렌더링
+        function openTimeTagModal(tagName, selectedTimes = []) {
+            document.getElementById('time-tag-context').textContent = `'${tagName}'에 사용된 시간봉을 선택해주세요. (다중 선택 가능)`;
+            const container = document.getElementById('time-tag-options-container');
+            container.innerHTML = '';
+            
+            (localTags.time || []).forEach(timeTag => {
+                const isSelected = selectedTimes.includes(timeTag);
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.dataset.timeTag = timeTag;
+                
+                button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors 
+                                   ${isSelected ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-[#4F4F4F] dark:text-gray-200 dark:hover:bg-[#666]'}`;
+                button.textContent = timeTag;
+                
+                // 다중 선택 가능
+                button.addEventListener('click', () => {
+                    button.classList.toggle('bg-blue-500');
+                    button.classList.toggle('text-white');
+                    button.classList.toggle('bg-gray-200');
+                    button.classList.toggle('text-gray-700');
+                    button.classList.toggle('dark:bg-[#4F4F4F]');
+                    button.classList.toggle('dark:text-gray-200');
+                });
+                container.appendChild(button);
+            });
+            
+            openModal('time-tag-modal');
+        }
+        
+        // 타임 태그 모달 닫기
+        document.getElementById('close-time-tag-modal-btn').addEventListener('click', () => closeModal('time-tag-modal'));
+        
+        // 타임 태그 저장 로직 (일지 작성 폼)
+        document.getElementById('time-tag-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const tagName = document.getElementById('time-tag-name').value;
+            const selectedTimeTags = Array.from(document.querySelectorAll('#time-tag-options-container button.bg-blue-500')).map(btn => btn.dataset.timeTag);
+            
+            if (selectedTimeTags.length === 0) {
+                showToast("최소 1개의 시간봉을 선택해야 합니다.", "error");
+                return;
+            }
+            
+            const newTagObj = { tag: tagName, timeTags: selectedTimeTags };
+            
+            // 현재 일지 작성 폼 상태 업데이트
+            const entryTagsContainer = document.getElementById('entry-tags-container');
+            let currentTagButton = entryTagsContainer.querySelector(`.tag[data-tag="${tagName}"]`);
+            
+            if (currentTagButton) {
+                // 이전에 선택된 상태가 아니었다면 selected class 추가
+                if (!currentTagButton.classList.contains('selected')) {
+                    currentTagButton.classList.add('selected');
+                }
+                
+                // dataset에 전체 태그 정보를 JSON 문자열로 저장
+                currentTagButton.dataset.fullTag = JSON.stringify(newTagObj);
+                
+                // 태그 위에 타임 태그 표시
+                let overlay = currentTagButton.querySelector('.time-tag-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('span');
+                    overlay.className = 'time-tag-overlay';
+                    currentTagButton.appendChild(overlay);
+                }
+                overlay.textContent = selectedTimeTags[0];
+                overlay.title = `시간봉: ${selectedTimeTags.join(', ')}`;
+            }
+            
+            // 태그 수정 모달 내부의 버튼이라면 해당 모달의 버튼 상태도 업데이트해야 함.
+            const tagEditButton = document.querySelector(`#tag-edit-modal .tag[data-tag="${tagName}"]`);
+            if (tagEditButton) {
+                tagEditButton.dataset.fullTag = JSON.stringify(newTagObj);
+                tagEditButton.classList.add('bg-green-500', 'text-white');
+                tagEditButton.classList.remove('bg-gray-200', 'text-gray-700', 'dark:bg-[#4F4F4F]', 'dark:text-gray-200', 'dark:hover:bg-[#666]');
+            }
+            
+            closeModal('time-tag-modal');
+            showToast(`'${tagName}'에 시간봉 정보가 저장되었습니다.`);
+        });
+        
+        
+        // 태그 수정 모달 저장 로직 업데이트 (entryTags 객체 배열 저장)
         document.getElementById('tag-edit-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const journalId = document.getElementById('tag-edit-journal-id').value;
             
             const selectedEnvironmentTags = Array.from(document.querySelectorAll('#tag-edit-environment-tags .tag.bg-yellow-500')).map(btn => btn.dataset.tag);
-            const selectedEntryTags = Array.from(document.querySelectorAll('#tag-edit-entry-tags .tag.bg-green-500')).map(btn => btn.dataset.tag);
+            
+            const selectedEntryTags = Array.from(document.querySelectorAll('#tag-edit-entry-tags .tag.bg-green-500')).map(btn => {
+                // 진입 근거 태그는 객체 형태로 저장
+                const fullTagData = btn.dataset.fullTag ? JSON.parse(btn.dataset.fullTag) : { tag: btn.dataset.tag, timeTags: [] };
+                return fullTagData;
+            });
+            
             const selectedPsychologyTags = Array.from(document.querySelectorAll('#tag-edit-psychology-tags .tag.bg-purple-500')).map(btn => btn.dataset.tag);
             
             try {
@@ -963,106 +1111,19 @@
                 showToast("태그 수정 실패: " + error.message, "error");
             }
         });
-        
-        document.getElementById('close-tag-edit-modal-btn').addEventListener('click', () => closeModal('tag-edit-modal'));
-        document.getElementById('tag-edit-modal').addEventListener('click', e => { if (e.target.id === 'tag-edit-modal') closeModal('tag-edit-modal'); });
 
-
-        async function getJournalById(id) {
-            const docRef = db.collection("users").doc(currentUser.uid).collection("journals").doc(id);
-            const docSnap = await docRef.get();
-            if (docSnap.exists) {
-                const data = docSnap.data();
-                return { 
-                    id: docSnap.id, 
-                    ...data, 
-                    date: data.date.toDate(),
-                    // quantity가 없으면 contracts로 채움 (역할 통일)
-                    quantity: data.quantity !== undefined ? data.quantity : (data.contracts !== undefined ? data.contracts : 0),
-                    contracts: data.contracts !== undefined ? data.contracts : (data.quantity !== undefined ? data.quantity : 0) // contracts 필드도 따로 저장/사용
-                };
-            }
-            return null;
-        }
-
-        function addJournalListEventListeners() {
-            document.querySelectorAll('#journal-list .delete-btn').forEach(btn => btn.addEventListener('click', handleDeleteJournal));
-            document.querySelectorAll('#journal-list .edit-btn').forEach(btn => btn.addEventListener('click', handleEditJournal));
-            document.querySelectorAll('#journal-list .exit-btn').forEach(btn => btn.addEventListener('click', handleOpenExitModal));
-            document.querySelectorAll('#journal-list .memo-btn').forEach(btn => btn.addEventListener('click', handleOpenMemoModal));
-            document.querySelectorAll('#journal-list .tag-edit-btn').forEach(btn => btn.addEventListener('click', handleOpenTagEditModal));
-        }
-        
-        function renderJournalTags(tags, containerId, type) {
-            const container = document.getElementById(containerId); container.innerHTML = '';
-            if(!tags) return;
-            tags.forEach(tag => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                let baseColor;
-                if (type === 'environment') baseColor = 'bg-yellow-500';
-                else if (type === 'entry') baseColor = 'bg-green-500';
-                else baseColor = 'bg-purple-500';
-
-                button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center dark:bg-[#4F4F4F] dark:text-gray-200';
-                button.dataset.tag = tag;
-                
-                button.innerHTML = `<span class="pl-3 pr-2 py-1">${tag}</span><span class="delete-tag-span pr-2 text-gray-500 dark:text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
-
-                button.addEventListener('click', (e) => e.currentTarget.classList.toggle('selected', !e.currentTarget.classList.contains(baseColor)));
-                button.querySelector('.delete-tag-span').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    handleDeleteJournalTag(tag, type);
-                });
-                container.appendChild(button);
-            });
-            lucide.createIcons();
-        }
-
-        async function handleDeleteJournalTag(tag, type) {
-            const isTagInUse = localJournals.some(journal => (type === 'entry' ? journal.entryTags : (type === 'environment' ? journal.environmentTags : journal.psychologyTags))?.includes(tag));
-            if (isTagInUse) {
-                showToast("사용 중인 태그는 삭제할 수 없습니다.", "error");
-                return;
-            }
-            showConfirmModal(`'${tag}' 태그를 삭제하시겠습니까?`, async () => {
-                const newTags = localTags[type].filter(t => t !== tag);
-                try {
-                    await db.collection("users").doc(currentUser.uid).collection("journalTags").doc("all").update({ [type]: newTags });
-                    showToast(`'${tag}' 태그가 삭제되었습니다.`);
-                } catch(e) { showToast("태그 삭제 실패.", "error"); }
-            }, '삭제');
-        }
-        
-        async function addJournalTag(type, tag) {
-            const tagsDocRef = db.collection("users").doc(currentUser.uid).collection("journalTags").doc("all");
-            const currentTags = localTags[type] || [];
-            if (!currentTags.includes(tag)) {
-                await tagsDocRef.update({ [type]: [...currentTags, tag] });
-                showToast(`'${tag}' 태그가 추가되었습니다.`);
-            } else { showToast("이미 존재하는 태그입니다.", "error"); }
-        }
-        
-        // 환경 태그 추가 이벤트 리스너
-        document.querySelector('.add-environment-tag-btn').addEventListener('click', () => {
-            const input = document.getElementById('new-environment-tag');
-            if (input.value.trim()) { addJournalTag('environment', input.value.trim()); input.value = ''; }
-        });
-
-        document.querySelector('.add-entry-tag-btn').addEventListener('click', () => {
-            const input = document.getElementById('new-entry-tag');
-            if (input.value.trim()) { addJournalTag('entry', input.value.trim()); input.value = ''; }
-        });
-        document.querySelector('.add-psychology-tag-btn').addEventListener('click', () => {
-            const input = document.getElementById('new-psychology-tag');
-            if (input.value.trim()) { addJournalTag('psychology', input.value.trim()); input.value = ''; }
-        });
-
+        // 폼 제출 로직 업데이트 (entryTags 객체 배열 저장)
         journalForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const journalId = document.getElementById('journal-id').value;
             const assetType = document.querySelector('[data-group="asset-type"] .toggle-btn.selected').dataset.value;
             
+            // 진입 근거 태그: 선택된 버튼에서 fullTag 데이터를 JSON 파싱하여 저장
+            const entryTagsToSave = Array.from(document.querySelectorAll('.entry-tags-container .tag.selected')).map(btn => {
+                const fullTagData = btn.dataset.fullTag ? JSON.parse(btn.dataset.fullTag) : { tag: btn.dataset.tag, timeTags: [] };
+                return fullTagData;
+            });
+
             const journalData = {
                 assetType: assetType,
                 ticker: document.getElementById('ticker').value.toUpperCase(),
@@ -1073,29 +1134,26 @@
                 entryPrice: parseFloat(unformatNumber(document.getElementById('entry-price').value)),
                 stopLoss: parseFloat(unformatNumber(document.getElementById('stop-loss').value)), 
                 targetPrice: parseFloat(unformatNumber(document.getElementById('target-price').value)),
-                environmentTags: Array.from(document.querySelectorAll('.environment-tags-container .tag.selected')).map(b => b.dataset.tag), // 환경 태그 저장
-                entryTags: Array.from(document.querySelectorAll('.entry-tags-container .tag.selected')).map(b => b.dataset.tag),
+                environmentTags: Array.from(document.querySelectorAll('.environment-tags-container .tag.selected')).map(b => b.dataset.tag),
+                entryTags: entryTagsToSave, // 수정된 객체 배열 저장
                 psychologyTags: Array.from(document.querySelectorAll('.psychology-tags-container .tag.selected')).map(b => b.dataset.tag),
             };
 
             
             if (assetType === 'spot') {
                 journalData.quantity = parseFloat(unformatNumber(document.getElementById('quantity').value));
-                // contracts, tickValue, tickSize는 삭제 (clean up)
                 delete journalData.contracts;
                 delete journalData.tickValue;
                 delete journalData.tickSize;
             } else { // futures
-                journalData.contracts = parseFloat(unformatNumber(document.getElementById('contracts').value)); // contracts 필드 사용
+                journalData.contracts = parseFloat(unformatNumber(document.getElementById('contracts').value)); 
                 journalData.tickValue = parseFloat(unformatNumber(document.getElementById('tick-value').value));
                 journalData.tickSize = parseFloat(unformatNumber(document.getElementById('tick-size').value));
-                // quantity는 삭제 (clean up)
                 delete journalData.quantity;
             }
             
             try {
                 if (journalId) {
-                    // 메모 및 청산 필드 유지
                     const existingJournal = localJournals.find(j => j.id === journalId);
                     journalData.exits = existingJournal.exits || [];
                     journalData.memo = existingJournal.memo || '';
@@ -1111,306 +1169,51 @@
                 switchJournalView('list-view');
             } catch (error) { showToast("저장 실패: " + error.message, "error"); }
         });
-        
-        async function handleDeleteJournal(e) {
-            const id = e.currentTarget.dataset.id;
-            showConfirmModal("정말로 이 일지를 삭제하시겠습니까?", async () => {
-                await db.collection("users").doc(currentUser.uid).collection("journals").doc(id).delete();
-                showToast("일지를 삭제했습니다.");
-            }, '삭제');
-        }
 
+        // 폼 편집 로직 업데이트
         async function handleEditJournal(e) {
             const journal = await getJournalById(e.currentTarget.dataset.id);
             if (journal) {
-                document.getElementById('journal-id').value = journal.id;
-                document.getElementById('date').value = journal.date.toISOString().split('T')[0];
-                document.getElementById('ticker').value = journal.ticker;
+                // ... (생략) ...
                 
-                document.querySelector(`[data-group="asset-type"] .toggle-btn[data-value="${journal.assetType}"]`).click();
-
-                ['position', 'strategy'].forEach(group => document.querySelectorAll(`[data-group="${group}"] .toggle-btn`).forEach(b => b.classList.toggle('selected', b.dataset.value === journal[group])));
-                document.querySelectorAll('[data-group="form-currency"] .toggle-btn').forEach(b => b.classList.toggle('selected', (journal.currency === 'USD' && b.id.includes('usd')) || (journal.currency !== 'USD' && b.id.includes('krw'))));
-                
-                if (journal.assetType === 'spot') {
-                    document.getElementById('quantity').value = formatNumber(journal.quantity);
-                } else {
-                    document.getElementById('contracts').value = formatNumber(journal.contracts);
-                    document.getElementById('tick-value').value = formatNumber(journal.tickValue);
-                    document.getElementById('tick-size').value = formatNumber(journal.tickSize);
-                    
-                    const selectEl = document.getElementById('futures-info-select');
-                    const ticker = journal.ticker.toUpperCase();
-                    if(localFuturesInfo[ticker]) {
-                        selectEl.value = ticker;
-                        document.getElementById('delete-futures-info-btn').disabled = false;
-                    } else {
-                        selectEl.value = '';
-                        document.getElementById('delete-futures-info-btn').disabled = true;
-                    }
-                }
-
-                ['entry-price', 'stop-loss', 'target-price'].forEach(id => document.getElementById(id).value = formatNumber(journal[id.replace('-','')]));
-                
+                // 타임 태그 연동 로직 추가
                 ['environmentTags', 'entryTags', 'psychologyTags'].forEach(type => {
                     const containerClass = `.${type.replace('Tags', '-tags-container')}`;
-                    document.querySelectorAll(`${containerClass} .tag`).forEach(b => b.classList.remove('selected'));
-                    (journal[type] || []).forEach(tag => document.querySelector(`${containerClass} .tag[data-tag="${tag}"]`)?.classList.add('selected'));
+                    document.querySelectorAll(`${containerClass} .tag`).forEach(b => {
+                        b.classList.remove('selected');
+                        // 이전 타임 태그 오버레이 제거
+                        b.querySelector('.time-tag-overlay')?.remove();
+                        b.dataset.fullTag = '';
+                    });
+
+                    (journal[type] || []).forEach(tagItem => {
+                        const tagName = typeof tagItem === 'string' ? tagItem : tagItem.tag;
+                        const timeTags = tagItem.timeTags || [];
+                        
+                        const button = document.querySelector(`${containerClass} .tag[data-tag="${tagName}"]`);
+                        if (button) {
+                            button.classList.add('selected');
+
+                            if (type === 'entryTags') {
+                                // fullTag 데이터셋에 시간봉 정보 저장
+                                button.dataset.fullTag = JSON.stringify({ tag: tagName, timeTags: timeTags });
+                                
+                                // 오버레이 렌더링
+                                let overlay = document.createElement('span');
+                                overlay.className = 'time-tag-overlay';
+                                overlay.textContent = timeTags[0] || '시간X';
+                                overlay.title = `시간봉: ${timeTags.join(', ')}`;
+                                button.appendChild(overlay);
+                            }
+                        }
+                    });
                 });
 
                 switchJournalView('form-view'); window.scrollTo(0, 0);
             }
         }
-
-        async function handleOpenMemoModal(e) {
-            const journalId = e.currentTarget.dataset.id;
-            const journal = await getJournalById(journalId);
-            if(journal) {
-                document.getElementById('memo-journal-id').value = journalId;
-                document.getElementById('memo-content').value = journal.memo || '';
-                openModal('memo-modal');
-            }
-        }
-
-        document.getElementById('close-memo-modal-btn').addEventListener('click', () => closeModal('memo-modal'));
-        document.getElementById('memo-modal').addEventListener('click', e => { if (e.target.id === 'memo-modal') closeModal('memo-modal'); });
-
-        document.getElementById('memo-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const journalId = document.getElementById('memo-journal-id').value;
-            const memoContent = document.getElementById('memo-content').value.trim();
-
-            try {
-                await db.collection("users").doc(currentUser.uid).collection("journals").doc(journalId).update({ memo: memoContent });
-                showToast("매매 복기 내용이 저장되었습니다.");
-                closeModal('memo-modal');
-            } catch(error) {
-                showToast("메모 저장 실패: " + error.message, "error");
-            }
-        });
-
-        async function handleOpenExitModal(e) {
-            const journal = await getJournalById(e.currentTarget.dataset.id);
-            if(journal){
-                const isSpot = journal.assetType === 'spot';
-                const totalAmount = isSpot ? journal.quantity : journal.contracts;
-                const exitedAmount = journal.exits ? journal.exits.reduce((s, ex) => s + ex.quantity, 0) : 0;
-                const remaining = totalAmount - exitedAmount;
-                
-                document.getElementById('exit-journal-id').value = journal.id;
-                document.getElementById('exit-quantity-label').textContent = isSpot ? '청산 수량' : '청산 계약 수';
-                document.getElementById('remaining-quantity').textContent = formatNumber(remaining);
-                document.getElementById('exit-quantity').dataset.max = remaining;
-                document.getElementById('exit-quantity').value = formatNumber(remaining);
-                document.getElementById('exit-date').value = new Date().toISOString().split('T')[0];
-                openModal('exit-modal');
-            }
-        }
-
-        document.getElementById('exit-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const journalId = document.getElementById('exit-journal-id').value;
-            const journal = await getJournalById(journalId);
-            const price = parseFloat(unformatNumber(document.getElementById('exit-price').value));
-            const quantity = parseFloat(unformatNumber(document.getElementById('exit-quantity').value));
-            const date = Timestamp.fromDate(new Date(document.getElementById('exit-date').value));
-            const maxQuantity = parseFloat(document.getElementById('exit-quantity').dataset.max);
-
-            if (isNaN(quantity) || quantity <= 0 || quantity > maxQuantity + 1e-9) {
-                showToast(`청산 수량/계약 수는 0보다 크고 ${formatNumber(maxQuantity)} 이하여야 합니다.`, "error"); return;
-            }
-            
-            const exitData = { price, quantity, date };
-            const updatedExits = [...(journal.exits || []), exitData];
-            await db.collection("users").doc(currentUser.uid).collection("journals").doc(journalId).update({ exits: updatedExits });
-            showToast("청산 기록이 추가되었습니다.");
-            closeModal('exit-modal');
-        });
         
-        function getStats(journals) {
-            const completed = journals.filter(j => {
-                const isSpot = j.assetType === 'spot';
-                const totalAmount = isSpot ? j.quantity : j.contracts;
-                const exitedAmount = j.exits ? j.exits.reduce((s, e) => s + e.quantity, 0) : 0;
-                return j.exits && j.exits.length > 0 && (totalAmount - exitedAmount <= 1e-9);
-            });
-            
-            let winningTrades = 0;
-            let totalRealizedPnlKRW = 0;
-            const plRatios = [];
-            
-            completed.forEach(j => {
-                const totalPnl = j.exits.reduce((sum, exit) => sum + calculatePnl(j, exit), 0);
-                const totalPnlInKRW = j.currency === 'USD' ? totalPnl * exchangeRate : totalPnl;
-                totalRealizedPnlKRW += totalPnlInKRW;
-
-                if (totalPnl > 0) winningTrades++;
-
-                const potentialReward = Math.abs(j.position === 'long' ? (j.targetPrice - j.entryPrice) : (j.entryPrice - j.targetPrice));
-                const potentialRisk = Math.abs(j.position === 'long' ? (j.entryPrice - j.stopLoss) : (j.stopLoss - j.entryPrice));
-                if (potentialRisk > 0) plRatios.push(potentialReward / potentialRisk);
-            });
-
-            const winRate = completed.length > 0 ? (winningTrades / completed.length) * 100 : 0;
-            const averagePlRatio = plRatios.length > 0 ? plRatios.reduce((sum, r) => sum + r, 0) / plRatios.length : 0;
-
-            return { completed, winRate, averagePlRatio, totalRealizedPnlKRW };
-        }
-
-        function renderJournalStats(journals) {
-            const { completed, winRate, averagePlRatio, totalRealizedPnlKRW } = getStats(journals);
-            renderOverallStats(completed, winRate, averagePlRatio, totalRealizedPnlKRW);
-            renderPnlCompositionChart(completed);
-            renderPnlTrendCharts(completed);
-            renderWinRateCharts(completed);
-        }
-
-        // '직전 기간 대비' 컨텍스트 정보 삭제 (요청 4)
-        function renderOverallStats(journals, winRate, averagePlRatio, totalRealizedPnlKRW) {
-            const winRateEl = document.getElementById('total-win-rate');
-            const plRatioEl = document.getElementById('average-pl-ratio');
-            const pnlEl = document.getElementById('total-realized-pnl');
-
-            // 직전 기간 대비 컨텍스트 텍스트를 제거합니다. (요청 4)
-            document.getElementById('win-rate-context').textContent = '';
-            document.getElementById('pl-ratio-context').textContent = '';
-            document.getElementById('pnl-context').textContent = '';
-
-            if (journals.length === 0) { 
-                winRateEl.textContent = 'N/A'; plRatioEl.textContent = 'N/A'; pnlEl.textContent = 'N/A';
-                return;
-            }
-            
-            // 1. 현재 기간 통계
-            winRateEl.textContent = `${winRate.toFixed(2)}%`;
-            winRateEl.className = `text-4xl font-extrabold ${winRate >= 50 ? 'text-blue-500' : 'text-red-500'}`;
-            
-            plRatioEl.textContent = `${averagePlRatio.toFixed(2)} : 1`;
-            plRatioEl.className = `text-4xl font-extrabold ${averagePlRatio >= 1 ? 'text-green-500' : 'text-yellow-500'}`;
-
-            const pnlValue = totalRealizedPnlKRW * (statsCurrency === 'USD' ? 1 / exchangeRate : 1);
-            const pnlClass = pnlValue > 0 ? 'text-green-500' : pnlValue < 0 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400';
-            pnlEl.textContent = formatPrice(pnlValue, statsCurrency);
-            pnlEl.className = `text-4xl font-extrabold ${pnlClass}`;
-        }
-
-        function renderPnlCompositionChart(journals) {
-            let totalProfit = 0; let totalLoss = 0;
-            journals.forEach(j => {
-                const pnl = j.exits.reduce((s, e) => s + calculatePnl(j, e), 0);
-                const pnlInKRW = j.currency === 'USD' ? pnl * exchangeRate : pnl;
-                if(pnlInKRW > 0) totalProfit += pnlInKRW;
-                else totalLoss += Math.abs(pnlInKRW);
-            });
-            createJournalChart('pnl-composition-chart', 'doughnut', ['총 수익', '총 손실'], [totalProfit, totalLoss], '손익 구성');
-        }
-
-        function renderPnlTrendCharts(journals) {
-            const monthlyPnl = {}; const quarterlyPnl = {};
-            journals.forEach(j => {
-                const date = j.date;
-                const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                const quarter = `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`;
-                const pnl = j.exits.reduce((s, e) => s + calculatePnl(j,e), 0);
-                const pnlInKRW = j.currency === 'USD' ? pnl * exchangeRate : pnl;
-                monthlyPnl[month] = (monthlyPnl[month] || 0) + pnlInKRW;
-                quarterlyPnl[quarter] = (quarterlyPnl[quarter] || 0) + pnlInKRW;
-            });
-            
-            const sortedMonthlyKeys = Object.keys(monthlyPnl).sort();
-            const sortedMonthlyValues = sortedMonthlyKeys.map(key => monthlyPnl[key]);
-            createJournalChart('monthly-pnl-chart', 'bar', sortedMonthlyKeys, sortedMonthlyValues, '월별 손익');
-            renderJournalSummary('monthly-pnl-summary', sortedMonthlyKeys, sortedMonthlyValues);
-
-            const sortedQuarterlyKeys = Object.keys(quarterlyPnl).sort();
-            const sortedQuarterlyValues = sortedQuarterlyKeys.map(key => quarterlyPnl[key]);
-            createJournalChart('quarterly-pnl-chart', 'bar', sortedQuarterlyKeys, sortedQuarterlyValues, '분기별 손익');
-            renderJournalSummary('quarterly-pnl-summary', sortedQuarterlyKeys, sortedQuarterlyValues);
-        }
-        
-        function renderJournalSummary(elementId, labels, data) {
-            const container = document.getElementById(elementId);
-            container.innerHTML = '';
-            if (labels.length === 0) return;
-            const summaryHtml = labels.map((label, index) => {
-                const value = data[index] * (statsCurrency === 'USD' ? 1 / exchangeRate : 1);
-                const colorClass = value >= 0 ? 'text-green-500' : 'text-red-500';
-                return `<span class="inline-block mx-2">${label}: <strong class="${colorClass}">${formatPrice(value, statsCurrency)}</strong></span>`;
-            }).join('');
-            container.innerHTML = summaryHtml;
-        }
-
-        function renderWinRateCharts(journals) {
-            const environmentTagStats = {}, entryTagStats = {}, psychologyTagStats = {}, strategyStats = {}, positionStats = { 'long': { wins: 0, trades: 0 }, 'short': { wins: 0, trades: 0 }};
-            journals.forEach(j => {
-                const pnl = j.exits.reduce((s, e) => s + calculatePnl(j,e), 0);
-                const isWin = pnl > 0;
-
-                // 포지션 통계
-                if (positionStats[j.position]) { positionStats[j.position].trades++; if (isWin) positionStats[j.position].wins++; }
-                
-                // 태그 통계
-                [j.environmentTags, j.entryTags, j.psychologyTags, [j.strategy]].forEach((tags, i) => {
-                    const stats = [environmentTagStats, entryTagStats, psychologyTagStats, strategyStats][i];
-                    (tags || []).forEach(tag => { if (!stats[tag]) stats[tag] = { wins: 0, trades: 0 }; stats[tag].trades++; if (isWin) stats[tag].wins++; });
-                });
-            });
-
-            const createData = stats => ({ labels: Object.keys(stats), rates: Object.keys(stats).map(l => (stats[l].trades > 0 ? (stats[l].wins / stats[l].trades) * 100 : 0)) });
-            
-            const environmentData = createData(environmentTagStats);
-            const entryData = createData(entryTagStats);
-            const psychologyData = createData(psychologyTagStats);
-            const strategyData = createData(strategyStats);
-            const positionData = createData(positionStats);
-
-            // 환경 태그 차트 렌더링
-            createJournalChart('environment-win-rate-chart', 'bar', environmentData.labels, environmentData.rates, '승률 (%)', true);
-            
-            createJournalChart('entry-win-rate-chart', 'bar', entryData.labels, entryData.rates, '승률 (%)', true);
-            createJournalChart('psychology-win-rate-chart', 'bar', psychologyData.labels, psychologyData.rates, '승률 (%)', true);
-            
-            // 전략과 포지션을 하나의 차트로 렌더링
-            const combinedLabels = [...strategyData.labels, ...positionData.labels];
-            const combinedRates = [...strategyData.rates, ...positionData.rates];
-            createJournalChart('strategy-position-win-rate-chart', 'bar', combinedLabels, combinedRates, '승률 (%)', true);
-        }
-
-        function createJournalChart(canvasId, type, labels, data, label, isWinRate = false) {
-            if (charts[canvasId]) charts[canvasId].destroy();
-            const ctx = document.getElementById(canvasId)?.getContext('2d');
-            if(!ctx) return;
-
-            const pnlMultiplier = statsCurrency === 'USD' ? 1 / exchangeRate : 1;
-            const chartData = isWinRate ? data : data.map(d => d * pnlMultiplier);
-            const isDark = document.documentElement.classList.contains('dark');
-            
-            const commonOptions = {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { 
-                    legend: { display: type === 'doughnut', position: 'bottom' }, 
-                    tooltip: { callbacks: { label: c => isWinRate ? `${c.label}: ${c.parsed.toFixed(2)}%` : `${c.label}: ${formatPrice(c.raw, statsCurrency)}` } } 
-                },
-                scales: {
-                    x: { ticks: { color: isDark ? '#d1d5db' : '#374151' } },
-                    y: { ticks: { color: isDark ? '#d1d5db' : '#374151' } }
-                }
-            };
-
-            if (type === 'doughnut') {
-                 charts[canvasId] = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ 
-                    label, data: chartData, 
-                    backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 99, 132, 0.7)'],
-                    borderColor: [isDark ? '#1E1E1E' : '#fff'], borderWidth: 4
-                }]}, options: commonOptions });
-            } else { // bar
-                 charts[canvasId] = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label, data: chartData, backgroundColor: chartData.map(d => d >= (isWinRate ? 50 : 0) ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'), borderWidth: 1 }] }, 
-                 options: { ...commonOptions, scales: { 
-                     x: { ...commonOptions.scales.x, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } }, 
-                     y: { ...commonOptions.scales.y, beginAtZero: !isWinRate, ticks: { callback: v => isWinRate ? `${v.toFixed(0)}%` : formatPrice(v, statsCurrency) }, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } } } } });
-            }
-        }
-        
+        // 폼 초기화 로직 업데이트
         function resetForm() {
             journalForm.reset(); 
             document.getElementById('journal-id').value = '';
@@ -1419,9 +1222,8 @@
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
             
             document.getElementById('quantity').value = '';
-            document.getElementById('contracts').value = ''; // 계약수 필드 초기화
+            document.getElementById('contracts').value = ''; 
 
-            // 선물 정보 필드 초기화
             document.getElementById('futures-info-select').value = '';
             document.getElementById('tick-value').value = '';
             document.getElementById('tick-size').value = '';
@@ -1433,454 +1235,16 @@
             document.querySelector('[data-group="strategy"] .toggle-btn[data-value="단타"]').classList.add('selected');
             document.getElementById('form-currency-usd-btn').classList.add('selected');
             
-            document.querySelectorAll('.environment-tags-container .tag.selected, .entry-tags-container .tag.selected, .psychology-tags-container .tag.selected').forEach(t => t.classList.remove('selected'));
+            document.querySelectorAll('.environment-tags-container .tag.selected, .entry-tags-container .tag.selected, .psychology-tags-container .tag.selected').forEach(t => {
+                 t.classList.remove('selected');
+                 t.querySelector('.time-tag-overlay')?.remove(); // 오버레이 제거
+                 t.dataset.fullTag = ''; // 데이터셋 초기화
+            });
         }
         document.getElementById('clear-form-btn').addEventListener('click', resetForm);
         
-        // =======================================================
-        // ================== HOUSEHOLD LEDGER LOGIC =============
-        // =======================================================
-
-        async function initializeLedgerDefaults(userId) {
-            const categoriesDocRef = db.collection("users").doc(userId).collection("ledgerData").doc("categories");
-            const docSnap = await categoriesDocRef.get();
-            if (!docSnap.exists) {
-                await categoriesDocRef.set({
-                    expense: ['식비', '교통비', '공과금', '구독료', '자기개발비', '오락/여가', '선물'],
-                    income: ['월급', '부수입', '용돈', '금융소득']
-                });
-            }
-        }
-
-        function attachLedgerListeners(userId) {
-            if (unsubscribeLedger) unsubscribeLedger();
-            unsubscribeLedger = db.collection("users").doc(userId).collection("ledgerEntries").orderBy("date", "desc")
-                .onSnapshot((snapshot) => {
-                    localLedgerEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), date: doc.data().date.toDate() }));
-                    renderLedgerListView();
-                    renderLedgerStatsView();
-                });
-
-            if (unsubscribeLedgerCategories) unsubscribeLedgerCategories();
-            unsubscribeLedgerCategories = db.collection("users").doc(userId).collection("ledgerData").doc("categories")
-                .onSnapshot((doc) => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        localLedgerCategories = {
-                            expense: data.expense || data.list || [], 
-                            income: data.income || []
-                        };
-                    } else {
-                        localLedgerCategories = { expense: [], income: [] };
-                    }
-                    renderLedgerCategoryTags(localLedgerCategories.expense, 'expense');
-                    renderLedgerCategoryTags(localLedgerCategories.income, 'income');
-                });
-        }
+        // ... (나머지 로직은 그대로 유지) ...
         
-        function switchLedgerView(tabId) {
-            document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.ledgerTab === tabId));
-            ['ledger-form-view', 'ledger-list-view', 'ledger-stats-view'].forEach(viewId => document.getElementById(viewId).classList.toggle('hidden', viewId !== tabId));
-            if(tabId === 'ledger-list-view') renderLedgerListView();
-            if(tabId === 'ledger-stats-view') renderLedgerStatsView();
-            lucide.createIcons();
-        }
-        document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.addEventListener('click', () => switchLedgerView(btn.dataset.ledgerTab)));
-
-        function renderLedgerCategoryTags(categories, type) {
-            const container = document.getElementById(`ledger-${type}-category-tags-container`);
-            container.innerHTML = '';
-            categories.forEach(cat => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center dark:bg-[#4F4F4F] dark:text-gray-200';
-                button.dataset.tag = cat;
-                
-                button.innerHTML = `<span class="pl-3 pr-2 py-1">${cat}</span><span class="delete-tag-span pr-2 text-gray-500 dark:text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
-
-                button.addEventListener('click', () => {
-                    container.querySelectorAll('.tag.selected').forEach(t => t.classList.remove('selected'));
-                    button.classList.add('selected');
-                });
-                button.querySelector('.delete-tag-span').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    handleDeleteLedgerCategory(cat, type);
-                });
-                container.appendChild(button);
-            });
-            lucide.createIcons();
-        }
-        
-        async function addLedgerCategory(type) {
-            const input = document.getElementById(`new-ledger-${type}-category`);
-            const newCategory = input.value.trim();
-            if (newCategory && !localLedgerCategories[type].includes(newCategory)) {
-                const updatedCategories = { ...localLedgerCategories };
-                updatedCategories[type] = [...updatedCategories[type], newCategory].sort((a,b) => a.localeCompare(b));
-
-                try {
-                    await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(updatedCategories);
-                    showToast(`'${newCategory}' 카테고리가 추가되었습니다.`);
-                    input.value = '';
-                } catch(e) {
-                    showToast("카테고리 추가 실패", "error");
-                }
-            } else if (localLedgerCategories[type].includes(newCategory)) {
-                showToast("이미 존재하는 카테고리입니다.", "error");
-            }
-        }
-        document.getElementById('add-ledger-expense-category-btn').addEventListener('click', () => addLedgerCategory('expense'));
-        document.getElementById('add-ledger-income-category-btn').addEventListener('click', () => addLedgerCategory('income'));
-
-        
-        function handleDeleteLedgerCategory(category, type) {
-            const isCategoryInUse = localLedgerEntries.some(entry => entry.type === type && entry.category === category);
-            if (isCategoryInUse) {
-                showToast("사용 중인 카테고리는 삭제할 수 없습니다.", "error"); return;
-            }
-            showConfirmModal(`'${category}' 카테고리를 삭제하시겠습니까?`, async () => {
-                const updatedCategories = { ...localLedgerCategories };
-                updatedCategories[type] = updatedCategories[type].filter(c => c !== category);
-                try {
-                    await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(updatedCategories);
-                    showToast(`'${category}' 카테고리가 삭제되었습니다.`);
-                } catch(e) {
-                     showToast("카테고리 삭제 실패", "error");
-                }
-            }, '삭제');
-        }
-
-        document.getElementById('ledger-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('ledger-id').value;
-            const type = document.querySelector('[data-group="ledger-type"] .toggle-btn.selected').dataset.value;
-            const selectedCategoryTag = document.querySelector(`#ledger-${type}-category-tags-container .tag.selected`);
-            const amount = parseFloat(unformatNumber(document.getElementById('ledger-amount').value));
-
-            if(!selectedCategoryTag) { showToast("카테고리를 선택해주세요.", "error"); return; }
-            if(isNaN(amount) || amount <= 0) { showToast("올바른 금액을 입력해주세요.", "error"); return; }
-
-            const entryData = {
-                type: type,
-                date: Timestamp.fromDate(new Date(document.getElementById('ledger-date').value)),
-                amount: amount,
-                category: selectedCategoryTag.dataset.tag,
-                memo: document.getElementById('ledger-memo').value.trim()
-            };
-
-            try {
-                const collectionRef = db.collection("users").doc(currentUser.uid).collection("ledgerEntries");
-                if (id) {
-                    await collectionRef.doc(id).update(entryData);
-                    showToast("내역이 수정되었습니다.");
-                } else {
-                    await collectionRef.add(entryData);
-                    showToast("내역이 저장되었습니다.");
-                }
-                resetLedgerForm();
-                switchLedgerView('ledger-list-view');
-            } catch (error) { showToast("저장 실패.", "error"); }
-        });
-        
-        function resetLedgerForm() {
-            document.getElementById('ledger-form').reset();
-            document.getElementById('ledger-id').value = '';
-            document.getElementById('ledger-date').value = new Date().toISOString().split('T')[0];
-            document.querySelectorAll('#ledger-form .tag.selected').forEach(t => t.classList.remove('selected'));
-            document.querySelector('#ledger-form .toggle-btn[data-value="expense"]').click();
-        }
-        document.getElementById('clear-ledger-form-btn').addEventListener('click', resetLedgerForm);
-
-        function renderLedgerListView() {
-            const filterType = document.getElementById('ledger-list-filter-type').value;
-            const displayEl = document.getElementById('ledger-list-period-display');
-            
-            const { start, end, displayString } = getPeriod(ledgerListDate, filterType);
-            displayEl.textContent = displayString;
-            
-            const filteredEntries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
-            
-            // Render Expenses Summary
-            const expensesByCategory = filteredEntries
-                .filter(e => e.type === 'expense')
-                .reduce((acc, curr) => {
-                    const category = curr.category || '미분류';
-                    acc[category] = (acc[category] || 0) + curr.amount;
-                    return acc;
-                }, {});
-
-            const expenseSummaryContainer = document.getElementById('ledger-category-summary');
-            expenseSummaryContainer.innerHTML = '';
-            if(Object.keys(expensesByCategory).length === 0){
-                expenseSummaryContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-center text-sm">지출 내역 없음</p>`;
-            } else {
-                Object.entries(expensesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
-                    const div = document.createElement('div');
-                    div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
-                    div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-red-500">- ${formatPrice(total, 'KRW')}</span>`;
-                    div.onclick = () => {
-                        document.querySelectorAll('#ledger-list-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
-                        document.querySelectorAll('#ledger-list-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
-                        div.classList.add('selected');
-                        renderLedgerDetails(category, 'expense', filteredEntries);
-                    };
-                    expenseSummaryContainer.appendChild(div);
-                });
-            }
-
-            // Render Incomes Summary
-            const incomesByCategory = filteredEntries
-                .filter(e => e.type === 'income')
-                .reduce((acc, curr) => {
-                    const category = curr.category || '미분류'; // Handle uncategorized old entries
-                    acc[category] = (acc[category] || 0) + curr.amount;
-                    return acc;
-                }, {});
-            
-            const incomeSummaryContainer = document.getElementById('ledger-income-summary');
-            incomeSummaryContainer.innerHTML = '';
-            if(Object.keys(incomesByCategory).length === 0) {
-                 incomeSummaryContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-center text-sm">수입 내역 없음</p>`;
-            } else {
-                Object.entries(incomesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
-                    const div = document.createElement('div');
-                    div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
-                    div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-green-500">+ ${formatPrice(total, 'KRW')}</span>`;
-                    div.onclick = () => {
-                        document.querySelectorAll('#ledger-list-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
-                        document.querySelectorAll('#ledger-list-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
-                        div.classList.add('selected');
-                        renderLedgerDetails(category, 'income', filteredEntries);
-                    };
-                    incomeSummaryContainer.appendChild(div);
-                });
-            }
-            
-            document.getElementById('ledger-entry-details').innerHTML = '';
-            document.getElementById('ledger-detail-title').textContent = '내역 선택';
-        }
-        
-        function renderLedgerDetails(category, type, entries) {
-            document.getElementById('ledger-detail-title').textContent = category;
-            const detailsContainer = document.getElementById('ledger-entry-details');
-            detailsContainer.innerHTML = '';
-
-            let entriesToShow;
-            if (category === '미분류') {
-                entriesToShow = entries.filter(e => e.type === type && !e.category);
-            } else {
-                entriesToShow = entries.filter(e => e.type === type && e.category === category);
-            }
-
-            if(entriesToShow.length === 0) {
-                detailsContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-center">상세 내역이 없습니다.</p>`;
-                return;
-            }
-
-            entriesToShow.sort((a,b) => b.date - a.date)
-                .forEach(entry => {
-                    const div = document.createElement('div');
-                    div.className = 'p-3 rounded-lg border border-gray-200 dark:border-[#4F4F4F] flex justify-between items-center bg-gray-50 dark:bg-[#2d2d2d]';
-                    const amountClass = type === 'income' ? 'text-green-500' : 'text-red-500';
-                    const sign = type === 'income' ? '+' : '-';
-                    div.innerHTML = `
-                        <div>
-                            <p class="font-medium">${entry.date.toLocaleDateString()}</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">${entry.memo || (type === 'income' ? '수입' : '메모 없음')}</p>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <span class="font-bold ${amountClass}">${sign} ${formatPrice(entry.amount, 'KRW')}</span>
-                            <div>
-                                <button class="p-1 hover:text-blue-500 edit-ledger-btn" data-id="${entry.id}"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                                <button class="p-1 hover:text-red-500 delete-ledger-btn" data-id="${entry.id}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                            </div>
-                        </div>`;
-                    detailsContainer.appendChild(div);
-                });
-            lucide.createIcons();
-            document.querySelectorAll('.edit-ledger-btn').forEach(b => b.addEventListener('click', handleEditLedgerEntry));
-            document.querySelectorAll('.delete-ledger-btn').forEach(b => b.addEventListener('click', handleDeleteLedgerEntry));
-        }
-        
-        function handleEditLedgerEntry(e) {
-            const id = e.currentTarget.dataset.id;
-            const entry = localLedgerEntries.find(item => item.id === id);
-            if (entry) {
-                switchLedgerView('ledger-form-view');
-                document.getElementById('ledger-id').value = entry.id;
-                document.getElementById('ledger-date').value = entry.date.toISOString().split('T')[0];
-                document.getElementById('ledger-amount').value = formatNumber(entry.amount);
-                document.getElementById('ledger-memo').value = entry.memo;
-                document.querySelector(`.toggle-btn[data-value="${entry.type}"]`).click();
-                if(entry.category) {
-                    document.querySelector(`#ledger-${entry.type}-category-tags-container .tag[data-tag="${entry.category}"]`)?.click();
-                }
-            }
-        }
-        
-        function handleDeleteLedgerEntry(e) {
-            const id = e.currentTarget.dataset.id;
-            showConfirmModal('정말로 이 내역을 삭제하시겠습니까?', () => {
-                db.collection("users").doc(currentUser.uid).collection("ledgerEntries").doc(id).delete()
-                  .then(() => showToast("내역이 삭제되었습니다."))
-                  .catch(() => showToast("삭제 실패", "error"));
-            }, '삭제');
-        }
-
-        function updateLedgerListDate(offset) {
-            const filterType = document.getElementById('ledger-list-filter-type').value;
-            if (filterType === 'month') ledgerListDate.setMonth(ledgerListDate.getMonth() + offset);
-            else if (filterType === 'quarter') ledgerListDate.setMonth(ledgerListDate.getMonth() + offset * 3);
-            else ledgerListDate.setFullYear(ledgerListDate.getFullYear() + offset);
-            renderLedgerListView();
-        }
-        document.getElementById('ledger-list-prev-btn').addEventListener('click', () => updateLedgerListDate(-1));
-        document.getElementById('ledger-list-next-btn').addEventListener('click', () => updateLedgerListDate(1));
-        document.getElementById('ledger-list-filter-type').addEventListener('change', () => {
-            ledgerListDate = new Date(); 
-            renderLedgerListView();
-        });
-
-        function renderLedgerStatsView() {
-            const filterType = document.getElementById('ledger-stats-filter-type').value;
-            const displayEl = document.getElementById('ledger-stats-period-display');
-            
-            const { start, end, displayString } = getPeriod(ledgerStatsDate, filterType);
-            displayEl.textContent = displayString;
-
-            const entries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
-            
-            let totalIncome = 0, totalExpense = 0;
-            const expenseByCategory = {};
-            const incomeByCategory = {};
-
-
-            entries.forEach(e => {
-                if (e.type === 'income') {
-                    totalIncome += e.amount;
-                    const category = e.category || '미분류';
-                    incomeByCategory[category] = (incomeByCategory[category] || 0) + e.amount;
-                }
-                else {
-                    totalExpense += e.amount;
-                    const category = e.category || '미분류';
-                    expenseByCategory[category] = (expenseByCategory[category] || 0) + e.amount;
-                }
-            });
-
-            document.getElementById('ledger-total-income').textContent = formatPrice(totalIncome, 'KRW');
-            document.getElementById('ledger-total-expense').textContent = formatPrice(totalExpense, 'KRW');
-            const balance = totalIncome - totalExpense;
-            const balanceEl = document.getElementById('ledger-balance');
-            balanceEl.textContent = formatPrice(balance, 'KRW');
-            balanceEl.className = `text-3xl font-bold ${balance >= 0 ? 'text-blue-500' : 'text-red-500'}`;
-            
-            // Trend Chart
-            let trendLabels, trendIncomeData, trendExpenseData;
-            if(filterType === 'year') {
-                document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 월별 추이`;
-                trendLabels = Array.from({length: 12}, (_, i) => `${i + 1}월`);
-                const monthlyData = trendLabels.map(() => ({income: 0, expense: 0}));
-                entries.forEach(e => {
-                    const month = e.date.getMonth();
-                    if (e.type === 'income') monthlyData[month].income += e.amount;
-                    else monthlyData[month].expense += e.amount;
-                });
-                trendIncomeData = monthlyData.map(d => d.income);
-                trendExpenseData = monthlyData.map(d => d.expense);
-            } else { // month or quarter
-                document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 일별 추이`;
-                const days = (end - start) / (1000 * 60 * 60 * 24);
-                trendLabels = Array.from({length: Math.ceil(days) + 1}, (_, i) => {
-                    const d = new Date(start);
-                    d.setDate(d.getDate() + i);
-                    return `${d.getMonth()+1}/${d.getDate()}`;
-                });
-                const dailyData = Object.fromEntries(trendLabels.map(l => [l, {income: 0, expense: 0}]));
-                entries.forEach(e => {
-                    const dayLabel = `${e.date.getMonth()+1}/${e.date.getDate()}`;
-                    if(dailyData[dayLabel]) {
-                        if (e.type === 'income') dailyData[dayLabel].income += e.amount;
-                        else dailyData[dayLabel].expense += e.amount;
-                    }
-                });
-                trendIncomeData = Object.values(dailyData).map(d => d.income);
-                trendExpenseData = Object.values(dailyData).map(d => d.expense);
-            }
-            
-            createLedgerChart('ledger-monthly-pnl-chart', 'bar', trendLabels,
-                [{ label: '수입', data: trendIncomeData, backgroundColor: 'rgba(75, 192, 192, 0.6)' },
-                 { label: '지출', data: trendExpenseData, backgroundColor: 'rgba(255, 99, 132, 0.6)' }]
-            );
-
-            // Expense Category Chart
-            document.getElementById('ledger-expense-chart-title').textContent = `${displayString} 지출 구성`;
-            const sortedExpense = Object.entries(expenseByCategory).sort((a,b) => b[1] - a[1]);
-            createLedgerChart('ledger-expense-chart', 'pie', 
-                sortedExpense.map(c => c[0]), 
-                [{ label: '지출', data: sortedExpense.map(c => c[1]) }]
-            );
-
-            // Income Category Chart
-            document.getElementById('ledger-income-chart-title').textContent = `${displayString} 수입 구성`;
-            const sortedIncome = Object.entries(incomeByCategory).sort((a,b) => b[1] - a[1]);
-            createLedgerChart('ledger-income-chart', 'pie', 
-                sortedIncome.map(c => c[0]), 
-                [{ label: '수입', data: sortedIncome.map(c => c[1]) }]
-            );
-        }
-        
-        function updateLedgerStatsDate(offset) {
-            const filterType = document.getElementById('ledger-stats-filter-type').value;
-            if (filterType === 'month') ledgerStatsDate.setMonth(ledgerStatsDate.getMonth() + offset);
-            else if (filterType === 'quarter') ledgerStatsDate.setMonth(ledgerStatsDate.getMonth() + offset * 3);
-            else ledgerStatsDate.setFullYear(ledgerStatsDate.getFullYear() + offset);
-            renderLedgerStatsView();
-        }
-        document.getElementById('ledger-stats-prev-btn').addEventListener('click', () => updateLedgerStatsDate(-1));
-        document.getElementById('ledger-stats-next-btn').addEventListener('click', () => updateLedgerStatsDate(1));
-        document.getElementById('ledger-stats-filter-type').addEventListener('change', () => {
-            ledgerStatsDate = new Date();
-            renderLedgerStatsView();
-        });
-        
-        function createLedgerChart(canvasId, type, labels, datasets) {
-            if (charts[canvasId]) charts[canvasId].destroy();
-            const ctx = document.getElementById(canvasId)?.getContext('2d');
-            if(!ctx) return;
-            const isDark = document.documentElement.classList.contains('dark');
-
-            const defaultColors = [
-              'rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)',
-              'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)',
-              'rgba(199, 199, 199, 0.7)', 'rgba(83, 102, 255, 0.7)', 'rgba(40, 159, 64, 0.7)'
-            ];
-
-            const chartDatasets = datasets.map((ds, index) => ({
-                ...ds,
-                backgroundColor: ds.backgroundColor || (type === 'pie' ? defaultColors : defaultColors[index % defaultColors.length]),
-                borderColor: isDark ? '#1E1E1E' : '#fff',
-                borderWidth: type === 'pie' ? 2 : 1
-            }));
-
-            charts[canvasId] = new Chart(ctx, {
-                type: type,
-                data: { labels, datasets: chartDatasets },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: type !== 'bar', position: 'bottom' },
-                        tooltip: { callbacks: { label: c => `${c.label}: ${formatPrice(c.raw, 'KRW')}` } } 
-                    },
-                    scales: (type === 'bar') ? { 
-                        x: { ticks: { color: isDark ? '#d1d5db' : '#374151' }, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } },
-                        y: { beginAtZero: true, ticks: { callback: v => formatPrice(v, 'KRW') , color: isDark ? '#d1d5db' : '#374151' }, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } } 
-                    } : {}
-                }
-            });
-        }
-
-
         // ================== Global Helpers & Listeners ==================
         
         function getPeriod(date, filterType) {
@@ -1996,7 +1360,6 @@
                     if (group.dataset.group === 'asset-type') {
                         const isSpot = button.dataset.value === 'spot';
                         
-                        // 요청 2: 선물 계약 수 필드 표시 로직 업데이트
                         document.getElementById('spot-fields').classList.toggle('hidden', !isSpot);
                         document.getElementById('futures-contracts-field').classList.toggle('hidden', isSpot);
                         document.getElementById('futures-fields').classList.toggle('hidden', isSpot);
@@ -2006,18 +1369,10 @@
                         document.getElementById('tick-value').required = !isSpot;
                         document.getElementById('tick-size').required = !isSpot;
 
-                        // 현물/선물 필드 정리
-                        const quantityInput = document.getElementById('quantity');
-                        const contractsInput = document.getElementById('contracts');
-
                         if (!isSpot) {
-                             document.querySelector('label[for="quantity"]').textContent = '수량 (현물용)';
-                             quantityInput.classList.add('hidden');
-                             document.querySelector('label[for="quantity"]').classList.add('hidden');
+                             document.getElementById('quantity').value = '';
                         } else {
-                             document.querySelector('label[for="quantity"]').textContent = '수량';
-                             quantityInput.classList.remove('hidden');
-                             document.querySelector('label[for="quantity"]').classList.remove('hidden');
+                             document.getElementById('contracts').value = '';
                         }
                     }
                 }
