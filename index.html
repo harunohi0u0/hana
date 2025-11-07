@@ -9,6 +9,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
+        /* --- Original CSS Styles Restored --- */
         body {
             font-family: 'Noto Sans KR', sans-serif;
             transition: background-color 0.3s ease;
@@ -84,11 +85,13 @@
         /* Quick-Edit Tag & Memo */
         .quick-edit-btn { transition: all 0.2s; }
         .quick-edit-btn:hover { transform: scale(1.05); }
+        /* --- Original CSS Styles Restored --- */
 
-        /* Custom Styles for Timeframe Selector - START */
+
+        /* --- Custom Styles for Timeframe Selector (Minimal changes to original) --- */
         .entry-tags-container .tag { position: relative; }
         .tag.selected.entry-tags-container { 
-             /* Increased padding for selected tag to accommodate the hidden selector */
+             /* Increased size on select for Timeframe UI, using the original selector */
              padding: 8px 12px; 
              font-size: 1rem;
         }
@@ -100,12 +103,10 @@
             left: 0;
             margin-top: 4px;
             min-width: 150px;
-            /* Initially hidden, controlled by JS and .selected class */
             display: none; 
         }
         .tag.selected .timeframe-selector { 
             display: flex !important;
-            /* Override the default hidden state when selected */
         }
 
         .timeframe-button.selected {
@@ -116,8 +117,7 @@
         .dark .timeframe-button.selected {
             background-color: #3b82f6; /* Blue-500 in dark mode */
         }
-
-        /* Custom Styles for Timeframe Selector - END */
+        /* --- Custom Styles for Timeframe Selector (Minimal changes to original) --- */
 
     </style>
     <script>
@@ -335,7 +335,8 @@
                     </div>
                     <div class="grid grid-cols-1"><div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">롱/숏 포지션 승률</h3><div class="chart-container"><canvas id="position-win-rate-chart"></canvas></div></div></div>
                 </div>
-            </main>
+            </div>
+        </main>
  
         </div>
 
@@ -434,8 +435,7 @@
                         <select id="ledger-stats-filter-type" class="p-2 border border-gray-300 rounded-lg dark:bg-[#2d2d2d] dark:border-[#4F4F4F]"><option value="month">월별</option><option value="quarter">분기별</option><option value="year">연도별</option></select>
                         <div class="flex items-center gap-2">
                             <button id="ledger-stats-prev-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#2d2d2d]"><i data-lucide="chevron-left"></i></button>
-   
-                          <span id="ledger-stats-period-display" class="font-bold text-lg w-40 text-center"></span>
+                            <span id="ledger-stats-period-display" class="font-bold text-lg w-40 text-center"></span>
                             <button id="ledger-stats-next-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#2d2d2d]"><i data-lucide="chevron-right"></i></button>
                         </div>
             
