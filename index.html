@@ -1,14 +1,641 @@
-// ... 
+<!DOCTYPE html>
+<html lang="ko" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>매매일지 & 가계부</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: background-color 0.3s ease;
+        }
+        .main-tab-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .main-tab-btn.active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 700;
+        }
+        .tab-btn { transition: all 0.3s ease; }
+        .tab-btn.active { background-color: #4a90e2; color: white; font-weight: 700; }
+        .tag { transition: all 0.2s; }
+        .tag.selected {
+             /* Increased padding for selected tag to accommodate the hidden selector */
+             padding: 8px 12px; 
+             font-size: 1rem;
+        }
+        .tag.selected .tag-text {
+            /* Adjust text alignment when the tag is enlarged */
+            line-height: 1; 
+        }
 
-    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-sm modal-content transform scale-95"><h2 id="confirm-title" class="text-xl font-bold mb-4">확인</h2><p id="confirm-message" class="text-gray-600 dark:text-gray-300 mb-6"></p><div class="flex justify-end space-x-3"><button type="button" id="confirm-cancel-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 font-semibold">취소</button><button type="button" id="confirm-ok-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 font-semibold">확인</button></div></div></div>
-    <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"><p id="toast-message"></p></div>
+        .toggle-group .toggle-btn { transition: all 0.2s ease; }
+        .toggle-group .toggle-btn.selected {
+            background-color: #3b82f6; /* Blue-500 */
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Dark Mode Styles */
+        html.dark {
+            background-color: #121212;
+        }
+        html.dark .bg-white {
+            background-color: #1E1E1E;
+        }
+        html.dark .text-gray-800 {
+            color: #E0E0E0;
+        }
+        html.dark .text-gray-700 {
+            color: #B0B0B0;
+        }
+        html.dark .text-gray-500 {
+            color: #A0A0A0;
+        }
+        html.dark .border-gray-200 {
+            border-color: #333333;
+        }
+        html.dark .hover\:bg-gray-100:hover {
+            background-color: #2D2D2D;
+        }
+        html.dark .bg-gray-50 {
+            background-color: #2D2D2D;
+        }
+        html.dark .bg-gray-200 {
+            background-color: #4F4F4F;
+        }
+        html.dark .hover\:bg-gray-300:hover {
+            background-color: #666666;
+        }
+        html.dark .bg-gray-300 {
+            background-color: #424242;
+        }
+        html.dark .border-gray-100 {
+            border-color: #333;
+        }
+        html.dark .bg-green-100 {
+            background-color: #104C10;
+        }
+        html.dark .text-green-800 {
+            color: #A7F3D0;
+        }
+        html.dark .border-green-300 {
+            border-color: #34D399;
+        }
+        html.dark .bg-purple-100 {
+            background-color: #4C1D95;
+        }
+        html.dark .text-purple-800 {
+            color: #C4B5FD;
+        }
+        html.dark .modal-content {
+            border: 1px solid #333;
+        }
+
+        /* New: Timeframe Selector Styles */
+        .tag.selected .timeframe-selector { 
+            display: flex !important;
+            /* Override the default hidden state when selected */
+        }
+
+        .tag .timeframe-selector {
+            position: absolute;
+            z-index: 20; 
+            top: 100%;
+            left: 0;
+            margin-top: 4px;
+            min-width: 150px;
+            /* Initially hidden, controlled by JS and .selected class */
+            display: none; 
+        }
+
+        .timeframe-button.selected {
+            background-color: #2563eb; /* Blue-600 */
+            color: white;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-[#121212] transition-colors duration-300">
+    <div id="login-view" class="h-screen flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-[#1E1E1E] p-10 rounded-xl shadow-2xl text-center w-full max-w-md">
+            <h1 class="text-3xl font-extrabold mb-4 text-gray-800 dark:text-white">매매일지 & 가계부</h1>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">데이터 저장을 위해 Google 로그인이 필요합니다.</p>
+            <button id="login-btn" class="bg-blue-600 text-white px-6 py-3 rounded-xl shadow-lg hover:bg-blue-700 transition-colors font-bold flex items-center justify-center w-full">
+                <i data-lucide="log-in" class="w-5 h-5 mr-2"></i>
+                Google 계정으로 로그인
+            </button>
+        </div>
+    </div>
+
+    <div id="app-container" class="min-h-screen p-4 sm:p-8 hidden">
+        
+        <header class="flex justify-between items-center mb-6">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-3xl font-extrabold text-gray-800 dark:text-white">나의 자산 기록</h1>
+                <p id="auth-info" class="text-sm text-gray-500 dark:text-gray-400"></p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-300" title="테마 전환">
+                    <i id="sun-icon" data-lucide="sun" class="w-6 h-6"></i>
+                    <i id="moon-icon" data-lucide="moon" class="w-6 h-6 hidden"></i>
+                </button>
+                <button id="logout-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-xl hover:bg-gray-400 font-semibold dark:bg-[#4F4F4F] dark:text-white dark:hover:bg-[#666]">
+                    로그아웃
+                </button>
+            </div>
+        </header>
+        
+        <div class="flex border-b border-gray-200 dark:border-gray-700 mb-6 sticky top-0 z-10 bg-gray-50 dark:bg-[#121212] transition-colors duration-300">
+            <button data-main-tab="journal-container" class="main-tab-btn py-3 px-6 text-gray-600 dark:text-gray-300 active" title="트레이딩 일지 기록 및 분석">
+                <i data-lucide="clipboard-list" class="w-5 h-5 inline-block mr-2 align-text-bottom"></i>
+                매매일지
+            </button>
+            <button data-main-tab="ledger-container" class="main-tab-btn py-3 px-6 text-gray-600 dark:text-gray-300" title="가계부 기록 및 분석">
+                <i data-lucide="wallet" class="w-5 h-5 inline-block mr-2 align-text-bottom"></i>
+                가계부
+            </button>
+        </div>
+
+        <div id="journal-container">
+            <div class="flex space-x-3 mb-6">
+                <button data-tab="form-view" class="tab-btn active px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300" title="새 일지 작성">일지 작성</button>
+                <button data-tab="list-view" class="tab-btn px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300" title="기록된 일지 목록 보기">일지 목록</button>
+                <button data-tab="stats-view" class="tab-btn px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300" title="매매 통계 분석">매매 통계</button>
+            </div>
+            
+            <div id="form-view" class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-xl">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">매매일지 작성 / 수정</h2>
+                <form id="journal-form" class="space-y-6">
+                    <input type="hidden" id="journal-id">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">날짜</label>
+                            <input type="date" id="date" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
+                        </div>
+                        <div>
+                            <label for="ticker" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">종목명/티커</label>
+                            <input type="text" id="ticker" required placeholder="BTC, ES, 삼성전자 등" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200 uppercase">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">자산 구분</label>
+                            <div class="toggle-group flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden" data-group="asset-type">
+                                <button type="button" data-value="spot" class="toggle-btn selected flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="주식, 코인 등 현물">현물</button>
+                                <button type="button" data-value="futures" class="toggle-btn flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="해외/국내 선물">선물</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">통화</label>
+                            <div class="toggle-group flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden" data-group="form-currency">
+                                <button type="button" id="form-currency-krw-btn" class="toggle-btn flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="원화">₩ KRW</button>
+                                <button type="button" id="form-currency-usd-btn" class="toggle-btn selected flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="달러">＄ USD</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">매매 방향</label>
+                            <div class="toggle-group flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden" data-group="position">
+                                <button type="button" data-value="long" class="toggle-btn selected flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="매수 후 매도">롱 (Long)</button>
+                                <button type="button" data-value="short" class="toggle-btn flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="매도 후 매수">숏 (Short)</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">매매 전략</label>
+                            <div class="toggle-group flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden" data-group="strategy">
+                                <button type="button" data-value="단타" class="toggle-btn selected flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">단타</button>
+                                <button type="button" data-value="스윙" class="toggle-btn flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">스윙</button>
+                                <button type="button" data-value="장투" class="toggle-btn flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">장투</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <label for="entry-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">진입 가격</label>
+                            <input type="text" id="entry-price" required placeholder="가격" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
+                        </div>
+                        <div>
+                            <label for="target-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">목표 가격</label>
+                            <input type="text" id="target-price" required placeholder="가격" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
+                        </div>
+                        <div>
+                            <label for="stop-loss" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">손절 가격</label>
+                            <input type="text" id="stop-loss" required placeholder="가격" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
+                        </div>
+                        <div>
+                            <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" id="quantity-label">수량/계약 수</label>
+                            <input type="text" id="quantity" required placeholder="수량 또는 계약 수" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
+                        </div>
+                    </div>
+                    
+                    <div id="futures-fields" class="space-y-4 hidden border-t border-gray-200 dark:border-gray-700 pt-4">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">선물 정보 (틱가치/틱단위)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="col-span-full">
+                                <label for="futures-info-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">저장된 종목 정보 불러오기</label>
+                                <select id="futures-info-select" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200"></select>
+                            </div>
+                            <div>
+                                <label for="tick-value" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">틱 가치 (Tick Value)</label>
+                                <input type="text" id="tick-value" placeholder="예: 12.50" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
+                            </div>
+                            <div>
+                                <label for="tick-size" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">틱 단위 (Tick Size)</label>
+                                <input type="text" id="tick-size" placeholder="예: 0.25" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
+                            </div>
+                            <div class="flex items-end space-x-2">
+                                <button type="button" id="save-futures-info-btn" class="flex-1 bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 font-semibold text-sm">정보 저장</button>
+                                <button type="button" id="delete-futures-info-btn" class="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 font-semibold text-sm disabled:opacity-50" disabled>정보 삭제</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">진입 근거 태그 (시간봉 필수 선택)</h3>
+                            <div id="entry-tags-container" class="flex flex-wrap gap-2 mb-3">
+                                </div>
+                            <div class="flex space-x-2">
+                                <input type="text" id="new-entry-tag" placeholder="새 진입 근거 태그 추가" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200 text-sm">
+                                <button type="button" class="add-entry-tag-btn bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 font-semibold text-sm" title="새 태그 추가">추가</button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">심리 상태 태그</h3>
+                            <div id="psychology-tags-container" class="flex flex-wrap gap-2 mb-3">
+                                </div>
+                            <div class="flex space-x-2">
+                                <input type="text" id="new-psychology-tag" placeholder="새 심리 태그 추가" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200 text-sm">
+                                <button type="button" class="add-psychology-tag-btn bg-purple-500 text-white px-3 py-2 rounded-lg hover:bg-purple-600 font-semibold text-sm" title="새 태그 추가">추가</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <button type="button" id="clear-form-btn" class="bg-gray-300 text-gray-800 px-6 py-3 rounded-xl hover:bg-gray-400 font-bold dark:bg-[#4F4F4F] dark:text-white dark:hover:bg-[#666]">초기화</button>
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl shadow-lg hover:bg-blue-700 transition-colors font-bold">저장 / 수정</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="list-view" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="journal-list">
+                    </div>
+            </div>
+
+            <div id="stats-view" class="hidden">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">매매 통계 분석</h2>
+                
+                <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-xl mb-6 flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <label for="exchange-rate-input" class="text-sm font-medium text-gray-700 dark:text-gray-300">현재 환율 (1 USD = KRW)</label>
+                        <input type="text" id="exchange-rate-input" class="exchange-rate-input number-input w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200 text-sm text-right">
+                    </div>
+                    <div class="flex items-center space-x-2">
+                         <label class="text-sm font-medium text-gray-700 dark:text-gray-300">통계 표시 통화</label>
+                        <div class="toggle-group flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden" data-group="stats-currency">
+                            <button type="button" id="stats-currency-krw-btn" class="toggle-btn selected px-3 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">₩ KRW</button>
+                            <button type="button" id="stats-currency-usd-btn" class="toggle-btn px-3 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">＄ USD</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md text-center">
+                        <p class="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">총 승률 (Win Rate)</p>
+                        <p id="total-win-rate" class="text-4xl font-extrabold text-blue-500">N/A</p>
+                        <p id="win-rate-context" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
+                    </div>
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md text-center">
+                        <p class="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">평균 손익비 (R:R Ratio)</p>
+                        <p id="average-pl-ratio" class="text-4xl font-extrabold text-green-500">N/A</p>
+                        <p id="pl-ratio-context" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
+                    </div>
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md text-center">
+                        <p class="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">총 실현 손익</p>
+                        <p id="total-realized-pnl" class="text-4xl font-extrabold text-gray-500">N/A</p>
+                        <p id="pnl-context" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md lg:col-span-1">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">손익 구성 (총 수익 vs. 총 손실)</h3>
+                        <div class="h-64 flex justify-center items-center">
+                            <canvas id="pnl-composition-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md lg:col-span-2">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">월별 손익 추이</h3>
+                        <div class="h-64">
+                            <canvas id="monthly-pnl-chart"></canvas>
+                        </div>
+                        <div id="monthly-pnl-summary" class="flex flex-wrap justify-center text-sm mt-4 text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700 pt-3"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md my-6">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">분기별 손익 추이</h3>
+                    <div class="h-64">
+                        <canvas id="quarterly-pnl-chart"></canvas>
+                    </div>
+                    <div id="quarterly-pnl-summary" class="flex flex-wrap justify-center text-sm mt-4 text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700 pt-3"></div>
+                </div>
+
+                <h3 class="text-2xl font-bold my-6 text-gray-800 dark:text-white">승률 분석</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">진입 근거별 승률</h3>
+                        <div class="h-64">
+                            <canvas id="entry-win-rate-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">심리 상태별 승률</h3>
+                        <div class="h-64">
+                            <canvas id="psychology-win-rate-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">전략별 승률</h3>
+                        <div class="h-64">
+                            <canvas id="strategy-win-rate-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">포지션별 승률</h3>
+                        <div class="h-64">
+                            <canvas id="position-win-rate-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="ledger-container" class="hidden">
+            <div class="flex space-x-3 mb-6">
+                <button data-ledger-tab="ledger-form-view" class="tab-btn active px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300" title="새 내역 작성">내역 작성</button>
+                <button data-ledger-tab="ledger-list-view" class="tab-btn px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300" title="가계부 내역 목록 보기">내역 목록</button>
+                <button data-ledger-tab="ledger-stats-view" class="tab-btn px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300" title="가계부 통계 분석">가계부 통계</button>
+            </div>
+
+            <div id="ledger-form-view" class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-xl">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">가계부 내역 작성 / 수정</h2>
+                <form id="ledger-form" class="space-y-6">
+                    <input type="hidden" id="ledger-id">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <label for="ledger-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">날짜</label>
+                            <input type="date" id="ledger-date" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
+                        </div>
+                        <div>
+                            <label for="ledger-amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">금액 (KRW)</label>
+                            <input type="text" id="ledger-amount" required placeholder="금액" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200 text-right">
+                        </div>
+                        <div class="col-span-1 sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">구분</label>
+                            <div class="toggle-group flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden" data-group="ledger-type">
+                                <button type="button" data-value="expense" class="toggle-btn selected flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="지출 내역">지출</button>
+                                <button type="button" data-value="income" class="toggle-btn flex-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="수입 내역">수입</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                        <div id="ledger-expense-category-section">
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">지출 카테고리 (필수 선택)</h3>
+                            <div id="ledger-expense-category-tags-container" class="flex flex-wrap gap-2 mb-3">
+                                </div>
+                            <div class="flex space-x-2">
+                                <input type="text" id="new-ledger-expense-category" placeholder="새 지출 카테고리 추가" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200 text-sm">
+                                <button type="button" id="add-ledger-expense-category-btn" class="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 font-semibold text-sm">추가</button>
+                            </div>
+                        </div>
+                        
+                        <div id="ledger-income-category-section" class="hidden">
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">수입 카테고리 (필수 선택)</h3>
+                            <div id="ledger-income-category-tags-container" class="flex flex-wrap gap-2 mb-3">
+                                </div>
+                            <div class="flex space-x-2">
+                                <input type="text" id="new-ledger-income-category" placeholder="새 수입 카테고리 추가" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200 text-sm">
+                                <button type="button" id="add-ledger-income-category-btn" class="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 font-semibold text-sm">추가</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="ledger-memo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">메모/내용</label>
+                        <textarea id="ledger-memo" rows="2" placeholder="구입 품목이나 상세 내용을 적어주세요." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200"></textarea>
+                    </div>
+
+                    <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <button type="button" id="clear-ledger-form-btn" class="bg-gray-300 text-gray-800 px-6 py-3 rounded-xl hover:bg-gray-400 font-bold dark:bg-[#4F4F4F] dark:text-white dark:hover:bg-[#666]">초기화</button>
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl shadow-lg hover:bg-blue-700 transition-colors font-bold">저장 / 수정</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="ledger-list-view" class="hidden">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">기간별 내역 목록</h2>
+                
+                <div class="flex items-center space-x-4 mb-6">
+                    <select id="ledger-list-filter-type" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-[#2d2d2d] dark:text-gray-200 text-sm">
+                        <option value="month">월별</option>
+                        <option value="quarter">분기별</option>
+                        <option value="year">연도별</option>
+                    </select>
+                    <div class="flex items-center space-x-2">
+                        <button id="ledger-list-prev-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                        <span id="ledger-list-period-display" class="font-semibold text-lg text-gray-800 dark:text-white">YYYY년 MM월</span>
+                        <button id="ledger-list-next-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-xl shadow-md">
+                            <h3 class="text-xl font-semibold mb-3 text-gray-800 dark:text-white border-b border-red-500 pb-2">지출 요약</h3>
+                            <div id="ledger-category-summary" class="space-y-1">
+                                </div>
+                        </div>
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-xl shadow-md">
+                            <h3 class="text-xl font-semibold mb-3 text-gray-800 dark:text-white border-b border-green-500 pb-2">수입 요약</h3>
+                            <div id="ledger-income-summary" class="space-y-1">
+                                </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-white dark:bg-[#1E1E1E] p-6 rounded-xl shadow-md space-y-4">
+                        <h3 id="ledger-detail-title" class="text-xl font-bold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">내역 선택</h3>
+                        <div id="ledger-entry-details" class="space-y-3">
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ledger-stats-view" class="hidden">
+                 <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">가계부 통계</h2>
+
+                <div class="flex items-center space-x-4 mb-6">
+                    <select id="ledger-stats-filter-type" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-[#2d2d2d] dark:text-gray-200 text-sm">
+                        <option value="month">월별</option>
+                        <option value="quarter">분기별</option>
+                        <option value="year">연도별</option>
+                    </select>
+                    <div class="flex items-center space-x-2">
+                        <button id="ledger-stats-prev-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                        <span id="ledger-stats-period-display" class="font-semibold text-lg text-gray-800 dark:text-white">YYYY년 MM월</span>
+                        <button id="ledger-stats-next-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md text-center">
+                        <p class="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">총 수입</p>
+                        <p id="ledger-total-income" class="text-4xl font-extrabold text-green-500">₩ 0</p>
+                    </div>
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md text-center">
+                        <p class="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">총 지출</p>
+                        <p id="ledger-total-expense" class="text-4xl font-extrabold text-red-500">₩ 0</p>
+                    </div>
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md text-center">
+                        <p class="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">순 자산 변화 (수입 - 지출)</p>
+                        <p id="ledger-balance" class="text-4xl font-extrabold text-blue-500">₩ 0</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md lg:col-span-2">
+                        <h3 id="ledger-trend-chart-title" class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">월별 수입/지출 추이</h3>
+                        <div class="h-80">
+                            <canvas id="ledger-monthly-pnl-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md">
+                        <h3 id="ledger-expense-chart-title" class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">지출 구성</h3>
+                        <div class="h-64 flex justify-center items-center">
+                            <canvas id="ledger-expense-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-md">
+                        <h3 id="ledger-income-chart-title" class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">수입 구성</h3>
+                        <div class="h-64 flex justify-center items-center">
+                            <canvas id="ledger-income-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center py-6 text-sm text-gray-500 dark:text-gray-600 mt-10 border-t border-gray-200 dark:border-gray-800">
+            Powered by Gemini & Firebase Firestore
+        </footer>
+
+    </div>
+    
+    <div id="exit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0">
+        <div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-sm modal-content transform scale-95">
+            <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">청산 기록</h2>
+            <form id="exit-form" class="space-y-4">
+                <input type="hidden" id="exit-journal-id">
+                <div class="text-sm text-gray-600 dark:text-gray-400">잔여 수량/계약 수: <strong id="remaining-quantity" class="text-lg font-bold text-blue-500"></strong></div>
+                <div>
+                    <label for="exit-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">청산 가격</label>
+                    <input type="text" id="exit-price" required placeholder="청산 가격" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
+                </div>
+                <div>
+                    <label for="exit-quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" id="exit-quantity-label">청산 수량</label>
+                    <input type="text" id="exit-quantity" required placeholder="청산 수량" data-max="0" class="number-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
+                </div>
+                <div>
+                    <label for="exit-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">청산 날짜</label>
+                    <input type="date" id="exit-date" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" id="close-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 font-semibold dark:bg-[#4F4F4F] dark:text-white dark:hover:bg-[#666]">취소</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold">청산 기록</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="memo-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0">
+        <div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-lg modal-content transform scale-95">
+            <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">매매 복기 및 소감</h2>
+            <form id="memo-form" class="space-y-4">
+                <input type="hidden" id="memo-journal-id">
+                <div>
+                    <textarea id="memo-content" rows="8" placeholder="매매를 복기하고 느낀 점을 기록해 주세요." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-[#2d2d2d] dark:text-gray-200"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" id="close-memo-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 font-semibold dark:bg-[#4F4F4F] dark:text-white dark:hover:bg-[#666]">취소</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="tag-edit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0">
+        <div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-xl modal-content transform scale-95">
+            <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">매매일지 태그 수정</h2>
+            <form id="tag-edit-form" class="space-y-4">
+                <input type="hidden" id="tag-edit-journal-id">
+                
+                <div>
+                    <h3 class="font-semibold text-gray-800 dark:text-white mb-2 border-b border-gray-200 dark:border-gray-700 pb-1">진입 근거 태그 (시간봉 선택 기능은 작성 폼에서만 가능)</h3>
+                    <div id="tag-edit-entry-tags" class="flex flex-wrap gap-2">
+                        </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold text-gray-800 dark:text-white mb-2 border-b border-gray-200 dark:border-gray-700 pb-1">심리 상태 태그</h3>
+                    <div id="tag-edit-psychology-tags" class="flex flex-wrap gap-2">
+                        </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" id="close-tag-edit-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 font-semibold dark:bg-[#4F4F4F] dark:text-white dark:hover:bg-[#666]">취소</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0">
+        <div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-sm modal-content transform scale-95">
+            <h2 id="confirm-title" class="text-xl font-bold mb-4 text-gray-800 dark:text-white">확인</h2>
+            <p id="confirm-message" class="text-gray-600 dark:text-gray-300 mb-6"></p>
+            <div class="flex justify-end space-x-3">
+                <button type="button" id="confirm-cancel-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 font-semibold dark:bg-[#4F4F4F] dark:text-white dark:hover:bg-[#666]">취소</button>
+                <button type="button" id="confirm-ok-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 font-semibold">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300">
+        <p id="toast-message"></p>
+    </div>
     
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
     
     <script>
- 
+        // 이 부분은 고객님의 Firebase 설정 정보를 포함해야 합니다.
         const firebaseConfig = {
           apiKey: "AIzaSyDZm5AazCafB0Sb2gd0llv9e3GAhE-nKBw",
           authDomain: "sakurazima-mai-0u0.firebaseapp.com",
@@ -18,39 +645,41 @@
           appId: "1:697666115735:web:7380a588822f771dc071d2",
           measurementId: "G-TZQ9GVFWV5"
         };
- firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
         const provider = new firebase.auth.GoogleAuthProvider();
         const Timestamp = firebase.firestore.Timestamp;
- let currentUser = null;
+
+        let currentUser = null;
         let charts = {};
         let confirmCallback = null;
- // Trading Journal State
+
+        // Trading Journal State
         let unsubscribeJournals = null, unsubscribeTags = null;
-        // New: Timeframes constant
-        const TIME_FRAMES = ['1m', '5m', '15m', '30m', '1H', '4H', '1D', '1W', '1M'];
+        // Modified: TIME_FRAMES list reduced as per user request (1H, 4H, 1D, 1W, 1M)
+        const TIME_FRAMES = ['1H', '4H', '1D', '1W', '1M']; 
         let localJournals = [], localTags = { entry: [], psychology: [] };
         let localFuturesInfo = {};
- // { ticker: { tickValue: number, tickSize: number } } 
         let unsubscribeFuturesInfo = null;
         let statsCurrency = 'KRW', exchangeRate = 1380;
         
         // Household Ledger State
         let unsubscribeLedger = null, unsubscribeLedgerCategories = null;
- let localLedgerEntries = [];
+        let localLedgerEntries = [];
         let localLedgerCategories = { expense: [], income: [] };
         let ledgerListDate = new Date();
- let ledgerStatsDate = new Date();
+        let ledgerStatsDate = new Date();
 
         // DOM Elements
         const loginView = document.getElementById('login-view');
- const appContainer = document.getElementById('app-container');
+        const appContainer = document.getElementById('app-container');
         const loginBtn = document.getElementById('login-btn');
         const logoutBtn = document.getElementById('logout-btn');
- // ================== Authentication ==================
+
+        // ================== Authentication ==================
         loginBtn.addEventListener('click', () => auth.signInWithPopup(provider).catch(error => showToast("로그인 실패: " + error.message, "error")));
- logoutBtn.addEventListener('click', () => auth.signOut());
+        logoutBtn.addEventListener('click', () => auth.signOut());
 
         auth.onAuthStateChanged((user) => {
             if (user) {
@@ -58,28 +687,25 @@
                 loginView.classList.add('hidden');
                 appContainer.classList.remove('hidden');
                 document.getElementById('auth-info').textContent = `${user.displayName}님 환영합니다!`;
-           
-          initializeAppFunctionality();
+                initializeAppFunctionality();
             } else {
                 currentUser = null;
                 loginView.classList.remove('hidden');
                 appContainer.classList.add('hidden');
                 if (unsubscribeJournals) unsubscribeJournals();
-             
-            if (unsubscribeTags) unsubscribeTags();
+                if (unsubscribeTags) unsubscribeTags();
                 if (unsubscribeFuturesInfo) unsubscribeFuturesInfo();
                 if (unsubscribeLedger) unsubscribeLedger();
                 if (unsubscribeLedgerCategories) unsubscribeLedgerCategories();
                 Object.values(charts).forEach(chart => { if(chart) chart.destroy(); });
                 charts = {};
-  
             }
             lucide.createIcons();
- });
+        });
 
         async function initializeAppFunctionality() {
             if (!currentUser) return;
- const userId = currentUser.uid;
+            const userId = currentUser.uid;
 
             await initializeJournalDefaults(userId);
             await initializeFuturesInfoDefaults(userId);
@@ -89,7 +715,7 @@
             await initializeLedgerDefaults(userId);
             attachLedgerListeners(userId);
             resetLedgerForm();
- }
+        }
 
         // ================== Main Tab Switching Logic ==================
         document.querySelectorAll('.main-tab-btn').forEach(btn => {
@@ -98,26 +724,24 @@
                 document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
         
-                
                 document.getElementById('journal-container').classList.toggle('hidden', targetId !== 'journal-container');
                 document.getElementById('ledger-container').classList.toggle('hidden', targetId !== 'ledger-container');
                 
                 if (targetId === 'ledger-container' && currentUser) {
-                
-          renderLedgerListView();
-                     renderLedgerStatsView();
+                    renderLedgerListView();
+                    renderLedgerStatsView();
                 } else if (targetId === 'journal-container' && currentUser) {
                     renderJournalStats(localJournals);
                 }
             });
- });
+        });
         
         // =======================================================
         // ================== TRADING JOURNAL LOGIC ==============
         // =======================================================
         
         const journalForm = document.getElementById('journal-form');
- const journalList = document.getElementById('journal-list');
+        const journalList = document.getElementById('journal-list');
 
         async function initializeJournalDefaults(userId) {
             const tagsDocRef = db.collection("users").doc(userId).collection("journalTags").doc("all");
@@ -126,11 +750,11 @@
                 await tagsDocRef.set({
                     // Modified: entry is now an array of objects to include default timeframes
                     entry: [
-                        { tag: '정배열 돌파', timeframes: ['4H', '1D', '1W'] },
-                        { tag: '낙주 매매', timeframes: ['1m', '5m'] },
+                        // Ensured all entry tags have a valid timeframes array
+                        { tag: '정배열 돌파', timeframes: ['1H', '4H', '1D'] },
+                        { tag: '낙주 매매', timeframes: ['1H'] },
                         { tag: '채널 하단', timeframes: ['4H', '1D'] },
                         { tag: 'OB', timeframes: ['1H', '4H'] },
-                        { tag: '4H', timeframes: ['4H'] },
                         { tag: '연속저점', timeframes: ['1D'] },
                         { tag: '주추세', timeframes: ['1D', '1W', '1M'] }
                     ],
@@ -147,8 +771,7 @@
                 await docRef.set({
                     'ES': { tickValue: 5.0, tickSize: 0.25 },
                     'NG': { tickValue: 10.0, tickSize: 0.001 },
-      
-                'MGC': { tickValue: 1.0, tickSize: 0.1 }
+                    'MGC': { tickValue: 1.0, tickSize: 0.1 }
                 });
             }
         }
@@ -161,6 +784,7 @@
                 renderJournals(localJournals);
                 renderJournalStats(localJournals);
             }, (error) => console.error("Error fetching journals:", error));
+
             if (unsubscribeTags) unsubscribeTags();
             const tagsDocRef = db.collection("users").doc(userId).collection("journalTags").doc("all");
             unsubscribeTags = tagsDocRef.onSnapshot((doc) => {
@@ -169,17 +793,17 @@
                     // localTags.entry는 객체 배열이므로 변경된 데이터 구조로 함수 호출
                     renderJournalTags(localTags.entry, 'entry-tags-container', 'entry');
                     renderJournalTags(localTags.psychology, 'psychology-tags-container', 'psychology');
-     
                 }
             }, (error) => console.error("Error fetching tags:", error));
- // 선물 종목 정보 리스너
+
+            // 선물 종목 정보 리스너
             if (unsubscribeFuturesInfo) unsubscribeFuturesInfo();
             const futuresDocRef = db.collection("users").doc(userId).collection("journalData").doc("futuresInfo");
             unsubscribeFuturesInfo = futuresDocRef.onSnapshot((doc) => {
                 localFuturesInfo = doc.exists ? doc.data() : {};
                 renderFuturesInfoSelect();
             }, (error) => console.error("Error fetching futures info:", error));
- }
+        }
         
         function switchJournalView(tabId) {
             document.querySelectorAll('#journal-container [data-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId));
@@ -190,53 +814,51 @@
             }
         }
         document.querySelectorAll('#journal-container [data-tab]').forEach(b => b.addEventListener('click', () => switchJournalView(b.dataset.tab)));
- // Asset type toggle (수량/계약수 필드는 HTML에서 통합되어 있지 않으므로 quantity 필드를 contracts로 간주하고 로직 수정 없이 유지)
+
+        // Asset type toggle (수량/계약수 필드는 HTML에서 통합되어 있지 않으므로 quantity 필드를 contracts로 간주하고 로직 수정 없이 유지)
         document.querySelectorAll('[data-group="asset-type"] .toggle-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const isSpot = btn.dataset.value === 'spot';
                 
-                // 수량/계약 수 필드를 
-                quantity로 통일하여 사용 (Futures는 contracts로 저장)
-                document.getElementById('spot-fields').classList.toggle('hidden', !isSpot);
+                // 수량/계약 수 필드를 quantity로 통일하여 사용 (Futures는 contracts로 저장)
                 document.getElementById('futures-fields').classList.toggle('hidden', isSpot);
                 
                 const quantityInput = document.getElementById('quantity');
                 const tickValueInput = document.getElementById('tick-value');
-       
-                  const tickSizeInput = document.getElementById('tick-size');
+                const tickSizeInput = document.getElementById('tick-size');
                 
                 // Set required attribute based on type
                 quantityInput.required = true; // quantity input을 spot/futures 모두 사용
                 tickValueInput.required = !isSpot;
-            tickSizeInput.required = !isSpot;
+                tickSizeInput.required = !isSpot;
                 
                 // 선물 타입 선택 시
                 if (!isSpot) {
-                     const currentTicker = document.getElementById('ticker').value.trim().toUpperCase();
-            if (localFuturesInfo[currentTicker]) {
-                        quantityInput.value = quantityInput.value ||
-                1; // 계약수 없으면 1로 자동 채움
+                    const currentTicker = document.getElementById('ticker').value.trim().toUpperCase();
+                    if (localFuturesInfo[currentTicker]) {
+                        quantityInput.value = quantityInput.value || 1; // 계약수 없으면 1로 자동 채움
                         document.getElementById('futures-info-select').value = currentTicker;
-            tickValueInput.value = formatNumber(localFuturesInfo[currentTicker].tickValue);
+                        tickValueInput.value = formatNumber(localFuturesInfo[currentTicker].tickValue);
                         tickSizeInput.value = formatNumber(localFuturesInfo[currentTicker].tickSize);
                         document.getElementById('delete-futures-info-btn').disabled = false;
-                     } else {
+                    } else {
                         quantityInput.value = '';
-            document.getElementById('futures-info-select').value = '';
+                        document.getElementById('futures-info-select').value = '';
                         tickValueInput.value = '';
                         tickSizeInput.value = '';
                         document.getElementById('delete-futures-info-btn').disabled = true;
- }
+                    }
                 } else { // 현물 타입 선택 시
-                     document.getElementById('futures-info-select').value = '';
-            tickValueInput.value = '';
-                     tickSizeInput.value = '';
-                     document.getElementById('delete-futures-info-btn').disabled = true;
-                     quantityInput.value = '';
- }
+                    document.getElementById('futures-info-select').value = '';
+                    tickValueInput.value = '';
+                    tickSizeInput.value = '';
+                    document.getElementById('delete-futures-info-btn').disabled = true;
+                    // quantityInput.value = ''; // 현물도 quantity 사용하므로 값 유지
+                }
             });
         });
- // 선물 정보 Select 박스 렌더링 및 리스너
+
+        // 선물 정보 Select 박스 렌더링 및 리스너
         function renderFuturesInfoSelect() {
             const select = document.getElementById('futures-info-select');
             const tickerInput = document.getElementById('ticker');
@@ -255,7 +877,6 @@
                 option.textContent = `${ticker} (가치: ${formatNumber(info.tickValue)}, 단위: ${formatNumber(info.tickSize)})`;
                 select.appendChild(option);
                 
-    
                 if (ticker === currentTicker && !document.getElementById('futures-fields').classList.contains('hidden')) {
                     select.value = ticker;
                     deleteBtn.disabled = false;
@@ -263,35 +884,34 @@
             });
             select.onchange = (e) => {
                 const selectedTicker = e.target.value;
-            const info = localFuturesInfo[selectedTicker];
+                const info = localFuturesInfo[selectedTicker];
                 
                 deleteBtn.disabled = !selectedTicker;
 
                 if (info) {
                     tickerInput.value = selectedTicker;
-            tickValueInput.value = formatNumber(info.tickValue);
+                    tickValueInput.value = formatNumber(info.tickValue);
                     tickSizeInput.value = formatNumber(info.tickSize);
-                    quantityInput.value = quantityInput.value || 1;
-            // 계약수 없으면 1로 자동 채움
+                    quantityInput.value = quantityInput.value || 1; // 계약수 없으면 1로 자동 채움
                     showToast(`종목 '${selectedTicker}' 정보가 채워졌습니다.`);
-            } else {
+                } else {
                     tickValueInput.value = '';
-            tickSizeInput.value = '';
+                    tickSizeInput.value = '';
                 }
             };
             tickerInput.oninput = () => {
                 const newTicker = tickerInput.value.trim().toUpperCase();
-            const isFutures = !document.getElementById('futures-fields').classList.contains('hidden');
+                const isFutures = !document.getElementById('futures-fields').classList.contains('hidden');
                 
                 deleteBtn.disabled = !localFuturesInfo[newTicker];
 
                 if (isFutures && localFuturesInfo[newTicker]) {
                     select.value = newTicker;
-            tickValueInput.value = formatNumber(localFuturesInfo[newTicker].tickValue);
+                    tickValueInput.value = formatNumber(localFuturesInfo[newTicker].tickValue);
                     tickSizeInput.value = formatNumber(localFuturesInfo[newTicker].tickSize);
                 } else if (isFutures) {
-                     select.value = '';
-            }
+                    select.value = '';
+                }
             }
         }
         
@@ -300,15 +920,13 @@
             const ticker = document.getElementById('ticker').value.trim().toUpperCase();
             const tickValueInput = document.getElementById('tick-value');
             const tickSizeInput = document.getElementById('tick-size');
-  
             
             const tickValue = parseFloat(unformatNumber(tickValueInput.value));
             const tickSize = parseFloat(unformatNumber(tickSizeInput.value));
 
             if (!ticker || isNaN(tickValue) || tickValue <= 0 || isNaN(tickSize) || tickSize <= 0) {
                 showToast("종목 이름, 틱가치, 틱단위를 올바르게 입력해주세요.", "error");
-            
-            return;
+                return;
             }
 
             const currentInfo = localFuturesInfo[ticker];
@@ -320,8 +938,7 @@
                 try {
                     const updatedInfo = {
                         ...localFuturesInfo,
-                        
-            [ticker]: { tickValue, tickSize }
+                        [ticker]: { tickValue, tickSize }
                     };
                     await db.collection("users").doc(currentUser.uid).collection("journalData").doc("futuresInfo").set(updatedInfo);
                     
@@ -332,11 +949,10 @@
                     document.getElementById('futures-info-select').value = ticker; 
                     document.getElementById('delete-futures-info-btn').disabled = false;
                 } catch(e) {
-     
                     showToast(`정보 ${action} 실패: ${e.message}`, "error");
                 }
             }, action);
- });
+        });
         
         document.getElementById('delete-futures-info-btn').addEventListener('click', handleDeleteFuturesInfo);
 
@@ -344,7 +960,7 @@
             const ticker = document.getElementById('futures-info-select').value;
             if (!ticker) {
                 showToast("삭제할 종목을 선택해주세요.", "error");
-            return;
+                return;
             }
 
             const isUsedInJournal = localJournals.some(journal => 
@@ -353,116 +969,111 @@
             );
             if (isUsedInJournal) {
                 showToast(`'${ticker}' 종목은 현재 매매일지에 사용 중이므로 삭제할 수 없습니다.`, "error");
-            return;
+                return;
             }
 
             showConfirmModal(`선물 종목 '${ticker}'의 저장된 틱가치/틱단위 정보를 삭제하시겠습니까?`, async () => {
                 try {
                     const updatedInfo = { ...localFuturesInfo };
                     delete updatedInfo[ticker];
-              
-              
+                    
                     await db.collection("users").doc(currentUser.uid).collection("journalData").doc("futuresInfo").set(updatedInfo);
                     
                     showToast(`선물 종목 '${ticker}' 정보가 삭제되었습니다.`);
                     document.getElementById('futures-info-select').value = '';
-       
                     document.getElementById('delete-futures-info-btn').disabled = true;
                     document.getElementById('tick-value').value = '';
                     document.getElementById('tick-size').value = '';
                 } catch(e) {
-                    showToast(`삭제 실패: ${e.message}`, 
- "error");
+                    showToast(`삭제 실패: ${e.message}`, "error");
                 }
             }, '삭제');
- }
+        }
 
 
         function calculatePnl(journal, exit) {
             const priceDiff = journal.position === 'long' ?
             (exit.price - journal.entryPrice) : (journal.entryPrice - exit.price);
-            const totalAmount = journal.assetType === 'spot' ? journal.quantity : journal.contracts;
+            // const totalAmount = journal.assetType === 'spot' ? journal.quantity : journal.contracts;
             const exitQuantity = exit.quantity;
 
             if (journal.assetType === 'futures') {
                 if (!journal.tickSize || !journal.tickValue) return 0;
-            return (priceDiff / journal.tickSize) * journal.tickValue * exitQuantity;
+                return (priceDiff / journal.tickSize) * journal.tickValue * exitQuantity;
             } else { // spot
                 return priceDiff * exitQuantity;
             }
         }
-
+        
+        // Stability Fix: Strengthened data rendering in renderJournals
         function renderJournals(journals) {
             journalList.innerHTML = '';
             if (journals.length === 0) {
                 journalList.innerHTML = `<div class="bg-white dark:bg-[#1E1E1E] col-span-full text-center text-gray-500 dark:text-gray-400 p-10 rounded-2xl shadow-md"><i data-lucide="folder-x" class="mx-auto w-16 h-16 text-gray-400 dark:text-gray-600 mb-4"></i><p class="text-xl">작성된 매매일지가 없습니다.</p></div>`;
-            lucide.createIcons(); return;
+                lucide.createIcons(); return;
             }
 
             journals.forEach(journal => {
                 const isSpot = journal.assetType === 'spot';
-                // journal.quantity는 spot의 수량, journal.contracts는 futures의 계약수를 의미합니다.
-                const totalAmount = isSpot ? journal.quantity : journal.contracts; 
+                // Use quantity for spot and contracts for futures
+                const totalAmount = isSpot ? (journal.quantity || 0) : (journal.contracts || 0); 
                 
                 const exitedAmount = journal.exits ? journal.exits.reduce((sum, exit) => sum + exit.quantity, 0) : 0;
                 const isClosed = (totalAmount - exitedAmount) <= 1e-9;
                 
                 let totalPnl = 0;
                 if (journal.exits && journal.exits.length > 0) {
-       
                     totalPnl = journal.exits.reduce((sum, exit) => sum + calculatePnl(journal, exit), 0);
                 }
                 const totalPnlInKRW = journal.currency === 'USD' ? totalPnl * exchangeRate : totalPnl;
                 const pnlClass = totalPnlInKRW > 0 ? 'text-green-500' : totalPnlInKRW < 0 ? 'text-red-500' : 'text-gray-500';
-   
                  
                 const borderColor = isClosed ?
-            (totalPnlInKRW > 0 ? 'border-green-500' : 'border-red-500') : 'border-yellow-500';
+                (totalPnlInKRW > 0 ? 'border-green-500' : 'border-red-500') : 'border-yellow-500';
                 const card = document.createElement('div');
-            card.className = `bg-white dark:bg-[#1E1E1E] p-5 rounded-xl shadow-md border-l-4 ${borderColor} flex flex-col justify-between`;
+                card.className = `bg-white dark:bg-[#1E1E1E] p-5 rounded-xl shadow-md border-l-4 ${borderColor} flex flex-col justify-between`;
                 
                 let holdingPeriodDays = 0;
-            if (journal.exits && journal.exits.length > 0) {
+                if (journal.exits && journal.exits.length > 0) {
                     const lastExitDate = new Date(Math.max(...journal.exits.map(e => (e.date.toDate ? e.date.toDate() : new Date(e.date)).getTime())));
-            const entryDate = journal.date;
+                    const entryDate = journal.date;
                     const diffTime = Math.abs(lastExitDate - entryDate);
-            holdingPeriodDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-            }
+                    holdingPeriodDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+                }
                 
                 let dateDisplay = journal.date.toLocaleDateString();
-            if (holdingPeriodDays > 0) {
+                if (holdingPeriodDays > 0) {
                     dateDisplay += ` <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(${holdingPeriodDays}일)</span>`;
-            }
+                }
 
                 // Quick Edit 버튼 및 아이콘
                 const memoIndicator = journal.memo ?
-            `<i data-lucide="message-square" class="w-4 h-4 text-blue-500 quick-edit-btn"></i>` : `<i data-lucide="message-square" class="w-4 h-4 text-gray-400 hover:text-blue-500 quick-edit-btn"></i>`;
-            const tagEditIcon = `<i data-lucide="tags" class="w-4 h-4 text-gray-400 hover:text-purple-500 quick-edit-btn"></i>`;
+                `<i data-lucide="message-square" class="w-4 h-4 text-blue-500 quick-edit-btn"></i>` : `<i data-lucide="message-square" class="w-4 h-4 text-gray-400 hover:text-blue-500 quick-edit-btn"></i>`;
+                const tagEditIcon = `<i data-lucide="tags" class="w-4 h-4 text-gray-400 hover:text-purple-500 quick-edit-btn"></i>`;
 
 
                 const exitsHtml = journal.exits && journal.exits.length > 0 ?
-            `
+                `
                     <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-1 text-xs">
                         <h5 class="font-semibold mb-1 text-gray-600 dark:text-gray-400">청산 내역</h5>
                         ${journal.exits.map(exit => {
-                  
                             const exitPnl = calculatePnl(journal, exit);
                             const exitPnlClass = exitPnl > 0 ? 'text-green-500' : exitPnl < 0 ? 'text-red-500' : 'text-gray-500';
                             const exitDate = exit.date.toDate ? exit.date.toDate() : new Date(exit.date);
-       
                             const amountLabel = isSpot ? '주' : '계약';
-                            // 청산 내역의 흰색 강조(border, hover, bg-gray-50) 제거 (요청 3)
-                            return `<div class="flex justify-between items-center p-1 rounded"><span>${exitDate.toLocaleDateString()} 
-            @ ${formatPrice(exit.price, journal.currency)} (${formatNumber(exit.quantity)} ${amountLabel})</span><span class="${exitPnlClass} font-medium">${formatPrice(exitPnl, journal.currency)}</span></div>`
+                            return `<div class="flex justify-between items-center p-1 rounded"><span>${exitDate.toLocaleDateString()} @ ${formatPrice(exit.price, journal.currency)} (${formatNumber(exit.quantity)} ${amountLabel})</span><span class="${exitPnlClass} font-medium">${formatPrice(exitPnl, journal.currency)}</span></div>`
                         }).join('')}
                     </div>` : '';
-            const amountLabel = isSpot ? '수량' : '계약';
+
+                const amountLabel = isSpot ? '수량' : '계약';
                 const futuresInfoHtml = !isSpot ?
-            `<p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><strong>틱가치/단위:</strong> ${formatPrice(journal.tickValue, journal.currency)} / ${formatNumber(journal.tickSize)}</p>` : '';
-            // New: 태그 렌더링 (시간봉 표시 요청 반영)
-                const entryTagsWithTimeframes = (journal.entryTags || []).filter(t => t.timeframe && t.tag);
+                `<p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><strong>틱가치/단위:</strong> ${formatPrice(journal.tickValue, journal.currency)} / ${formatNumber(journal.tickSize)}</p>` : '';
+
+                // Stability Fix: Enhanced rendering of tags with null/undefined checks
+                const entryTagsWithTimeframes = (journal.entryTags || []).filter(t => t && t.timeframe && t.tag);
                 const visibleTags = entryTagsWithTimeframes.slice(0, 4);
                 const hiddenTagsCount = Math.max(0, entryTagsWithTimeframes.length - 4);
+                
                 const tagHtml = `<div class="flex flex-wrap gap-1">${visibleTags.map(tagData => `
                                     <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 text-xs font-medium px-2.5 py-0.5 rounded-xl flex flex-col items-center border border-green-300 dark:border-green-700">
                                         <span class="text-xs font-extrabold text-blue-500 dark:text-blue-300 leading-none mb-0.5">${tagData.timeframe}</span>
@@ -471,69 +1082,59 @@
                                 `).join('')}
                                 ${hiddenTagsCount > 0 ?
                                 `<span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2.5 py-0.5 rounded-full">+${hiddenTagsCount}</span>` : ''}</div>`;
-            // 심리 상태 태그 렌더링 (기존 유지)
+
+                // 심리 상태 태그 렌더링 (기존 유지)
                 const visiblePsyTags = (journal.psychologyTags || []).slice(0, 4);
                 const hiddenPsyTagsCount = Math.max(0, (journal.psychologyTags || []).length - 4);
                 const psyTagHtml = `<div class="flex flex-wrap gap-1">${visiblePsyTags.map(tag => `<span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}
                                 ${hiddenPsyTagsCount > 0 ?
-            `<span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2.5 py-0.5 rounded-full">+${hiddenPsyTagsCount}</span>` : ''}</div>`;
-            card.innerHTML = `
-                    <div> <div class="flex justify-between items-start mb-3 border-b border-gray-100 dark:border-gray-800 pb-2">
+                `<span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2.5 py-0.5 rounded-full">+${hiddenPsyTagsCount}</span>` : ''}</div>`;
+                
+                card.innerHTML = `
+                    <div> 
+                        <div class="flex justify-between items-start mb-3 border-b border-gray-100 dark:border-gray-800 pb-2">
                             <div>
-                                <p class="font-bold text-lg text-gray-800 dark:text-gray-200">${dateDisplay}</p>
-     
-                            <div class="flex items-center space-x-2">
-                                    <p class="font-extrabold text-xl text-gray-800 dark:text-white">${journal.ticker} <span class="text-xs font-medium text-gray-400 align-top">${isSpot ?
-            '현물' : '선물'}</span></p>
-                                    <span class="text-base font-bold ${journal.position === 'long' ? 'text-green-500' : 'text-red-500'}">${journal.position === 'long' ?
-            '🟢 롱' : '🔴 숏'}</span>
+                                <p class="font-bold text-lg text-gray-800 dark:text-white">${dateDisplay}</p>
+                                <div class="flex items-center space-x-2">
+                                    <p class="font-extrabold text-xl text-gray-800 dark:text-white">${journal.ticker} <span class="text-xs font-medium text-gray-400 align-top">${isSpot ? '현물' : '선물'}</span></p>
+                                    <span class="text-base font-bold ${journal.position === 'long' ? 'text-green-500' : 'text-red-500'}">${journal.position === 'long' ? '🟢 롱' : '🔴 숏'}</span>
                                     <span class="text-sm text-gray-500 dark:text-gray-400 ml-1">${journal.strategy}</span>
                                 </div>
-                        
-                </div>
+                            </div>
                             <div class="flex space-x-1">
-                                 ${!isClosed ?
-            `<button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full exit-btn" data-id="${journal.id}" title="청산 기록"><i data-lucide="log-out" class="w-5 h-5 text-blue-500"></i></button>` : ''}
+                                 ${!isClosed ? `<button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full exit-btn" data-id="${journal.id}" title="청산 기록"><i data-lucide="log-out" class="w-5 h-5 text-blue-500"></i></button>` : ''}
                                 <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full edit-btn" data-id="${journal.id}" title="전체 수정"><i data-lucide="edit" class="w-5 h-5 text-gray-500"></i></button>
-                                <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full delete-btn" data-id="${journal.id}" title="삭제"><i data-lucide="trash-2" class="w-5 
-            h-5 text-red-500"></i></button>
+                                <button class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full delete-btn" data-id="${journal.id}" title="삭제"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></button>
                             </div>
                         </div>
                         <div class="space-y-1 text-sm text-gray-700 dark:text-gray-300 mb-4">
-                  
-                        <p><strong>진입:</strong> ${formatPrice(journal.entryPrice, journal.currency)} / <strong>${amountLabel}:</strong> ${formatNumber(totalAmount)}</p>
+                            <p><strong>진입:</strong> ${formatPrice(journal.entryPrice, journal.currency)} / <strong>${amountLabel}:</strong> ${formatNumber(totalAmount)}</p>
                             <p><strong>목표/손절:</strong> ${formatPrice(journal.targetPrice, journal.currency)} / ${formatPrice(journal.stopLoss, journal.currency)}</p>
                             ${futuresInfoHtml}
-                        
-            ${journal.exits && journal.exits.length > 0 ?
-            `<p class="font-extrabold text-xl pt-2 ${pnlClass}"><strong>총 실현 손익:</strong> ${formatDualCurrency(totalPnlInKRW, journal.currency)}</p>` : ''}
+                            ${journal.exits && journal.exits.length > 0 ?
+                            `<p class="font-extrabold text-xl pt-2 ${pnlClass}"><strong>총 실현 손익:</strong> ${formatDualCurrency(totalPnlInKRW, journal.currency)}</p>` : ''}
                         </div>
                         
                         <div class="space-y-2 mb-4">
-                
-                        <div><h4 class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">진입 근거</h4>${tagHtml}</div>
+                            <div><h4 class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">진입 근거</h4>${tagHtml}</div>
                             <div><h4 class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">심리 상태</h4>${psyTagHtml}</div>
                         </div>
                         
- 
                         ${exitsHtml}
                     </div>
                     
                     <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-700 mt-auto">
-        
                         <button class="flex items-center text-sm font-semibold gap-2 memo-btn text-gray-600 dark:text-gray-300 hover:text-blue-500" data-id="${journal.id}" title="매매 복기 및 소감 작성/수정">
                             ${memoIndicator}
-                            <span>${journal.memo ?
-            '메모 확인/수정' : '메모 작성'}</span>
+                            <span>${journal.memo ? '메모 확인/수정' : '메모 작성'}</span>
                         </button>
                         <button class="flex items-center text-sm font-semibold gap-2 tag-edit-btn text-gray-600 dark:text-gray-300 hover:text-purple-500" data-id="${journal.id}" title="태그 추가/제거">
                             ${tagEditIcon}
-        
                             <span>태그 수정</span>
                         </button>
                     </div>
                 `;
-            journalList.appendChild(card);
+                journalList.appendChild(card);
             });
             lucide.createIcons();
             addJournalListEventListeners();
@@ -544,8 +1145,7 @@
             const journal = await getJournalById(journalId);
             if (journal) {
                 document.getElementById('tag-edit-journal-id').value = journalId;
-            // 태그 목록 렌더링 함수 호출
-                // entryTags가 객체 배열이므로 .map(t => t.tag)로 문자열 배열로 변환
+                // entryTags가 객체 배열이므로 .map(t => t.tag)로 문자열 배열로 변환하여 전달
                 renderTagEditOptions('tag-edit-entry-tags', 'entry', (journal.entryTags || []).map(t => t.tag));
                 renderTagEditOptions('tag-edit-psychology-tags', 'psychology', journal.psychologyTags || []);
 
@@ -559,10 +1159,8 @@
             
             const availableTags = localTags[type] || [];
             
-            // NOTE: Tag Edit Modal에서는 시간봉 선택 UI 없이 단순 선택만 지원
-            // Tag Edit Modal의 EntryTags는 객체가 아닌 문자열 배열로 가정하고, Tag Edit Modal은 단순 태그 추가/제거용으로만 사용
-
             availableTags.forEach(tagData => {
+                // entry 태그는 객체에서 tag 속성을, psychology 태그는 문자열 자체를 사용
                 const tag = type === 'entry' ? tagData.tag : tagData;
                 const isSelected = selectedTags.includes(tag);
                 const button = document.createElement('button');
@@ -573,28 +1171,24 @@
                     isSelected 
                         ? (type === 'entry' ? 'bg-green-500 text-white' : 'bg-purple-500 text-white')
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-[#4F4F4F] dark:text-gray-200 dark:hover:bg-[#666]'
-    
                 }`;
 
                 button.textContent = tag;
                 button.addEventListener('click', () => {
                     if (button.classList.contains('bg-green-500') || button.classList.contains('bg-purple-500')) {
                         // Deselect
-  
                         button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-[#4F4F4F] dark:text-gray-200 dark:hover:bg-[#666]`;
-            } else {
+                    } else {
                         // Select
-                         button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors ${type === 'entry' ?
-            'bg-green-500 text-white' : 'bg-purple-500 text-white'}`;
+                         button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors ${type === 'entry' ? 'bg-green-500 text-white' : 'bg-purple-500 text-white'}`;
                     }
                 });
-            container.appendChild(button);
+                container.appendChild(button);
             });
 
             // 선택된 태그가 없을 경우를 대비해 placeholder 표시
             if (availableTags.length === 0) {
-                 container.innerHTML = `<p class="text-sm text-gray-500 dark:text-gray-400">등록된 태그가 없습니다.
- '일지 작성' 탭에서 태그를 추가해 주세요.</p>`;
+                 container.innerHTML = `<p class="text-sm text-gray-500 dark:text-gray-400">등록된 태그가 없습니다. '일지 작성' 탭에서 태그를 추가해 주세요.</p>`;
             }
         }
         
@@ -603,21 +1197,22 @@
             const journalId = document.getElementById('tag-edit-journal-id').value;
             
             const selectedEntryTags = Array.from(document.querySelectorAll('#tag-edit-entry-tags .tag.bg-green-500')).map(btn => btn.dataset.tag);
-         
             const selectedPsychologyTags = Array.from(document.querySelectorAll('#tag-edit-psychology-tags .tag.bg-purple-500')).map(btn => btn.dataset.tag);
             
             // Tag Edit Modal에서는 시간봉 선택이 없으므로, 기존 journal의 시간봉 데이터를 최대한 유지
             const existingJournal = localJournals.find(j => j.id === journalId);
+            const existingEntryTags = existingJournal?.entryTags || [];
+
+            // 선택된 태그가 기존 목록에 있으면 해당 시간봉을 유지, 없으면 기본값 'N/A' 부여
             const newEntryTags = selectedEntryTags.map(tag => {
-                const existing = (existingJournal.entryTags || []).find(t => t.tag === tag);
-                return existing || { tag: tag, timeframe: 'N/A' }; // 기본값 'N/A'
+                const existing = existingEntryTags.find(t => t.tag === tag);
+                return existing || { tag: tag, timeframe: 'N/A' }; 
             });
 
             try {
                 await db.collection("users").doc(currentUser.uid).collection("journals").doc(journalId).update({
                     entryTags: newEntryTags,
                     psychologyTags: selectedPsychologyTags
-       
                 });
                 showToast("태그가 수정되었습니다.");
                 closeModal('tag-edit-modal');
@@ -628,19 +1223,18 @@
         
         document.getElementById('close-tag-edit-modal-btn').addEventListener('click', () => closeModal('tag-edit-modal'));
         document.getElementById('tag-edit-modal').addEventListener('click', e => { if (e.target.id === 'tag-edit-modal') closeModal('tag-edit-modal'); });
+
         async function getJournalById(id) {
             const docRef = db.collection("users").doc(currentUser.uid).collection("journals").doc(id);
             const docSnap = await docRef.get();
             if (docSnap.exists) {
                 const data = docSnap.data();
-            return { 
+                return { 
                     id: docSnap.id, 
                     ...data, 
                     date: data.date.toDate(),
                     // quantity가 없으면 contracts로 채움 (역할 통일)
-        
-                    quantity: data.quantity !== undefined ?
-            data.quantity : (data.contracts !== undefined ? data.contracts : 0) 
+                    quantity: data.quantity !== undefined ? data.quantity : (data.contracts !== undefined ? data.contracts : 0) 
                 };
             }
             return null;
@@ -654,7 +1248,7 @@
             document.querySelectorAll('#journal-list .tag-edit-btn').forEach(btn => btn.addEventListener('click', handleOpenTagEditModal));
         }
         
-        // Modified: To include Timeframe selection UI for entry tags
+        // Stability Fix: Enhanced event handling and structure for Timeframe selection
         function renderJournalTags(tags, containerId, type) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
@@ -674,50 +1268,53 @@
                     button.dataset.availableTf = JSON.stringify(tagData.timeframes || TIME_FRAMES);
                 }
             
-            
-                button.innerHTML = `<span class="pl-3 pr-2 py-1">${tag}</span><span class="delete-tag-span pr-2 text-gray-500 dark:text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
+                // Use inner structure to clearly separate text and delete icon
+                button.innerHTML = `<span class="pl-3 pr-2 py-1 tag-text">${tag}</span><span class="delete-tag-span pr-2 text-gray-500 dark:text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
                 
+                // Main Tag Click Listener (Toggle Selection and Timeframe Selector)
                 button.addEventListener('click', (e) => {
-                    const isSelected = e.currentTarget.classList.toggle('selected');
+                    // Prevent button activation if clicking the delete icon (handled by delete-tag-span listener)
+                    if (e.target.closest('.delete-tag-span')) return;
+                    
+                    const isSelected = e.currentTarget.classList.contains('selected');
+                    const selector = e.currentTarget.querySelector('.timeframe-selector');
+                    
                     if (isEntryTag) {
-                        // Deselect other selected entry tags
-                        if(isSelected) {
-                             container.querySelectorAll('.tag.selected').forEach(t => {
-                                 if (t !== e.currentTarget) {
-                                     t.classList.remove('selected');
-                                     t.querySelector('.timeframe-selector')?.classList.add('hidden');
-                                     t.dataset.timeframe = ''; // Deselecting clears timeframe
-                                 }
-                             });
-                        }
-                        
-                        const selector = e.currentTarget.querySelector('.timeframe-selector');
-                        if (selector) {
-                            selector.classList.toggle('hidden', !isSelected);
-                            
-                            if (isSelected) {
-                                // If selecting, ensure timeframe is set, or show selector
-                                if(!e.currentTarget.dataset.timeframe) {
-                                     // Optional: Auto-click the first TF if available, or just show the selector
-                                }
-                            } else {
-                                e.currentTarget.dataset.timeframe = ''; // Deselecting clears timeframe
-                            }
+                        // 1. Deselect other selected entry tags
+                        container.querySelectorAll('.tag.selected').forEach(t => {
+                             if (t !== e.currentTarget) {
+                                 t.classList.remove('selected');
+                                 t.dataset.timeframe = ''; // Deselecting clears timeframe
+                                 t.querySelector('.timeframe-selector')?.classList.add('hidden');
+                             }
+                        });
+
+                        if (!isSelected) {
+                            // 2. Select the current tag and show selector
+                            e.currentTarget.classList.add('selected');
+                            selector?.classList.remove('hidden');
+                        } else {
+                            // 3. Deselect the current tag and hide selector
+                            e.currentTarget.classList.remove('selected');
+                            e.currentTarget.dataset.timeframe = '';
+                            selector?.classList.add('hidden');
                         }
                     } else {
                         // Psychology tags remain single toggle
+                        e.currentTarget.classList.toggle('selected');
                     }
                 });
 
+                // Delete Tag Listener
                 button.querySelector('.delete-tag-span').addEventListener('click', (e) => {
-                    e.stopPropagation();
-       
+                    e.stopPropagation(); // Stop click from propagating to the main button handler
                     handleDeleteJournalTag(tag, type);
                 });
                 
                 // New: Add Timeframe Selector UI for Entry Tags
                 if (isEntryTag) {
                     const tfSelector = document.createElement('div');
+                    // Add 'hidden' class by default, removed when the tag is selected by main click handler
                     tfSelector.className = 'timeframe-selector hidden absolute z-20 top-full left-0 mt-1 p-2 bg-white dark:bg-[#2d2d2d] rounded-lg shadow-xl flex flex-wrap gap-1 border border-gray-300 dark:border-[#4F4F4F]';
                     
                     const availableTf = tagData.timeframes || TIME_FRAMES;
@@ -729,15 +1326,14 @@
                         tfBtn.className = 'timeframe-button text-xs px-2 py-1 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors dark:text-gray-200';
                         
                         tfBtn.addEventListener('click', (e) => {
-                            e.stopPropagation(); // Prevent closing the main tag button
+                            e.stopPropagation(); // Stop click from propagating to the main tag button
                             tfSelector.querySelectorAll('.timeframe-button').forEach(b => b.classList.remove('selected'));
                             e.currentTarget.classList.add('selected');
                             
-                            // Set timeframe on the main tag button and ensure it's selected
+                            // Set timeframe on the main tag button
                             button.dataset.timeframe = tf;
-                            if(!button.classList.contains('selected')) button.classList.add('selected');
                             
-                            tfSelector.classList.add('hidden');
+                            tfSelector.classList.add('hidden'); // Hide selector after selection
                             
                             showToast(`'${tag}' 태그에 '${tf}' 시간봉이 선택되었습니다.`);
                         });
@@ -760,13 +1356,12 @@
             
             if (isTagInUse) {
                 showToast("사용 중인 태그는 삭제할 수 없습니다.", "error");
-            return;
+                return;
             }
             showConfirmModal(`'${tag}' 태그를 삭제하시겠습니까?`, async () => {
                 const newTags = localTags[type].filter(t => (isEntryTag ? t.tag : t) !== tag);
                 try {
                     await db.collection("users").doc(currentUser.uid).collection("journalTags").doc("all").update({ [type]: newTags });
-                 
                     showToast(`'${tag}' 태그가 삭제되었습니다.`);
                 } catch(e) { showToast("태그 삭제 실패.", "error"); }
             }, '삭제');
@@ -779,10 +1374,11 @@
             
             if (!currentTags.some(t => (isEntryTag ? t.tag : t) === tag)) {
                 
+                // Ensured new entry tags get the full list of timeframes
                 const newTagData = isEntryTag ? { tag: tag, timeframes: TIME_FRAMES } : tag;
                 
                 await tagsDocRef.update({ [type]: [...currentTags, newTagData] });
-            showToast(`'${tag}' 태그가 추가되었습니다.`);
+                showToast(`'${tag}' 태그가 추가되었습니다.`);
             } else { showToast("이미 존재하는 태그입니다.", "error");
             }
         }
@@ -794,43 +1390,49 @@
             const input = document.getElementById('new-psychology-tag');
             if (input.value.trim()) { addJournalTag('psychology', input.value.trim()); input.value = ''; }
         });
+        
         document.getElementById('journal-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const journalId = document.getElementById('journal-id').value;
             const assetType = document.querySelector('[data-group="asset-type"] .toggle-btn.selected').dataset.value;
             
             // New: Entry Tags now collect tag and timeframe
+            // Only include entry tags that have both 'selected' class AND a 'data-timeframe'
             const selectedEntryTags = Array.from(document.querySelectorAll('.entry-tags-container .tag.selected')).map(b => ({
                 tag: b.dataset.tag,
                 timeframe: b.dataset.timeframe || 'N/A' // N/A if timeframe not selected
             })).filter(t => t.timeframe !== 'N/A'); // Filter out tags where only tag is selected but no timeframe
 
+            if (assetType === 'spot' && selectedEntryTags.length === 0 && Array.from(document.querySelectorAll('.entry-tags-container .tag.selected')).length > 0) {
+                 showToast("선택된 진입 근거 태그의 시간봉을 선택해주세요.", "error");
+                 return;
+            }
+
             const journalData = {
                 assetType: assetType,
-         
                 ticker: document.getElementById('ticker').value.toUpperCase(),
                 date: Timestamp.fromDate(new Date(document.getElementById('date').value)),
                 position: document.querySelector('[data-group="position"] .toggle-btn.selected').dataset.value,
                 strategy: document.querySelector('[data-group="strategy"] .toggle-btn.selected').dataset.value, 
                 currency: document.querySelector('[data-group="form-currency"] .toggle-btn.selected').id.includes('usd') ? 'USD' : 'KRW',
-               
                 entryPrice: parseFloat(unformatNumber(document.getElementById('entry-price').value)),
                 stopLoss: parseFloat(unformatNumber(document.getElementById('stop-loss').value)), 
                 targetPrice: parseFloat(unformatNumber(document.getElementById('target-price').value)),
                 entryTags: selectedEntryTags, // Use the new structure
                 psychologyTags: Array.from(document.querySelectorAll('.psychology-tags-container .tag.selected')).map(b => b.dataset.tag),
             };
+
             const quantityInput = document.getElementById('quantity').value;
             
             if (assetType === 'spot') {
                 journalData.quantity = parseFloat(unformatNumber(quantityInput));
-            // contracts, tickValue, tickSize는 삭제 (clean up)
+                // contracts, tickValue, tickSize는 삭제 (clean up)
                 delete journalData.contracts;
                 delete journalData.tickValue;
                 delete journalData.tickSize;
             } else { // futures
                 journalData.contracts = parseFloat(unformatNumber(quantityInput));
-            // quantity input을 contracts로 사용
+                // quantity input을 contracts로 사용
                 journalData.tickValue = parseFloat(unformatNumber(document.getElementById('tick-value').value));
                 journalData.tickSize = parseFloat(unformatNumber(document.getElementById('tick-size').value));
                 // quantity는 삭제 (clean up)
@@ -841,20 +1443,21 @@
                 if (journalId) {
                     // 메모 필드 유지
                     const existingJournal = localJournals.find(j => j.id === journalId);
-            journalData.exits = existingJournal.exits || [];
+                    journalData.exits = existingJournal.exits || [];
                     journalData.memo = existingJournal.memo || '';
                     await db.collection("users").doc(currentUser.uid).collection("journals").doc(journalId).update(journalData);
                     showToast("일지가 수정되었습니다.");
-            } else {
+                } else {
                     journalData.exits = [];
-            journalData.memo = '';
+                    journalData.memo = '';
                     await db.collection("users").doc(currentUser.uid).collection("journals").add(journalData);
                     showToast("일지가 저장되었습니다.");
                 }
                 resetForm();
-            switchJournalView('list-view');
+                switchJournalView('list-view');
             } catch (error) { showToast("저장 실패: " + error.message, "error"); }
         });
+
         async function handleDeleteJournal(e) {
             const id = e.currentTarget.dataset.id;
             showConfirmModal("정말로 이 일지를 삭제하시겠습니까?", async () => {
@@ -867,31 +1470,33 @@
             const journal = await getJournalById(e.currentTarget.dataset.id);
             if (journal) {
                 document.getElementById('journal-id').value = journal.id;
-            document.getElementById('date').value = journal.date.toISOString().split('T')[0];
+                document.getElementById('date').value = journal.date.toISOString().split('T')[0];
                 document.getElementById('ticker').value = journal.ticker;
                 
                 document.querySelector(`[data-group="asset-type"] .toggle-btn[data-value="${journal.assetType}"]`).click();
 
                 ['position', 'strategy'].forEach(group => document.querySelectorAll(`[data-group="${group}"] .toggle-btn`).forEach(b => b.classList.toggle('selected', b.dataset.value === journal[group])));
-            document.querySelectorAll('[data-group="form-currency"] .toggle-btn').forEach(b => b.classList.toggle('selected', (journal.currency === 'USD' && b.id.includes('usd')) || (journal.currency !== 'USD' && b.id.includes('krw'))));
+                document.querySelectorAll('[data-group="form-currency"] .toggle-btn').forEach(b => b.classList.toggle('selected', (journal.currency === 'USD' && b.id.includes('usd')) || (journal.currency !== 'USD' && b.id.includes('krw'))));
                 
-                
-                document.getElementById('quantity').value = formatNumber(journal.quantity);
-            // quantity input에 통합된 값 사용
+                document.getElementById('quantity').value = formatNumber(journal.quantity); // quantity input에 통합된 값 사용
                 
                 if (journal.assetType === 'futures') {
-                    document.getElementById('tick-value').value = formatNumber(journal.tickValue);
-            document.getElementById('tick-size').value = formatNumber(journal.tickSize);
+                    document.getElementById('tick-value').value = formatNumber(journal.tickValue || '');
+                    document.getElementById('tick-size').value = formatNumber(journal.tickSize || '');
                     
                     const selectEl = document.getElementById('futures-info-select');
                     const ticker = journal.ticker.toUpperCase();
-            if(localFuturesInfo[ticker]) {
+                    if(localFuturesInfo[ticker]) {
                         selectEl.value = ticker;
-            document.getElementById('delete-futures-info-btn').disabled = false;
+                        document.getElementById('delete-futures-info-btn').disabled = false;
                     } else {
                         selectEl.value = '';
-            document.getElementById('delete-futures-info-btn').disabled = true;
+                        document.getElementById('delete-futures-info-btn').disabled = true;
                     }
+                } else {
+                    // Ensure futures fields are cleared when switching to spot view
+                    document.getElementById('tick-value').value = '';
+                    document.getElementById('tick-size').value = '';
                 }
 
                 ['entry-price', 'stop-loss', 'target-price'].forEach(id => document.getElementById(id).value = formatNumber(journal[id.replace('-','')]));
@@ -901,7 +1506,11 @@
                     const containerClass = `.${type.replace('Tags', '-tags-container')}`;
                     document.querySelectorAll(`${containerClass} .tag`).forEach(b => {
                         b.classList.remove('selected');
-                        if (type === 'entryTags') b.dataset.timeframe = ''; // Clear previous timeframe
+                        if (type === 'entryTags') {
+                             b.dataset.timeframe = ''; // Clear previous timeframe
+                             b.querySelector('.timeframe-selector')?.classList.add('hidden'); // Hide selector
+                             b.querySelectorAll('.timeframe-button.selected').forEach(tfb => tfb.classList.remove('selected')); // Deselect timeframe button
+                        }
                     });
                     
                     const tags = journal[type] || [];
@@ -913,13 +1522,18 @@
                                 tagButton.classList.add('selected');
                                 tagButton.dataset.timeframe = tagData.timeframe || '';
                                 tagButton.querySelector(`.timeframe-button[data-tf="${tagData.timeframe}"]`)?.classList.add('selected');
+                                // Selector remains hidden until clicked in form view
                             }
                         });
                     } else { // psychologyTags
                         tags.forEach(tag => document.querySelector(`${containerClass} .tag[data-tag="${tag}"]`)?.classList.add('selected'));
                     }
                 });
-            switchJournalView('form-view'); window.scrollTo(0, 0);
+
+                // Trigger asset type button to ensure all fields are correctly hidden/shown and validated
+                document.querySelector(`[data-group="asset-type"] .toggle-btn[data-value="${journal.assetType}"]`).click();
+                
+                switchJournalView('form-view'); window.scrollTo(0, 0);
             }
         }
 
@@ -928,7 +1542,7 @@
             const journal = await getJournalById(journalId);
             if(journal) {
                 document.getElementById('memo-journal-id').value = journalId;
-            document.getElementById('memo-content').value = journal.memo || '';
+                document.getElementById('memo-content').value = journal.memo || '';
                 openModal('memo-modal');
             }
         }
@@ -943,27 +1557,27 @@
             try {
                 await db.collection("users").doc(currentUser.uid).collection("journals").doc(journalId).update({ memo: memoContent });
                 showToast("매매 복기 내용이 저장되었습니다.");
-  
                 closeModal('memo-modal');
             } catch(error) {
                 showToast("메모 저장 실패: " + error.message, "error");
             }
         });
+        
         async function handleOpenExitModal(e) {
             const journal = await getJournalById(e.currentTarget.dataset.id);
             if(journal){
                 const isSpot = journal.assetType === 'spot';
-            const totalAmount = isSpot ? journal.quantity : journal.contracts;
-                const exitedAmount = journal.exits ?
-            journal.exits.reduce((s, ex) => s + ex.quantity, 0) : 0;
+                const totalAmount = isSpot ? journal.quantity : journal.contracts;
+                const exitedAmount = journal.exits ? journal.exits.reduce((s, ex) => s + ex.quantity, 0) : 0;
                 const remaining = totalAmount - exitedAmount;
                 
                 document.getElementById('exit-journal-id').value = journal.id;
-            document.getElementById('exit-quantity-label').textContent = isSpot ? '청산 수량' : '청산 계약 수';
+                document.getElementById('exit-quantity-label').textContent = isSpot ? '청산 수량' : '청산 계약 수';
                 document.getElementById('remaining-quantity').textContent = formatNumber(remaining);
                 document.getElementById('exit-quantity').dataset.max = remaining;
                 document.getElementById('exit-quantity').value = formatNumber(remaining);
-            document.getElementById('exit-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('exit-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('exit-price').value = ''; // clear price input
                 openModal('exit-modal');
             }
         }
@@ -974,28 +1588,30 @@
             const journal = await getJournalById(journalId);
             const price = parseFloat(unformatNumber(document.getElementById('exit-price').value));
             const quantity = parseFloat(unformatNumber(document.getElementById('exit-quantity').value));
-  
             const date = Timestamp.fromDate(new Date(document.getElementById('exit-date').value));
             const maxQuantity = parseFloat(document.getElementById('exit-quantity').dataset.max);
 
             if (isNaN(quantity) || quantity <= 0 || quantity > maxQuantity + 1e-9) {
                 showToast(`청산 수량/계약 수는 0보다 크고 ${formatNumber(maxQuantity)} 이하여야 합니다.`, "error"); return;
             }
+            if (isNaN(price) || price <= 0) {
+                 showToast("올바른 청산 가격을 입력해주세요.", "error"); return;
+            }
           
             
             const exitData = { price, quantity, date };
-            const updatedExits = [...(journal.exits ||
-            []), exitData];
+            const updatedExits = [...(journal.exits || []), exitData];
             await db.collection("users").doc(currentUser.uid).collection("journals").doc(journalId).update({ exits: updatedExits });
             showToast("청산 기록이 추가되었습니다.");
             closeModal('exit-modal');
         });
+
         function getStats(journals) {
             const completed = journals.filter(j => {
                 const isSpot = j.assetType === 'spot';
-                const totalAmount = isSpot ? j.quantity : j.contracts;
+                const totalAmount = isSpot ? (j.quantity || 0) : (j.contracts || 0);
                 const exitedAmount = j.exits ? j.exits.reduce((s, e) => s + e.quantity, 0) : 0;
-        
+                // Closed if exits exist AND remaining amount is near zero
                 return j.exits && j.exits.length > 0 && (totalAmount - exitedAmount <= 1e-9);
             });
             let winningTrades = 0;
@@ -1008,7 +1624,6 @@
 
                 if (totalPnl > 0) winningTrades++;
 
-       
                 const potentialReward = Math.abs(j.position === 'long' ? (j.targetPrice - j.entryPrice) : (j.entryPrice - j.targetPrice));
                 const potentialRisk = Math.abs(j.position === 'long' ? (j.entryPrice - j.stopLoss) : (j.stopLoss - j.entryPrice));
                 if (potentialRisk > 0) plRatios.push(potentialReward / potentialRisk);
@@ -1033,14 +1648,16 @@
             const pnlEl = document.getElementById('total-realized-pnl');
 
             // 직전 기간 대비 컨텍스트 텍스트를 제거합니다.
-            // (요청 4)
             document.getElementById('win-rate-context').textContent = '';
             document.getElementById('pl-ratio-context').textContent = '';
             document.getElementById('pnl-context').textContent = '';
 
             if (journals.length === 0) { 
                 winRateEl.textContent = 'N/A';
-            plRatioEl.textContent = 'N/A'; pnlEl.textContent = 'N/A';
+                plRatioEl.textContent = 'N/A'; pnlEl.textContent = 'N/A';
+                winRateEl.className = 'text-4xl font-extrabold text-gray-500 dark:text-gray-400';
+                plRatioEl.className = 'text-4xl font-extrabold text-gray-500 dark:text-gray-400';
+                pnlEl.className = 'text-4xl font-extrabold text-gray-500 dark:text-gray-400';
                 return;
             }
             
@@ -1064,7 +1681,6 @@
                 const pnlInKRW = j.currency === 'USD' ? pnl * exchangeRate : pnl;
                 if(pnlInKRW > 0) totalProfit += pnlInKRW;
                 else totalLoss += Math.abs(pnlInKRW);
- 
             });
             createJournalChart('pnl-composition-chart', 'doughnut', ['총 수익', '총 손실'], [totalProfit, totalLoss], '손익 구성');
         }
@@ -1077,8 +1693,7 @@
                 const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
                 const quarter = `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`;
                 const pnl = j.exits.reduce((s, e) => s + calculatePnl(j,e), 0);
-     
-            const pnlInKRW = j.currency === 'USD' ? pnl * exchangeRate : pnl;
+                const pnlInKRW = j.currency === 'USD' ? pnl * exchangeRate : pnl;
                 monthlyPnl[month] = (monthlyPnl[month] || 0) + pnlInKRW;
                 quarterlyPnl[quarter] = (quarterlyPnl[quarter] || 0) + pnlInKRW;
             });
@@ -1100,7 +1715,6 @@
                 const value = data[index] * (statsCurrency === 'USD' ? 1 / exchangeRate : 1);
                 const colorClass = value >= 0 ? 'text-green-500' : 'text-red-500';
                 return `<span class="inline-block mx-2">${label}: <strong class="${colorClass}">${formatPrice(value, statsCurrency)}</strong></span>`;
-          
             }).join('');
             container.innerHTML = summaryHtml;
         }
@@ -1114,7 +1728,6 @@
                 // entryTags는 객체 배열이므로 .map(t => t.tag)로 태그 이름만 추출
                 const entryTags = (j.entryTags || []).map(t => t.tag);
                 [entryTags, j.psychologyTags, [j.strategy]].forEach((tags, i) => {
-        
                     const stats = [entryTagStats, psychologyTagStats, strategyStats][i];
                     (tags || []).forEach(tag => { if (!stats[tag]) stats[tag] = { wins: 0, trades: 0 }; stats[tag].trades++; if (isWin) stats[tag].wins++; });
                 });
@@ -1143,25 +1756,21 @@
             `${c.label}: ${c.parsed.toFixed(2)}%` : `${c.label}: ${formatPrice(c.raw, statsCurrency)}` } } 
                 },
                 scales: {
-                    x: { ticks: { color: isDark ?
-            '#d1d5db' : '#374151' } },
-                    y: { ticks: { color: isDark ?
-            '#d1d5db' : '#374151' } }
+                    x: { ticks: { color: isDark ? '#d1d5db' : '#374151' } },
+                    y: { ticks: { color: isDark ? '#d1d5db' : '#374151' } }
                 }
             };
             if (type === 'doughnut') {
                  charts[canvasId] = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ 
                     label, data: chartData, 
                     backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 99, 132, 0.7)'],
-                
                     borderColor: [isDark ? '#1E1E1E' : '#fff'], borderWidth: 4
                 }]}, options: commonOptions });
             } else { // bar
                  charts[canvasId] = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label, data: chartData, backgroundColor: chartData.map(d => d >= (isWinRate ? 50 : 0) ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'), borderWidth: 1 }] }, 
                  options: { ...commonOptions, scales: { 
-                  
                     x: { ...commonOptions.scales.x, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } }, 
-                     y: { ...commonOptions.scales.y, beginAtZero: !isWinRate, ticks: { callback: v => isWinRate ? `${v.toFixed(0)}%` : formatPrice(v, statsCurrency) }, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } } } } });
+                    y: { ...commonOptions.scales.y, beginAtZero: !isWinRate, ticks: { callback: v => isWinRate ? `${v.toFixed(0)}%` : formatPrice(v, statsCurrency) }, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } } } } });
             }
         }
         
@@ -1186,10 +1795,11 @@
             document.getElementById('form-currency-usd-btn').classList.add('selected');
             
             // Also clear all timeframe data
-            document.querySelectorAll('.entry-tags-container .tag.selected, .psychology-tags-container .tag.selected').forEach(t => {
+            document.querySelectorAll('.entry-tags-container .tag, .psychology-tags-container .tag').forEach(t => {
                 t.classList.remove('selected');
                 if (t.dataset.timeframe) t.dataset.timeframe = '';
                 t.querySelector('.timeframe-selector')?.classList.add('hidden');
+                t.querySelectorAll('.timeframe-button.selected').forEach(tfb => tfb.classList.remove('selected'));
             });
         }
         document.getElementById('clear-form-btn').addEventListener('click', resetForm);
@@ -1215,7 +1825,6 @@
                     localLedgerEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), date: doc.data().date.toDate() }));
                     renderLedgerListView();
                     renderLedgerStatsView();
-         
                 });
 
             if (unsubscribeLedgerCategories) unsubscribeLedgerCategories();
@@ -1224,17 +1833,14 @@
                     if (doc.exists) {
                         const data = doc.data();
                         localLedgerCategories = {
-     
                             expense: data.expense || data.list || [], 
                             income: data.income || []
                         };
-                
-            } else {
+                    } else {
                         localLedgerCategories = { expense: [], income: [] };
                     }
                     renderLedgerCategoryTags(localLedgerCategories.expense, 'expense');
                     renderLedgerCategoryTags(localLedgerCategories.income, 'income');
- 
                 });
         }
         
@@ -1246,6 +1852,7 @@
             lucide.createIcons();
         }
         document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.addEventListener('click', () => switchLedgerView(btn.dataset.ledgerTab)));
+        
         function renderLedgerCategoryTags(categories, type) {
             const container = document.getElementById(`ledger-${type}-category-tags-container`);
             container.innerHTML = '';
@@ -1255,18 +1862,17 @@
                 button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center dark:bg-[#4F4F4F] dark:text-gray-200';
                 button.dataset.tag = cat;
               
-            
                 button.innerHTML = `<span class="pl-3 pr-2 py-1">${cat}</span><span class="delete-tag-span pr-2 text-gray-500 dark:text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
 
-                button.addEventListener('click', () => {
+                button.addEventListener('click', (e) => {
+                    if (e.target.closest('.delete-tag-span')) return;
                     container.querySelectorAll('.tag.selected').forEach(t => t.classList.remove('selected'));
                     button.classList.add('selected');
-      
                 });
                 button.querySelector('.delete-tag-span').addEventListener('click', (e) => {
                     e.stopPropagation();
                     handleDeleteLedgerCategory(cat, type);
-            });
+                });
                 container.appendChild(button);
             });
             lucide.createIcons();
@@ -1277,15 +1883,15 @@
             const newCategory = input.value.trim();
             if (newCategory && !localLedgerCategories[type].includes(newCategory)) {
                 const updatedCategories = { ...localLedgerCategories };
-            updatedCategories[type] = [...updatedCategories[type], newCategory].sort((a,b) => a.localeCompare(b));
+                updatedCategories[type] = [...updatedCategories[type], newCategory].sort((a,b) => a.localeCompare(b));
 
                 try {
                     await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(updatedCategories);
-            showToast(`'${newCategory}' 카테고리가 추가되었습니다.`);
+                    showToast(`'${newCategory}' 카테고리가 추가되었습니다.`);
                     input.value = '';
                 } catch(e) {
                     showToast("카테고리 추가 실패", "error");
-            }
+                }
             } else if (localLedgerCategories[type].includes(newCategory)) {
                 showToast("이미 존재하는 카테고리입니다.", "error");
             }
@@ -1298,14 +1904,13 @@
             const isCategoryInUse = localLedgerEntries.some(entry => entry.type === type && entry.category === category);
             if (isCategoryInUse) {
                 showToast("사용 중인 카테고리는 삭제할 수 없습니다.", "error");
-            return;
+                return;
             }
             showConfirmModal(`'${category}' 카테고리를 삭제하시겠습니까?`, async () => {
                 const updatedCategories = { ...localLedgerCategories };
                 updatedCategories[type] = updatedCategories[type].filter(c => c !== category);
                 try {
-                    await 
-            db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(updatedCategories);
+                    await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(updatedCategories);
                     showToast(`'${category}' 카테고리가 삭제되었습니다.`);
                 } catch(e) {
                      showToast("카테고리 삭제 실패", "error");
@@ -1321,30 +1926,30 @@
             const amount = parseFloat(unformatNumber(document.getElementById('ledger-amount').value));
 
             if(!selectedCategoryTag) { 
-            showToast("카테고리를 선택해주세요.", "error"); return; }
+                showToast("카테고리를 선택해주세요.", "error"); return; }
             if(isNaN(amount) || amount <= 0) { showToast("올바른 금액을 입력해주세요.", "error"); return; }
 
             const entryData = {
                 type: type,
                 date: Timestamp.fromDate(new Date(document.getElementById('ledger-date').value)),
                 amount: amount,
-      
                 category: selectedCategoryTag.dataset.tag,
                 memo: document.getElementById('ledger-memo').value.trim()
             };
             try {
                 const collectionRef = db.collection("users").doc(currentUser.uid).collection("ledgerEntries");
-            if (id) {
+                if (id) {
                     await collectionRef.doc(id).update(entryData);
-            showToast("내역이 수정되었습니다.");
+                    showToast("내역이 수정되었습니다.");
                 } else {
                     await collectionRef.add(entryData);
-            showToast("내역이 저장되었습니다.");
+                    showToast("내역이 저장되었습니다.");
                 }
                 resetLedgerForm();
                 switchLedgerView('ledger-list-view');
             } catch (error) { showToast("저장 실패.", "error"); }
         });
+
         function resetLedgerForm() {
             document.getElementById('ledger-form').reset();
             document.getElementById('ledger-id').value = '';
@@ -1353,6 +1958,7 @@
             document.querySelector('#ledger-form .toggle-btn[data-value="expense"]').click();
         }
         document.getElementById('clear-ledger-form-btn').addEventListener('click', resetLedgerForm);
+
         function renderLedgerListView() {
             const filterType = document.getElementById('ledger-list-filter-type').value;
             const displayEl = document.getElementById('ledger-list-period-display');
@@ -1360,12 +1966,12 @@
             const { start, end, displayString } = getPeriod(ledgerListDate, filterType);
             displayEl.textContent = displayString;
             const filteredEntries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
+
             // Render Expenses Summary
             const expensesByCategory = filteredEntries
                 .filter(e => e.type === 'expense')
                 .reduce((acc, curr) => {
                     const category = curr.category || '미분류';
-                  
                     acc[category] = (acc[category] || 0) + curr.amount;
                     return acc;
                 }, {});
@@ -1377,8 +1983,7 @@
                 Object.entries(expensesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
                     const div = document.createElement('div');
                     div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
-                    div.innerHTML = `<span 
-            class="font-medium">${category}</span><span class="font-bold text-red-500">- ${formatPrice(total, 'KRW')}</span>`;
+                    div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-red-500">- ${formatPrice(total, 'KRW')}</span>`;
                     div.onclick = () => {
                         document.querySelectorAll('#ledger-list-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
                         document.querySelectorAll('#ledger-list-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
@@ -1386,7 +1991,7 @@
                         div.classList.add('selected');
                         renderLedgerDetails(category, 'expense', filteredEntries);
                     };
-            expenseSummaryContainer.appendChild(div);
+                    expenseSummaryContainer.appendChild(div);
                 });
             }
 
@@ -1394,8 +1999,7 @@
             const incomesByCategory = filteredEntries
                 .filter(e => e.type === 'income')
                 .reduce((acc, curr) => {
-                    const category = curr.category || '미분류'; // Handle uncategorized 
-            old entries
+                    const category = curr.category || '미분류'; // Handle uncategorized old entries
                     acc[category] = (acc[category] || 0) + curr.amount;
                     return acc;
                 }, {});
@@ -1407,8 +2011,7 @@
                 Object.entries(incomesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
                     const div = document.createElement('div');
                     div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
-                    div.innerHTML = `<span 
-            class="font-medium">${category}</span><span class="font-bold text-green-500">+ ${formatPrice(total, 'KRW')}</span>`;
+                    div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-green-500">+ ${formatPrice(total, 'KRW')}</span>`;
                     div.onclick = () => {
                         document.querySelectorAll('#ledger-list-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
                         document.querySelectorAll('#ledger-list-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
@@ -1416,7 +2019,7 @@
                         div.classList.add('selected');
                         renderLedgerDetails(category, 'income', filteredEntries);
                     };
-            incomeSummaryContainer.appendChild(div);
+                    incomeSummaryContainer.appendChild(div);
                 });
             }
             
@@ -1438,31 +2041,26 @@
 
             if(entriesToShow.length === 0) {
                 detailsContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-center">상세 내역이 없습니다.</p>`;
-            return;
+                return;
             }
 
             entriesToShow.sort((a,b) => b.date - a.date)
                 .forEach(entry => {
                     const div = document.createElement('div');
                     div.className = 'p-3 rounded-lg border border-gray-200 dark:border-[#4F4F4F] flex justify-between items-center bg-gray-50 dark:bg-[#2d2d2d]';
-           
                     const amountClass = type === 'income' ? 'text-green-500' : 'text-red-500';
                     const sign = type === 'income' ? '+' : '-';
                     div.innerHTML = `
                         <div>
-       
                             <p class="font-medium">${entry.date.toLocaleDateString()}</p>
                             <p class="text-sm text-gray-500 dark:text-gray-400">${entry.memo || (type === 'income' ? '수입' : '메모 없음')}</p>
                         </div>
-              
                         <div class="flex items-center gap-4">
                             <span class="font-bold ${amountClass}">${sign} ${formatPrice(entry.amount, 'KRW')}</span>
                             <div>
-                           
                                 <button class="p-1 hover:text-blue-500 edit-ledger-btn" data-id="${entry.id}"><i data-lucide="edit" class="w-4 h-4"></i></button>
                                 <button class="p-1 hover:text-red-500 delete-ledger-btn" data-id="${entry.id}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                             </div>
-                     
                         </div>`;
                     detailsContainer.appendChild(div);
                 });
@@ -1476,14 +2074,21 @@
             const entry = localLedgerEntries.find(item => item.id === id);
             if (entry) {
                 switchLedgerView('ledger-form-view');
-            document.getElementById('ledger-id').value = entry.id;
+                document.getElementById('ledger-id').value = entry.id;
                 document.getElementById('ledger-date').value = entry.date.toISOString().split('T')[0];
                 document.getElementById('ledger-amount').value = formatNumber(entry.amount);
                 document.getElementById('ledger-memo').value = entry.memo;
+                
+                // Toggle type button
                 document.querySelector(`.toggle-btn[data-value="${entry.type}"]`).click();
-            if(entry.category) {
-                    document.querySelector(`#ledger-${entry.type}-category-tags-container .tag[data-tag="${entry.category}"]`)?.click();
-            }
+                
+                // Select category tag
+                if(entry.category) {
+                    // Timeout is needed because the toggle-group click (above) redraws the category tags
+                    setTimeout(() => {
+                        document.querySelector(`#ledger-${entry.type}-category-tags-container .tag[data-tag="${entry.category}"]`)?.click();
+                    }, 50); 
+                }
             }
         }
         
@@ -1509,6 +2114,7 @@
             ledgerListDate = new Date(); 
             renderLedgerListView();
         });
+        
         function renderLedgerStatsView() {
             const filterType = document.getElementById('ledger-stats-filter-type').value;
             const displayEl = document.getElementById('ledger-stats-period-display');
@@ -1526,13 +2132,11 @@
                 if (e.type === 'income') {
                     totalIncome += e.amount;
                     const category = e.category || '미분류';
-                    incomeByCategory[category] = (incomeByCategory[category] 
-            || 0) + e.amount;
+                    incomeByCategory[category] = (incomeByCategory[category] || 0) + e.amount;
                 }
                 else {
                     totalExpense += e.amount;
                     const category = e.category || '미분류';
-                 
                     expenseByCategory[category] = (expenseByCategory[category] || 0) + e.amount;
                 }
             });
@@ -1546,33 +2150,32 @@
             let trendLabels, trendIncomeData, trendExpenseData;
             if(filterType === 'year') {
                 document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 월별 추이`;
-            trendLabels = Array.from({length: 12}, (_, i) => `${i + 1}월`);
+                trendLabels = Array.from({length: 12}, (_, i) => `${i + 1}월`);
                 const monthlyData = trendLabels.map(() => ({income: 0, expense: 0}));
-            entries.forEach(e => {
+                entries.forEach(e => {
                     const month = e.date.getMonth();
                     if (e.type === 'income') monthlyData[month].income += e.amount;
                     else monthlyData[month].expense += e.amount;
                 });
-            trendIncomeData = monthlyData.map(d => d.income);
+                trendIncomeData = monthlyData.map(d => d.income);
                 trendExpenseData = monthlyData.map(d => d.expense);
             } else { // month or quarter
                 document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 일별 추이`;
-            const days = (end - start) / (1000 * 60 * 60 * 24);
-            trendLabels = Array.from({length: Math.ceil(days) + 1}, (_, i) => {
+                const days = (end - start) / (1000 * 60 * 60 * 24);
+                trendLabels = Array.from({length: Math.ceil(days) + 1}, (_, i) => {
                     const d = new Date(start);
                     d.setDate(d.getDate() + i);
                     return `${d.getMonth()+1}/${d.getDate()}`;
                 });
-            const dailyData = Object.fromEntries(trendLabels.map(l => [l, {income: 0, expense: 0}]));
-            entries.forEach(e => {
+                const dailyData = Object.fromEntries(trendLabels.map(l => [l, {income: 0, expense: 0}]));
+                entries.forEach(e => {
                     const dayLabel = `${e.date.getMonth()+1}/${e.date.getDate()}`;
                     if(dailyData[dayLabel]) {
                         if (e.type === 'income') dailyData[dayLabel].income += e.amount;
-                        
-            else dailyData[dayLabel].expense += e.amount;
+                        else dailyData[dayLabel].expense += e.amount;
                     }
                 });
-            trendIncomeData = Object.values(dailyData).map(d => d.income);
+                trendIncomeData = Object.values(dailyData).map(d => d.income);
                 trendExpenseData = Object.values(dailyData).map(d => d.expense);
             }
             
@@ -1609,6 +2212,7 @@
             ledgerStatsDate = new Date();
             renderLedgerStatsView();
         });
+
         function createLedgerChart(canvasId, type, labels, datasets) {
             if (charts[canvasId]) charts[canvasId].destroy();
             const ctx = document.getElementById(canvasId)?.getContext('2d');
@@ -1624,7 +2228,6 @@
                 backgroundColor: ds.backgroundColor || (type === 'pie' ? defaultColors : defaultColors[index % defaultColors.length]),
                 borderColor: isDark ? '#1E1E1E' : '#fff',
                 borderWidth: type === 'pie' ? 2 : 1
-       
             }));
 
             charts[canvasId] = new Chart(ctx, {
@@ -1632,16 +2235,13 @@
                 data: { labels, datasets: chartDatasets },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-            
                     plugins: { 
                         legend: { display: type !== 'bar', position: 'bottom' },
                         tooltip: { callbacks: { label: c => `${c.label}: ${formatPrice(c.raw, 'KRW')}` } } 
                     },
-  
                     scales: (type === 'bar') ? { 
                         x: { ticks: { color: isDark ? '#d1d5db' : '#374151' }, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } },
-                        y: { 
-            beginAtZero: true, ticks: { callback: v => formatPrice(v, 'KRW') , color: isDark ? '#d1d5db' : '#374151' }, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } } 
+                        y: { beginAtZero: true, ticks: { callback: v => formatPrice(v, 'KRW') , color: isDark ? '#d1d5db' : '#374151' }, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } } 
                     } : {}
                 }
             });
@@ -1656,16 +2256,16 @@
             let start, end, displayString;
             if (filterType === 'month') {
                 displayString = `${year}년 ${month + 1}월`;
-            start = new Date(year, month, 1);
+                start = new Date(year, month, 1);
                 end = new Date(year, month + 1, 0, 23, 59, 59);
             } else if (filterType === 'quarter') {
                 const quarter = Math.floor(month / 3) + 1;
-            displayString = `${year}년 ${quarter}분기`;
+                displayString = `${year}년 ${quarter}분기`;
                 start = new Date(year, (quarter - 1) * 3, 1);
-            end = new Date(year, quarter * 3, 0, 23, 59, 59);
+                end = new Date(year, quarter * 3, 0, 23, 59, 59);
             } else { // year
                 displayString = `${year}년`;
-            start = new Date(year, 0, 1);
+                start = new Date(year, 0, 1);
                 end = new Date(year, 11, 31, 23, 59, 59);
             }
             return { start, end, displayString };
@@ -1707,11 +2307,11 @@
         
         document.getElementById('close-modal-btn').addEventListener('click', () => closeModal('exit-modal'));
         document.getElementById('exit-modal').addEventListener('click', e => { if (e.target.id === 'exit-modal') closeModal('exit-modal'); });
+        
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             toast.firstElementChild.textContent = message;
-            toast.className = `fixed bottom-5 right-5 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${type === 'success' ?
-            'bg-green-500' : 'bg-red-500'}`;
+            toast.className = `fixed bottom-5 right-5 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
             toast.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
@@ -1720,54 +2320,62 @@
             document.getElementById('confirm-message').textContent = message;
             const okBtn = document.getElementById('confirm-ok-btn');
             okBtn.textContent = type;
-            okBtn.className = `text-white px-4 py-2 rounded-lg font-semibold ${type === '삭제' ?
-            'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`;
+            okBtn.className = `text-white px-4 py-2 rounded-lg font-semibold ${type === '삭제' ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`;
             confirmCallback = callback;
             openModal('confirm-modal');
         }
-        document.getElementById('confirm-ok-btn').addEventListener('click', () => { if (confirmCallback) confirmCallback(); closeModal('confirm-modal'); });
+        document.getElementById('confirm-ok-btn').addEventListener('click', () => { 
+            if (confirmCallback) {
+                 // The callback is executed first
+                 confirmCallback(); 
+                 // Then the modal is closed
+                 closeModal('confirm-modal'); 
+             }
+        });
         document.getElementById('confirm-cancel-btn').addEventListener('click', () => closeModal('confirm-modal'));
 
         document.querySelectorAll('.number-input').forEach(input => {
             input.addEventListener('input', (e) => { e.target.value = formatNumber(e.target.value); });
         });
+
         document.querySelectorAll('.exchange-rate-input').forEach(input => {
             input.addEventListener('input', (e) => {
                 const value = unformatNumber(e.target.value);
                 const newRate = parseFloat(value);
                 if (newRate > 0) {
                     exchangeRate = newRate;
-   
                     document.querySelectorAll('.exchange-rate-input').forEach(otherInput => {
                         if (otherInput !== e.target) otherInput.value = formatNumber(value);
                     });
                     if(currentUser) renderJournalStats(localJournals);
-          
                 }
             });
         });
+
         document.addEventListener('click', function(event) {
             const button = event.target.closest('.toggle-btn');
             if (button) {
                 const group = button.closest('.toggle-group');
                 if (group) {
                     group.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('selected'));
-          
                     button.classList.add('selected');
                     if(group.dataset.group === 'stats-currency' && currentUser) {
                          statsCurrency = button.id.includes('usd') ? 'USD' : 'KRW';
                          renderJournalStats(localJournals);
-         
                     }
                     if (group.dataset.group === 'ledger-type') {
                         const isExpense = button.dataset.value === 'expense';
                         document.getElementById('ledger-expense-category-section').classList.toggle('hidden', !isExpense);
-           
                         document.getElementById('ledger-income-category-section').classList.toggle('hidden', isExpense);
+                        
+                        // Clear category selection when type is toggled
+                        document.querySelectorAll(`#ledger-expense-category-tags-container .tag.selected`).forEach(t => t.classList.remove('selected'));
+                        document.querySelectorAll(`#ledger-income-category-tags-container .tag.selected`).forEach(t => t.classList.remove('selected'));
                     }
                 }
             }
         });
+
         window.addEventListener('DOMContentLoaded', () => {
             setTheme(localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
             lucide.createIcons();
@@ -1776,6 +2384,7 @@
             document.querySelectorAll('.exchange-rate-input').forEach(input => input.value = formatNumber(exchangeRate));
             resetForm(); 
         });
+        
         function setTheme(theme) {
             document.documentElement.classList.toggle('dark', theme === 'dark');
             localStorage.setItem('theme', theme);
@@ -1794,6 +2403,6 @@
             }
         }
         document.getElementById('theme-toggle').addEventListener('click', () => setTheme(localStorage.getItem('theme') === 'dark' ? 'light' : 'dark'));
-        </script>
+    </script>
 </body>
 </html>
