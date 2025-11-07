@@ -259,7 +259,7 @@
                         </div>
                     </div>
 
-                    <div class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <div class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4 entry-tags-container">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">진입 근거 태그 (시간봉 필수 선택)</h3>
                             <div id="entry-tags-container" class="flex flex-wrap gap-2 mb-3">
@@ -269,7 +269,9 @@
                                 <button type="button" class="add-entry-tag-btn bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 font-semibold text-sm" title="새 태그 추가">추가</button>
                             </div>
                         </div>
-                        
+                    </div>
+                    
+                    <div class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4 psychology-tags-container">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">심리 상태 태그</h3>
                             <div id="psychology-tags-container" class="flex flex-wrap gap-2 mb-3">
@@ -1261,7 +1263,7 @@
                 const button = document.createElement('button');
                 button.type = 'button';
                 // Add 'relative' for dropdown positioning
-                button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center dark:bg-[#4F4F4F] dark:text-gray-200 relative';
+                button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center dark:bg-[#4F4F4F] dark:text-gray-200 relative entry-tags-container';
                 button.dataset.tag = tag;
                 if(isEntryTag) {
                     // Store available timeframes data for the tag (if available)
@@ -1286,6 +1288,7 @@
                                  t.classList.remove('selected');
                                  t.dataset.timeframe = ''; // Deselecting clears timeframe
                                  t.querySelector('.timeframe-selector')?.classList.add('hidden');
+                                 t.querySelectorAll('.timeframe-button').forEach(tfb => tfb.classList.remove('selected'));
                              }
                         });
 
@@ -1298,6 +1301,7 @@
                             e.currentTarget.classList.remove('selected');
                             e.currentTarget.dataset.timeframe = '';
                             selector?.classList.add('hidden');
+                            e.currentTarget.querySelectorAll('.timeframe-button').forEach(tfb => tfb.classList.remove('selected'));
                         }
                     } else {
                         // Psychology tags remain single toggle
@@ -1466,6 +1470,7 @@
             }, '삭제');
         }
 
+        // Fix for Issue #2: Load correct timeframe data into the form buttons
         async function handleEditJournal(e) {
             const journal = await getJournalById(e.currentTarget.dataset.id);
             if (journal) {
@@ -1473,6 +1478,7 @@
                 document.getElementById('date').value = journal.date.toISOString().split('T')[0];
                 document.getElementById('ticker').value = journal.ticker;
                 
+                // Trigger asset type to correctly show/hide futures fields
                 document.querySelector(`[data-group="asset-type"] .toggle-btn[data-value="${journal.assetType}"]`).click();
 
                 ['position', 'strategy'].forEach(group => document.querySelectorAll(`[data-group="${group}"] .toggle-btn`).forEach(b => b.classList.toggle('selected', b.dataset.value === journal[group])));
@@ -1501,15 +1507,18 @@
 
                 ['entry-price', 'stop-loss', 'target-price'].forEach(id => document.getElementById(id).value = formatNumber(journal[id.replace('-','')]));
             
-                // Modified: To load entryTags with timeframe data
+                // Fix: Load entryTags with timeframe data and select the correct timeframe button
                 ['entryTags', 'psychologyTags'].forEach(type => {
-                    const containerClass = `.${type.replace('Tags', '-tags-container')}`;
-                    document.querySelectorAll(`${containerClass} .tag`).forEach(b => {
+                    const containerId = type.replace('Tags', '-tags-container');
+                    const tagsContainer = document.getElementById(containerId);
+                    
+                    // 1. Reset all buttons in the container
+                    tagsContainer.querySelectorAll('.tag').forEach(b => {
                         b.classList.remove('selected');
                         if (type === 'entryTags') {
-                             b.dataset.timeframe = ''; // Clear previous timeframe
-                             b.querySelector('.timeframe-selector')?.classList.add('hidden'); // Hide selector
-                             b.querySelectorAll('.timeframe-button.selected').forEach(tfb => tfb.classList.remove('selected')); // Deselect timeframe button
+                             b.dataset.timeframe = '';
+                             b.querySelector('.timeframe-selector')?.classList.add('hidden');
+                             b.querySelectorAll('.timeframe-button').forEach(tfb => tfb.classList.remove('selected'));
                         }
                     });
                     
@@ -1517,20 +1526,28 @@
                     
                     if (type === 'entryTags') {
                         tags.forEach(tagData => {
-                            const tagButton = document.querySelector(`${containerClass} .tag[data-tag="${tagData.tag}"]`);
+                            const tagButton = tagsContainer.querySelector(`.tag[data-tag="${tagData.tag}"]`);
                             if(tagButton) {
+                                // 2. Select the main tag button
                                 tagButton.classList.add('selected');
-                                tagButton.dataset.timeframe = tagData.timeframe || '';
-                                tagButton.querySelector(`.timeframe-button[data-tf="${tagData.timeframe}"]`)?.classList.add('selected');
-                                // Selector remains hidden until clicked in form view
+                                
+                                // 3. Set the timeframe data attribute on the main button
+                                const timeframe = tagData.timeframe || '';
+                                tagButton.dataset.timeframe = timeframe;
+
+                                // 4. Select the corresponding timeframe button inside the selector (if exists)
+                                const tfButton = tagButton.querySelector(`.timeframe-button[data-tf="${timeframe}"]`);
+                                if (tfButton) {
+                                    tfButton.classList.add('selected');
+                                }
                             }
                         });
-                    } else { // psychologyTags
-                        tags.forEach(tag => document.querySelector(`${containerClass} .tag[data-tag="${tag}"]`)?.classList.add('selected'));
+                    } else { // psychologyTags (simpler)
+                        tags.forEach(tag => tagsContainer.querySelector(`.tag[data-tag="${tag}"]`)?.classList.add('selected'));
                     }
                 });
 
-                // Trigger asset type button to ensure all fields are correctly hidden/shown and validated
+                // Trigger asset type button to ensure all fields are correctly hidden/shown and validated (repeated just in case)
                 document.querySelector(`[data-group="asset-type"] .toggle-btn[data-value="${journal.assetType}"]`).click();
                 
                 switchJournalView('form-view'); window.scrollTo(0, 0);
@@ -1794,7 +1811,7 @@
             document.querySelector('[data-group="strategy"] .toggle-btn[data-value="단타"]').classList.add('selected');
             document.getElementById('form-currency-usd-btn').classList.add('selected');
             
-            // Also clear all timeframe data
+            // Fix: Clear all timeframe data attributes and classes
             document.querySelectorAll('.entry-tags-container .tag, .psychology-tags-container .tag').forEach(t => {
                 t.classList.remove('selected');
                 if (t.dataset.timeframe) t.dataset.timeframe = '';
@@ -1851,7 +1868,7 @@
             if(tabId === 'ledger-stats-view') renderLedgerStatsView();
             lucide.createIcons();
         }
-        document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.addEventListener('click', () => switchLedgerView(btn.dataset.ledgerTab)));
+        document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(b => b.addEventListener('click', () => switchLedgerView(b.dataset.ledgerTab)));
         
         function renderLedgerCategoryTags(categories, type) {
             const container = document.getElementById(`ledger-${type}-category-tags-container`);
@@ -2213,6 +2230,40 @@
             renderLedgerStatsView();
         });
 
+        function createJournalChart(canvasId, type, labels, data, label, isWinRate = false) {
+            if (charts[canvasId]) charts[canvasId].destroy();
+            const ctx = document.getElementById(canvasId)?.getContext('2d');
+            if(!ctx) return;
+
+            const pnlMultiplier = statsCurrency === 'USD' ? 1 / exchangeRate : 1;
+            const chartData = isWinRate ? data : data.map(d => d * pnlMultiplier);
+            const isDark = document.documentElement.classList.contains('dark');
+            const commonOptions = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: type === 'doughnut', position: 'bottom' }, 
+                    tooltip: { callbacks: { label: c => isWinRate ?
+            `${c.label}: ${c.parsed.toFixed(2)}%` : `${c.label}: ${formatPrice(c.raw, statsCurrency)}` } } 
+                },
+                scales: {
+                    x: { ticks: { color: isDark ? '#d1d5db' : '#374151' } },
+                    y: { ticks: { color: isDark ? '#d1d5db' : '#374151' } }
+                }
+            };
+            if (type === 'doughnut') {
+                 charts[canvasId] = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ 
+                    label, data: chartData, 
+                    backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 99, 132, 0.7)'],
+                    borderColor: [isDark ? '#1E1E1E' : '#fff'], borderWidth: 4
+                }]}, options: commonOptions });
+            } else { // bar
+                 charts[canvasId] = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label, data: chartData, backgroundColor: chartData.map(d => d >= (isWinRate ? 50 : 0) ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'), borderWidth: 1 }] }, 
+                 options: { ...commonOptions, scales: { 
+                    x: { ...commonOptions.scales.x, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } }, 
+                    y: { ...commonOptions.scales.y, beginAtZero: !isWinRate, ticks: { callback: v => isWinRate ? `${v.toFixed(0)}%` : formatPrice(v, statsCurrency) }, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } } } } });
+            }
+        }
+        
         function createLedgerChart(canvasId, type, labels, datasets) {
             if (charts[canvasId]) charts[canvasId].destroy();
             const ctx = document.getElementById(canvasId)?.getContext('2d');
