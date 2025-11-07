@@ -9,7 +9,6 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
-        /* --- Original CSS Styles Restored --- */
         body {
             font-family: 'Noto Sans KR', sans-serif;
             transition: background-color 0.3s ease;
@@ -55,6 +54,7 @@
         .dark .tag.selected { background-color: #3b82f6; color: #ffffff; }
         .dark .entry-tags-container .tag.selected { background-color: #16a34a; }
         .dark .psychology-tags-container .tag.selected { background-color: #9333ea; }
+        .dark .environment-tags-container .tag.selected { background-color: #f59e0b; } /* 새로운 환경 태그 색상 */
         .dark .border-blue-200 { border-color: #3b82f6; }
         .dark .border-green-200 { border-color: #16a34a; }
         .dark .border-purple-200 { border-color: #9333ea; }
@@ -68,6 +68,8 @@
         .dark .text-green-800 { color: #4ade80; }
         .dark .bg-purple-100 { background-color: rgba(147, 51, 234, 0.2); }
         .dark .text-purple-800 { color: #c084fc; }
+        .dark .bg-yellow-100 { background-color: rgba(245, 158, 11, 0.2); }
+        .dark .text-yellow-800 { color: #facc15; }
         .dark .border-gray-200 { border-color: #4F4F4F; }
         .dark .bg-gray-50 { background-color: #2d2d2d; }
         .dark .hover\:bg-gray-100:hover { background-color: #2d2d2d; }
@@ -85,39 +87,6 @@
         /* Quick-Edit Tag & Memo */
         .quick-edit-btn { transition: all 0.2s; }
         .quick-edit-btn:hover { transform: scale(1.05); }
-        /* --- Original CSS Styles Restored --- */
-
-
-        /* --- Custom Styles for Timeframe Selector (Minimal changes to original) --- */
-        .entry-tags-container .tag { position: relative; }
-        .tag.selected.entry-tags-container { 
-             /* Increased size on select for Timeframe UI, using the original selector */
-             padding: 8px 12px; 
-             font-size: 1rem;
-        }
-        
-        .tag .timeframe-selector {
-            position: absolute;
-            z-index: 20; 
-            top: 100%;
-            left: 0;
-            margin-top: 4px;
-            min-width: 150px;
-            display: none; 
-        }
-        .tag.selected .timeframe-selector { 
-            display: flex !important;
-        }
-
-        .timeframe-button.selected {
-            background-color: #2563eb; /* Blue-600 */
-            color: white;
-            font-weight: 700;
-        }
-        .dark .timeframe-button.selected {
-            background-color: #3b82f6; /* Blue-500 in dark mode */
-        }
-        /* --- Custom Styles for Timeframe Selector (Minimal changes to original) --- */
 
     </style>
     <script>
@@ -135,11 +104,9 @@
             <h1 class="text-4xl md:text-5xl font-bold mb-4">나의 매매일지 & 가계부 📝</h1>
             <p class="text-lg md:text-xl text-gray-500 mb-8">당신의 모든 기록을 통해 성장하세요!</p>
             <button id="login-btn" class="bg-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center justify-center">
-           
-                 <svg class="w-6 h-6 mr-3" viewBox="0 0 48 48"><defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath><path clip-path="url(#b)" fill="#FBBC05" d="M0 37V11l17 13z"/><path clip-path="url(#b)" fill="#EA4335" d="M0 11l17 13 7-6.1L48 14V0H0z"/><path clip-path="url(#b)" fill="#34A853" d="M0 37l30-23 7.9 1L48 0v48H0z"/><path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/></svg>
+                <svg class="w-6 h-6 mr-3" viewBox="0 0 48 48"><defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath><path clip-path="url(#b)" fill="#FBBC05" d="M0 37V11l17 13z"/><path clip-path="url(#b)" fill="#EA4335" d="M0 11l17 13 7-6.1L48 14V0H0z"/><path clip-path="url(#b)" fill="#34A853" d="M0 37l30-23 7.9 1L48 0v48H0z"/><path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/></svg>
                 Google 계정으로 로그인
-         
-           </button>
+            </button>
         </div>
     </div>
 
@@ -148,326 +115,260 @@
         <header class="mb-6 relative flex items-center justify-center">
             <div class="text-center px-16 sm:px-20">
                 <h1 class="text-3xl md:text-4xl font-bold text-center mb-2">나의 기록 관리</h1>
-                
- <p class="text-center text-gray-500">매매일지 & 가계부</p>
+                <p class="text-center text-gray-500">매매일지 & 가계부</p>
                 <div id="auth-info" class="text-center text-xs mt-2"></div>
             </div>
             <div class="absolute top-0 right-0 flex items-center h-full space-x-2">
                 <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 transition-colors"><i id="sun-icon" data-lucide="sun" class="h-6 w-6"></i><i id="moon-icon" data-lucide="moon" class="h-6 w-6"></i></button>
-                
- <button id="logout-btn" title="로그아웃" class="text-sm font-semibold hover:text-red-500 transition-colors p-2 rounded-md hover:bg-gray-200"><i data-lucide="log-out" class="h-5 w-5"></i></button>
+                <button id="logout-btn" title="로그아웃" class="text-sm font-semibold hover:text-red-500 transition-colors p-2 rounded-md hover:bg-gray-200"><i data-lucide="log-out" class="h-5 w-5"></i></button>
             </div>
         </header>
 
         <div class="border-b-2 border-gray-200 dark:border-gray-700 mb-8">
             <nav class="-mb-0.5 flex justify-center space-x-6">
                 <button data-main-tab="journal-container" class="main-tab-btn py-4 px-1 inline-flex items-center gap-2 text-base whitespace-nowrap text-gray-500 hover:text-blue-600 active"><i data-lucide="book-marked" class="w-5 h-5"></i>매매일지</button>
-         
-               <button data-main-tab="ledger-container" class="main-tab-btn py-4 px-1 inline-flex items-center gap-2 text-base whitespace-nowrap text-gray-500 hover:text-blue-600"><i data-lucide="piggy-bank" class="w-5 h-5"></i>가계부</button>
+                <button data-main-tab="ledger-container" class="main-tab-btn py-4 px-1 inline-flex items-center gap-2 text-base whitespace-nowrap text-gray-500 hover:text-blue-600"><i data-lucide="piggy-bank" class="w-5 h-5"></i>가계부</button>
             </nav>
         </div>
 
         <div id="journal-container">
             <nav class="flex justify-center bg-white rounded-xl shadow-md p-2 mb-8 space-x-1 sm:space-x-2 dark:bg-[#1E1E1E]">
-                <button data-tab="form-view" class="tab-btn text-gray-600 active w-full md:w-auto px-3 sm:px-4 md:px-6 py-3 rounded-lg 
- text-sm md:text-base"><i data-lucide="plus-circle" class="inline-block w-4 h-4 sm:w-5 sm:h-5 mr-1 md:mr-2"></i>일지 작성</button>
+                <button data-tab="form-view" class="tab-btn text-gray-600 active w-full md:w-auto px-3 sm:px-4 md:px-6 py-3 rounded-lg text-sm md:text-base"><i data-lucide="plus-circle" class="inline-block w-4 h-4 sm:w-5 sm:h-5 mr-1 md:mr-2"></i>일지 작성</button>
                 <button data-tab="list-view" class="tab-btn text-gray-600 w-full md:w-auto px-3 sm:px-4 md:px-6 py-3 rounded-lg text-sm md:text-base"><i data-lucide="book-open" class="inline-block w-4 h-4 sm:w-5 sm:h-5 mr-1 md:mr-2"></i>내 일지</button>
                 <button data-tab="stats-view" class="tab-btn text-gray-600 w-full md:w-auto px-3 sm:px-4 md:px-6 py-3 rounded-lg text-sm md:text-base"><i data-lucide="bar-chart-2" class="inline-block w-4 h-4 sm:w-5 sm:h-5 mr-1 md:mr-2"></i>성과 분석</button>
             </nav>
-    
-             <main id="journal-main-content">
+            <main id="journal-main-content">
                 <div id="form-view">
                     <form id="journal-form" class="bg-white dark:bg-[#1E1E1E] p-6 md:p-8 rounded-2xl shadow-lg space-y-6 md:space-y-8">
                         <input type="hidden" id="journal-id">
-                   
-         
+                        
                         <div class="space-y-6">
                             <h2 class="text-2xl font-bold mb-4 border-b-2 border-blue-200 pb-2 flex items-center"><i data-lucide="clipboard-list" class="mr-3 text-blue-500"></i>기본 정보</h2>
                             
-  
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                                 <div class="sm:col-span-2 space-y-3">
-                                   
-  <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">자산 유형</span>
+                                    <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">자산 유형</span>
                                     <div class="toggle-group text-gray-600" data-group="asset-type"><button type="button" data-value="spot" class="toggle-btn selected">현물</button><button type="button" data-value="futures" class="toggle-btn">선물</button></div>
                                 </div>
 
-              
-                    <div class="sm:col-span-2 space-y-3">
+                                <div class="sm:col-span-2 space-y-3">
                                     <label for="ticker" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">종목 이름</label>
-                                    
- <input type="text" id="ticker" placeholder="예: 삼성전자, NG" required class="w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d] text-base">
+                                    <input type="text" id="ticker" placeholder="예: 삼성전자, NG" required class="w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d] text-base">
                                 </div>
                             </div>
 
-                          
-   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div><label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">날짜</label><input type="date" id="date" required class="w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
                                 
-            
-                      <div><span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">포지션</span>
+                                <div><span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">포지션</span>
                                     <div class="toggle-group text-gray-600" data-group="position"><button type="button" data-value="long" class="toggle-btn selected">🟢 롱</button><button type="button" data-value="short" class="toggle-btn">🔴 숏</button></div>
-                          
-        </div>
+                                </div>
                                 
                                 <div><span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">매매 전략</span>
-                       
-               <div class="toggle-group text-gray-600" data-group="strategy"><button type="button" data-value="단타" class="toggle-btn selected">단타</button><button type="button" data-value="스윙" class="toggle-btn">스윙</button><button type="button" data-value="장기" class="toggle-btn">장기</button></div>
+                                    <div class="toggle-group text-gray-600" data-group="strategy"><button type="button" data-value="단타" class="toggle-btn selected">단타</button><button type="button" data-value="스윙" class="toggle-btn">스윙</button><button type="button" data-value="장기" class="toggle-btn">장기</button></div>
                                 </div>
                             </div>
-              
-               
+                            
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                                 <div id="spot-fields" class="space-y-3">
-                   
-                   <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">수량</label>
+                                    <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">수량 / 계약 수</label>
                                     <input type="text" inputmode="numeric" id="quantity" placeholder="예: 100" class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]">
-                           
-        </div>
+                                </div>
+
+                                <div id="futures-contracts-field" class="hidden space-y-3">
+                                    <label for="contracts" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">계약 수</label>
+                                    <input type="text" inputmode="numeric" id="contracts" placeholder="예: 1" class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]">
+                                </div>
                                 
                                 <div class="space-y-3">
-                              
-        <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">입력 통화</span>
+                                    <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">입력 통화</span>
                                     <div class="toggle-group text-gray-600" data-group="form-currency"><button type="button" id="form-currency-krw-btn" class="toggle-btn">원 (₩)</button><button type="button" id="form-currency-usd-btn" class="toggle-btn selected">달러 ($)</button></div>
                                 </div>
 
-       
-                          <div><label for="entry-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">진입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="예: 10,000" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
+                                <div><label for="entry-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">진입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="예: 10,000" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
                                 <div><label for="target-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">목표가</label><input type="text" inputmode="decimal" id="target-price" placeholder="예: 11,000" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
- 
                                 <div class="sm:col-span-2"><label for="stop-loss" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="예: 9,500" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
                             </div>
-                   
-                   
+                            
                             <div id="futures-fields" class="hidden sm:col-span-2 space-y-4">
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                       
-                      <div class="sm:col-span-3 bg-gray-50 dark:bg-[#2d2d2d] p-4 rounded-xl border border-gray-200 dark:border-[#4F4F4F]">
+                                    <div class="sm:col-span-3 bg-gray-50 dark:bg-[#2d2d2d] p-4 rounded-xl border border-gray-200 dark:border-[#4F4F4F]">
                                         <h3 class="text-base font-semibold mb-3 flex justify-between items-center">
-                                 
-               선물 종목 정보 관리 (틱가치/단위)
-                                            <button type="button" id="delete-futures-info-btn" class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition text-xs flex items-center disabled:opacity-50 disabled:cursor-not-allowed" title="선택된 종목 정보를 삭제합니다.
- (매매일지에서 사용 중이면 삭제 불가)">
+                                            선물 종목 정보 관리 (틱가치/단위)
+                                            <button type="button" id="delete-futures-info-btn" class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition text-xs flex items-center disabled:opacity-50 disabled:cursor-not-allowed" title="선택된 종목 정보를 삭제합니다. (매매일지에서 사용 중이면 삭제 불가)">
                                                 <i data-lucide="trash-2" class="w-3 h-3 mr-1"></i> 삭제
-                                           
-   </button>
+                                            </button>
                                         </h3>
                                         <div class="flex flex-col sm:flex-row gap-2 mb-4">
-              
-                               <select id="futures-info-select" class="flex-grow p-3 border border-gray-300 dark:border-[#4F4F4F] rounded-lg bg-white dark:bg-[#1E1E1E] text-base">
+                                            <select id="futures-info-select" class="flex-grow p-3 border border-gray-300 dark:border-[#4F4F4F] rounded-lg bg-white dark:bg-[#1E1E1E] text-base">
                                                 <option value="">- 종목 선택 (틱가치/단위 불러오기) -</option>
-      
-                                       </select>
-                                            <button type="button" id="save-futures-info-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition text-sm font-semibold">정보 저장</button>
-      
-                                       </div>
+                                            </select>
+                                            <button type="button" id="save-futures-info-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition text-sm">정보 저장</button>
+                                        </div>
                                         <div class="grid grid-cols-2 gap-4">
-                       
-                      <div><label for="tick-value" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">틱가치 ($)</label><input type="text" inputmode="decimal" id="tick-value" placeholder="예: 1" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]"></div>
-                                            <div><label for="tick-size" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">틱단위</label><input type="text" inputmode="decimal" id="tick-size" placeholder="예: 0.001" 
- required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]"></div>
+                                            <div><label for="tick-value" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">틱가치 ($)</label><input type="text" inputmode="decimal" id="tick-value" placeholder="예: 1" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]"></div>
+                                            <div><label for="tick-size" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">틱단위</label><input type="text" inputmode="decimal" id="tick-size" placeholder="예: 0.001" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]"></div>
                                         </div>
                                     </div>
-                
-                 </div>
+                                </div>
                             </div>
                         </div>
-                        
-        
-                         <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <h2 class="text-2xl font-bold border-b-2 border-green-200 pb-2 flex items-center"><i data-lucide="siren" class="mr-3 text-green-500"></i>진입 근거 (환경/기술적 분석 태그)</h2>
-                            <div id="entry-tags-container" class="flex flex-wrap gap-2 mb-2 entry-tags-container"></div>
-   
-                           <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-entry-tag" placeholder="새로운 태그 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" class="add-entry-tag-btn bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition">추가</button></div>
+
+                        <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <h2 class="text-2xl font-bold border-b-2 border-yellow-200 pb-2 flex items-center"><i data-lucide="cloud-sun" class="mr-3 text-yellow-500"></i>환경 태그</h2>
+                            <div id="environment-tags-container" class="flex flex-wrap gap-2 mb-2 environment-tags-container"></div>
+                            <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-environment-tag" placeholder="새로운 태그 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" class="add-environment-tag-btn bg-yellow-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition">추가</button></div>
                         </div>
                         
- 
                         <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <h2 class="text-2xl font-bold border-b-2 border-purple-200 pb-2 flex items-center"><i data-lucide="brain-circuit" class="mr-3 text-purple-500"></i>심리 상태 (감정/태도 태그)</h2>
-                            <div id="psychology-tags-container" class="flex 
- flex-wrap gap-2 mb-2 psychology-tags-container"></div>
+                            <h2 class="text-2xl font-bold border-b-2 border-green-200 pb-2 flex items-center"><i data-lucide="siren" class="mr-3 text-green-500"></i>진입 근거</h2>
+                            <div id="entry-tags-container" class="flex flex-wrap gap-2 mb-2 entry-tags-container"></div>
+                            <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-entry-tag" placeholder="새로운 태그 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" class="add-entry-tag-btn bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition">추가</button></div>
+                        </div>
+                        
+                        <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <h2 class="text-2xl font-bold border-b-2 border-purple-200 pb-2 flex items-center"><i data-lucide="brain-circuit" class="mr-3 text-purple-500"></i>심리 상태</h2>
+                            <div id="psychology-tags-container" class="flex flex-wrap gap-2 mb-2 psychology-tags-container"></div>
                             <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-psychology-tag" placeholder="새로운 태그 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" class="add-psychology-tag-btn bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-600 transition">추가</button></div>
                         </div>
-                   
-         
+                        
                         <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
                             <button type="button" id="clear-form-btn" class="bg-gray-400 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-500 transition">새로 작성</button>
-                         
-               <button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-600 transition"><i data-lucide="save" class="inline-block w-5 h-5 mr-2"></i>일지 저장</button>
+                            <button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-600 transition"><i data-lucide="save" class="inline-block w-5 h-5 mr-2"></i>일지 저장</button>
                         </div>
                     </form>
                 </div>
                 <div id="list-view" class="hidden">
-    
-                  <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl shadow-lg mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
+                    <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl shadow-lg mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
                         <div class="flex items-center space-x-2"><label for="list-exchange-rate" class="font-medium text-sm text-gray-600 dark:text-gray-300">환율:</label><input type="text" inputmode="numeric" id="list-exchange-rate" value="1,380" class="exchange-rate-input number-input w-28 p-2 border border-gray-300 bg-white dark:bg-[#2d2d2d] rounded-lg text-center"></div>
                     </div>
-      
-                <div class="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-4 rounded-xl mb-6 flex items-center gap-3 dark:bg-[#2d2d2d] dark:border-[#4F4F4F] dark:text-gray-300"><i data-lucide="info" class="w-5 h-5 flex-shrink-0"></i><p>일지 우측의 <i data-lucide="log-out" class="inline-block w-4 h-4 mx-1"></i>(청산), <i data-lucide="edit" class="inline-block w-4 h-4 mx-1"></i>(수정), <i data-lucide="trash-2" class="inline-block w-4 h-4 mx-1"></i>(삭제) 아이콘으로 관리하세요.</p></div>
+                    <div class="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-4 rounded-xl mb-6 flex items-center gap-3 dark:bg-[#2d2d2d] dark:border-[#4F4F4F] dark:text-gray-300"><i data-lucide="info" class="w-5 h-5 flex-shrink-0"></i><p>일지 우측의 <i data-lucide="log-out" class="inline-block w-4 h-4 mx-1"></i>(청산), <i data-lucide="edit" class="inline-block w-4 h-4 mx-1"></i>(수정), <i data-lucide="trash-2" class="inline-block w-4 h-4 mx-1"></i>(삭제) 아이콘으로 관리하세요.</p></div>
                     <div id="journal-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
                 </div>
-     
-               <div id="stats-view" class="hidden space-y-8">
+                <div id="stats-view" class="hidden space-y-8">
                     <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl shadow-lg mb-6 flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-4">
                         <div class="flex items-center space-x-2"><label for="stats-exchange-rate" class="font-medium text-sm text-gray-600 dark:text-gray-300">환율:</label><input type="text" inputmode="numeric" id="stats-exchange-rate" value="1,380" class="exchange-rate-input number-input w-28 p-2 border border-gray-300 bg-white dark:bg-[#2d2d2d] rounded-lg text-center"></div>
-       
-                  <div class="toggle-group text-gray-600 w-full sm:w-auto" data-group="stats-currency"><button id="stats-currency-krw-btn" class="toggle-btn selected">원 (₩)</button><button id="stats-currency-usd-btn" class="toggle-btn">달러 ($)</button></div>
+                        <div class="toggle-group text-gray-600 w-full sm:w-auto" data-group="stats-currency"><button id="stats-currency-krw-btn" class="toggle-btn selected">원 (₩)</button><button id="stats-currency-usd-btn" class="toggle-btn">달러 ($)</button></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div class="bg-white dark:bg-[#1E1E1E] 
- p-6 rounded-2xl shadow-lg text-center space-y-2"><h3 class="text-xl font-bold mb-1">총 승률</h3><p id="total-win-rate" class="text-4xl font-extrabold text-blue-500">N/A</p><p id="win-rate-context" class="text-sm text-gray-500 dark:text-gray-400 min-h-[20px]"></p></div>
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg text-center space-y-2"><h3 class="text-xl font-bold mb-1">총 승률</h3><p id="total-win-rate" class="text-4xl font-extrabold text-blue-500">N/A</p><p id="win-rate-context" class="text-sm text-gray-500 dark:text-gray-400 min-h-[20px]"></p></div>
                         <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg text-center space-y-2"><h3 class="text-xl font-bold mb-1">평균 손익비</h3><p id="average-pl-ratio" class="text-4xl font-extrabold text-green-500">N/A</p><p id="pl-ratio-context" class="text-sm text-gray-500 dark:text-gray-400 min-h-[20px]"></p></div>
-                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg text-center space-y-2"><h3 class="text-xl font-bold mb-1">총 실현 손익</h3><p id="total-realized-pnl" class="text-4xl 
- font-extrabold text-gray-500">N/A</p><p id="pnl-context" class="text-sm text-gray-500 dark:text-gray-400 min-h-[20px]"></p></div>
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg text-center space-y-2"><h3 class="text-xl font-bold mb-1">총 실현 손익</h3><p id="total-realized-pnl" class="text-4xl font-extrabold text-gray-500">N/A</p><p id="pnl-context" class="text-sm text-gray-500 dark:text-gray-400 min-h-[20px]"></p></div>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg lg:col-span-1"><h3 class="text-xl font-bold mb-4">총 손익 구성</h3><div class="chart-container"><canvas id="pnl-composition-chart"></canvas></div></div>
-             
-               <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg lg:col-span-2"><h3 class="text-xl font-bold mb-4">월별 손익</h3><div class="chart-container"><canvas id="monthly-pnl-chart"></canvas></div><div id="monthly-pnl-summary" class="mt-4 text-sm text-center"></div></div>
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg lg:col-span-2"><h3 class="text-xl font-bold mb-4">월별 손익</h3><div class="chart-container"><canvas id="monthly-pnl-chart"></canvas></div><div id="monthly-pnl-summary" class="mt-4 text-sm text-center"></div></div>
                     </div>
                     <div class="grid grid-cols-1"><div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">분기별 손익</h3><div class="chart-container"><canvas id="quarterly-pnl-chart"></canvas></div><div id="quarterly-pnl-summary" class="mt-4 text-sm text-center"></div></div></div>
-                
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">환경 태그별 승률</h3><div class="chart-container"><canvas id="environment-win-rate-chart"></canvas></div></div>
                         <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">진입 근거별 승률</h3><div class="chart-container"><canvas id="entry-win-rate-chart"></canvas></div></div>
                         <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">심리 상태별 승률</h3><div class="chart-container"><canvas id="psychology-win-rate-chart"></canvas></div></div>
-                   
-             <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">매매 전략별 승률</h3><div class="chart-container"><canvas id="strategy-win-rate-chart"></canvas></div></div>
                     </div>
-                    <div class="grid grid-cols-1"><div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">롱/숏 포지션 승률</h3><div class="chart-container"><canvas id="position-win-rate-chart"></canvas></div></div></div>
+                    <div class="grid grid-cols-1"><div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">매매 전략별 승률 및 롱/숏 포지션 승률</h3><div class="chart-container"><canvas id="strategy-position-win-rate-chart"></canvas></div></div></div>
                 </div>
-            </div>
-        </main>
- 
+            </main>
         </div>
 
         <div id="ledger-container" class="hidden">
             <nav class="flex justify-center bg-white dark:bg-[#1E1E1E] rounded-xl shadow-md p-2 mb-8 space-x-1 sm:space-x-2">
                 <button data-ledger-tab="ledger-form-view" class="tab-btn text-gray-600 active w-full md:w-auto px-4 md:px-6 py-3 rounded-lg"><i data-lucide="plus-circle" class="inline-block w-5 h-5 mr-2"></i>내역 입력</button>
-                <button data-ledger-tab="ledger-list-view" class="tab-btn text-gray-600 w-full md:w-auto px-4 md:px-6 py-3 rounded-lg"><i data-lucide="list" class="inline-block w-5 
- h-5 mr-2"></i>상세 내역</button>
+                <button data-ledger-tab="ledger-list-view" class="tab-btn text-gray-600 w-full md:w-auto px-4 md:px-6 py-3 rounded-lg"><i data-lucide="list" class="inline-block w-5 h-5 mr-2"></i>상세 내역</button>
                 <button data-ledger-tab="ledger-stats-view" class="tab-btn text-gray-600 w-full md:w-auto px-4 md:px-6 py-3 rounded-lg"><i data-lucide="pie-chart" class="inline-block w-5 h-5 mr-2"></i>통계 분석</button>
             </nav>
             <main id="ledger-main-content">
                 <div id="ledger-form-view">
-                    <form id="ledger-form" class="bg-white dark:bg-[#1E1E1E] p-6 
- md:p-8 rounded-2xl shadow-lg space-y-6 md:space-y-8">
+                    <form id="ledger-form" class="bg-white dark:bg-[#1E1E1E] p-6 md:p-8 rounded-2xl shadow-lg space-y-6 md:space-y-8">
                         <input type="hidden" id="ledger-id">
                         
                         <div class="space-y-6">
-                     
-               <h2 class="text-2xl font-bold mb-4 flex items-center border-b-2 border-blue-200 pb-2"><i data-lucide="edit-3" class="mr-3 text-blue-500"></i>가계부 내역 입력</h2>
+                            <h2 class="text-2xl font-bold mb-4 flex items-center border-b-2 border-blue-200 pb-2"><i data-lucide="edit-3" class="mr-3 text-blue-500"></i>가계부 내역 입력</h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                                 <div class="sm:col-span-2 space-y-3">
-             
-                         <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">내역 유형</span>
+                                    <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">내역 유형</span>
                                     <div class="toggle-group text-gray-600" data-group="ledger-type"><button type="button" data-value="expense" class="toggle-btn selected">💸 지출</button><button type="button" data-value="income" class="toggle-btn">💰 수입</button></div>
-                      
-                    </div>
+                                </div>
 
                                 <div><label for="ledger-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">날짜</label><input type="date" id="ledger-date" required class="w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
-                                <div><label for="ledger-amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">금액</label><input type="text" 
- inputmode="numeric" id="ledger-amount" placeholder="금액 입력" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
+                                <div><label for="ledger-amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">금액</label><input type="text" inputmode="numeric" id="ledger-amount" placeholder="금액 입력" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
                             </div>
                                 
-                            
- <div class="sm:col-span-2 space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700" id="ledger-expense-category-section">
+                            <div class="sm:col-span-2 space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700" id="ledger-expense-category-section">
                                 <h3 class="text-xl font-bold mb-2">지출 카테고리</h3>
                                 <div id="ledger-expense-category-tags-container" class="flex flex-wrap gap-2 mb-3"></div>
-                    
-              <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-ledger-expense-category" placeholder="새로운 지출 카테고리 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" id="add-ledger-expense-category-btn" class="bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition">추가</button></div>
+                                <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-ledger-expense-category" placeholder="새로운 지출 카테고리 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" id="add-ledger-expense-category-btn" class="bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition">추가</button></div>
                             </div>
 
-                            <div class="sm:col-span-2 hidden space-y-4 pt-4 
- border-t border-gray-200 dark:border-gray-700" id="ledger-income-category-section">
+                            <div class="sm:col-span-2 hidden space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700" id="ledger-income-category-section">
                                 <h3 class="text-xl font-bold mb-2">수입 카테고리</h3>
                                 <div id="ledger-income-category-tags-container" class="flex flex-wrap gap-2 mb-3"></div>
-                        
-                          <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-ledger-income-category" placeholder="새로운 수입 카테고리 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" id="add-ledger-income-category-btn" class="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition">추가</button></div>
+                                <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-ledger-income-category" placeholder="새로운 수입 카테고리 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" id="add-ledger-income-category-btn" class="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition">추가</button></div>
                             </div>
 
-                            <div class="sm:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700"><label for="ledger-memo" class="block text-sm 
- font-medium text-gray-700 dark:text-gray-300 mb-1">메모</label><input type="text" id="ledger-memo" placeholder="메모 내용 (선택)" class="w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
+                            <div class="sm:col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700"><label for="ledger-memo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">메모</label><input type="text" id="ledger-memo" placeholder="메모 내용 (선택)" class="w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"></div>
                         </div>
                         
                         <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-      
-                       <button type="button" id="clear-ledger-form-btn" class="bg-gray-400 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-500 transition">새로 작성</button><button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-600 transition"><i data-lucide="save" class="inline-block w-5 h-5 mr-2"></i>내역 저장</button>
+                            <button type="button" id="clear-ledger-form-btn" class="bg-gray-400 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-500 transition">새로 작성</button><button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-600 transition"><i data-lucide="save" class="inline-block w-5 h-5 mr-2"></i>내역 저장</button>
                         </div>
                     </form>
-        
-         </div>
+                </div>
                 <div id="ledger-list-view" class="hidden space-y-6">
                     <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl shadow-lg flex flex-wrap items-center justify-center gap-4">
                         <select id="ledger-list-filter-type" class="p-2 border border-gray-300 rounded-lg dark:bg-[#2d2d2d] dark:border-[#4F4F4F]"><option value="month">월별</option><option value="quarter">분기별</option><option value="year">연도별</option></select>
-         
-                 <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2">
                             <button id="ledger-list-prev-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#2d2d2d]"><i data-lucide="chevron-left"></i></button>
                             <span id="ledger-list-period-display" class="font-bold text-lg w-40 text-center"></span>
-               
-              <button id="ledger-list-next-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#2d2d2d]"><i data-lucide="chevron-right"></i></button>
+                            <button id="ledger-list-next-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#2d2d2d]"><i data-lucide="chevron-right"></i></button>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-             
-               <div class="lg:col-span-1 bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg space-y-4">
+                        <div class="lg:col-span-1 bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg space-y-4">
                             <div>
                                 <h3 class="text-xl font-bold mb-4">카테고리별 지출</h3>
-                  
-                <div id="ledger-category-summary" class="space-y-2"></div>
+                                <div id="ledger-category-summary" class="space-y-2"></div>
                             </div>
                              <div class="border-t pt-4 dark:border-gray-700">
-                        
-          <h3 class="text-xl font-bold mb-4">카테고리별 수입</h3>
+                                <h3 class="text-xl font-bold mb-4">카테고리별 수입</h3>
                                 <div id="ledger-income-summary" class="space-y-2"></div>
                             </div>
                         </div>
-  
-                       <div class="lg:col-span-2 bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg">
+                        <div class="lg:col-span-2 bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg">
                             <h3 class="text-xl font-bold mb-4">상세 내역: <span id="ledger-detail-title">내역 선택</span></h3>
                             <div id="ledger-entry-details" class="space-y-2"></div>
-       
-                  </div>
+                        </div>
                     </div>
                 </div>
                 <div id="ledger-stats-view" class="hidden space-y-8">
-                    <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl shadow-lg flex flex-wrap 
- items-center justify-center gap-4">
+                    <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl shadow-lg flex flex-wrap items-center justify-center gap-4">
                         <select id="ledger-stats-filter-type" class="p-2 border border-gray-300 rounded-lg dark:bg-[#2d2d2d] dark:border-[#4F4F4F]"><option value="month">월별</option><option value="quarter">분기별</option><option value="year">연도별</option></select>
                         <div class="flex items-center gap-2">
                             <button id="ledger-stats-prev-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#2d2d2d]"><i data-lucide="chevron-left"></i></button>
                             <span id="ledger-stats-period-display" class="font-bold text-lg w-40 text-center"></span>
                             <button id="ledger-stats-next-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#2d2d2d]"><i data-lucide="chevron-right"></i></button>
                         </div>
-            
-         </div>
+                    </div>
                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2 text-green-500">기간 내 수입</h3><p id="ledger-total-income" class="text-3xl font-bold">₩0</p></div>
-                        <div class="bg-white dark:bg-[#1E1E1E] p-6 
- rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2 text-red-500">기간 내 지출</h3><p id="ledger-total-expense" class="text-3xl font-bold">₩0</p></div>
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2 text-red-500">기간 내 지출</h3><p id="ledger-total-expense" class="text-3xl font-bold">₩0</p></div>
                         <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg text-center"><h3 class="text-lg font-bold mb-2">합계</h3><p id="ledger-balance" class="text-3xl font-bold">₩0</p></div>
                     </div>
-                    <div class="grid grid-cols-1"><div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 id="ledger-trend-chart-title" class="text-xl font-bold mb-4">수입/지출 추이</h3><div 
- class="chart-container"><canvas id="ledger-monthly-pnl-chart"></canvas></div></div></div>
+                    <div class="grid grid-cols-1"><div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 id="ledger-trend-chart-title" class="text-xl font-bold mb-4">수입/지출 추이</h3><div class="chart-container"><canvas id="ledger-monthly-pnl-chart"></canvas></div></div></div>
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 id="ledger-expense-chart-title" class="text-xl font-bold mb-4">카테고리별 지출</h3><div class="chart-container"><canvas id="ledger-expense-chart"></canvas></div></div>
                         <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 id="ledger-income-chart-title" class="text-xl font-bold mb-4">카테고리별 수입</h3><div class="chart-container"><canvas id="ledger-income-chart"></canvas></div></div>
-   
-                  </div>
+                    </div>
                 </div>
             </main>
         </div>
     </div>
     
-    <div id="exit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-md modal-content transform scale-95"><h2 class="text-2xl font-bold mb-6">청산 기록</h2><form id="exit-form"><input type="hidden" id="exit-journal-id"><div class="space-y-4"><div><label for="exit-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 
- mb-1">청산 날짜</label><input type="date" id="exit-date" required class="mt-1 w-full p-3 border border-gray-300 bg-white dark:bg-[#2d2d2d] rounded-lg"></div><div><label for="exit-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">청산가</label><input type="text" inputmode="decimal" id="exit-price" required class="number-input mt-1 w-full p-3 border border-gray-300 bg-white dark:bg-[#2d2d2d] rounded-lg"></div><div><label for="exit-quantity" id="exit-quantity-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">청산 수량</label><input type="text" inputmode="numeric" id="exit-quantity" required class="number-input mt-1 w-full p-3 border border-gray-300 bg-white dark:bg-[#2d2d2d] rounded-lg"><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">남은 수량: <span id="remaining-quantity"></span></p></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">청산 추가</button></div></form></div></div>
+    <div id="exit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-md modal-content transform scale-95"><h2 class="text-2xl font-bold mb-6">청산 기록</h2><form id="exit-form"><input type="hidden" id="exit-journal-id"><div class="space-y-4"><div><label for="exit-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">청산 날짜</label><input type="date" id="exit-date" required class="mt-1 w-full p-3 border border-gray-300 bg-white dark:bg-[#2d2d2d] rounded-lg"></div><div><label for="exit-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">청산가</label><input type="text" inputmode="decimal" id="exit-price" required class="number-input mt-1 w-full p-3 border border-gray-300 bg-white dark:bg-[#2d2d2d] rounded-lg"></div><div><label for="exit-quantity" id="exit-quantity-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">청산 수량</label><input type="text" inputmode="numeric" id="exit-quantity" required class="number-input mt-1 w-full p-3 border border-gray-300 bg-white dark:bg-[#2d2d2d] rounded-lg"><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">남은 수량: <span id="remaining-quantity"></span></p></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">청산 추가</button></div></form></div></div>
     
-    <div id="memo-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden 
- modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-xl modal-content transform scale-95"><h2 class="text-2xl font-bold mb-4 flex items-center"><i data-lucide="book-open-text" class="mr-3 text-blue-500"></i> 매매 복기 및 소감</h2><form id="memo-form"><input type="hidden" id="memo-journal-id"><div class="space-y-4"><div><label for="memo-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">복기 내용 (당시 소감, 감정 등)</label><textarea id="memo-content" rows="8" class="mt-1 w-full p-3 border border-gray-300 dark:border-[#4F4F4F] bg-white dark:bg-[#2d2d2d] rounded-lg resize-none text-base" placeholder="매매를 복기하며 느낀 소감이나 당시 감정, 차트 분석 내용 등을 자유롭게 기록하세요."></textarea></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-memo-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">메모 저장</button></div></form></div></div>
+    <div id="memo-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-xl modal-content transform scale-95"><h2 class="text-2xl font-bold mb-4 flex items-center"><i data-lucide="book-open-text" class="mr-3 text-blue-500"></i> 매매 복기 및 소감</h2><form id="memo-form"><input type="hidden" id="memo-journal-id"><div class="space-y-4"><div><label for="memo-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">복기 내용 (당시 소감, 감정 등)</label><textarea id="memo-content" rows="8" class="mt-1 w-full p-3 border border-gray-300 dark:border-[#4F4F4F] bg-white dark:bg-[#2d2d2d] rounded-lg resize-none text-base" placeholder="매매를 복기하며 느낀 소감이나 당시 감정, 차트 분석 내용 등을 자유롭게 기록하세요."></textarea></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-memo-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">메모 저장</button></div></form></div></div>
     
-    <div id="tag-edit-modal" class="fixed inset-0 z-50 flex 
- items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-xl modal-content transform scale-95"><h2 class="text-2xl font-bold mb-6 flex items-center"><i data-lucide="tag" class="mr-3 text-purple-500"></i> 태그 수정</h2><form id="tag-edit-form"><input type="hidden" id="tag-edit-journal-id"><div class="space-y-6"><div id="tag-edit-entry-container"><h3 class="text-xl font-bold mb-3 border-b border-green-200 dark:border-green-700 pb-2 flex items-center text-green-600"><i data-lucide="siren" class="mr-2 w-5 h-5"></i> 진입 근거 (환경/기술적 분석)</h3><div id="tag-edit-entry-tags" class="flex flex-wrap gap-2"></div></div><div id="tag-edit-psychology-container"><h3 class="text-xl font-bold mb-3 border-b border-purple-200 dark:border-purple-700 pb-2 flex items-center text-purple-600"><i data-lucide="brain-circuit" class="mr-2 w-5 h-5"></i> 심리 상태 (감정/태도)</h3><div id="tag-edit-psychology-tags" class="flex flex-wrap gap-2"></div></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-tag-edit-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">태그 저장</button></div></form></div></div>
+    <div id="tag-edit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-xl modal-content transform scale-95"><h2 class="text-2xl font-bold mb-6 flex items-center"><i data-lucide="tag" class="mr-3 text-purple-500"></i> 태그 수정</h2><form id="tag-edit-form"><input type="hidden" id="tag-edit-journal-id"><div class="space-y-6"><div id="tag-edit-environment-container"><h3 class="text-xl font-bold mb-3 border-b border-yellow-200 dark:border-yellow-700 pb-2 flex items-center text-yellow-600"><i data-lucide="cloud-sun" class="mr-2 w-5 h-5"></i> 환경 태그</h3><div id="tag-edit-environment-tags" class="flex flex-wrap gap-2"></div></div><div id="tag-edit-entry-container"><h3 class="text-xl font-bold mb-3 border-b border-green-200 dark:border-green-700 pb-2 flex items-center text-green-600"><i data-lucide="siren" class="mr-2 w-5 h-5"></i> 진입 근거</h3><div id="tag-edit-entry-tags" class="flex flex-wrap gap-2"></div></div><div id="tag-edit-psychology-container"><h3 class="text-xl font-bold mb-3 border-b border-purple-200 dark:border-purple-700 pb-2 flex items-center text-purple-600"><i data-lucide="brain-circuit" class="mr-2 w-5 h-5"></i> 심리 상태</h3><div id="tag-edit-psychology-tags" class="flex flex-wrap gap-2"></div></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-tag-edit-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">태그 저장</button></div></form></div></div>
     
- 
     <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-sm modal-content transform scale-95"><h2 id="confirm-title" class="text-xl font-bold mb-4">확인</h2><p id="confirm-message" class="text-gray-600 dark:text-gray-300 mb-6"></p><div class="flex justify-end space-x-3"><button type="button" id="confirm-cancel-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 font-semibold">취소</button><button type="button" id="confirm-ok-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 font-semibold">확인</button></div></div></div>
     <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"><p id="toast-message"></p></div>
     
@@ -476,7 +377,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
     
     <script>
-        // 이 부분은 고객님의 Firebase 설정 정보를 포함해야 합니다.
         const firebaseConfig = {
           apiKey: "AIzaSyDZm5AazCafB0Sb2gd0llv9e3GAhE-nKBw",
           authDomain: "sakurazima-mai-0u0.firebaseapp.com",
@@ -495,13 +395,12 @@
         let currentUser = null;
         let charts = {};
         let confirmCallback = null;
-
+        
         // Trading Journal State
         let unsubscribeJournals = null, unsubscribeTags = null;
-        // Modified: TIME_FRAMES list reduced as per user request (1H, 4H, 1D, 1W, 1M)
-        const TIME_FRAMES = ['1H', '4H', '1D', '1W', '1M']; 
-        let localJournals = [], localTags = { entry: [], psychology: [] };
-        let localFuturesInfo = {};
+        // environment 태그 추가
+        let localJournals = [], localTags = { environment: [], entry: [], psychology: [] }; 
+        let localFuturesInfo = {}; 
         let unsubscribeFuturesInfo = null;
         let statsCurrency = 'KRW', exchangeRate = 1380;
         
@@ -564,13 +463,13 @@
                 const targetId = btn.dataset.mainTab;
                 document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-        
+                
                 document.getElementById('journal-container').classList.toggle('hidden', targetId !== 'journal-container');
                 document.getElementById('ledger-container').classList.toggle('hidden', targetId !== 'ledger-container');
                 
                 if (targetId === 'ledger-container' && currentUser) {
-                    renderLedgerListView();
-                    renderLedgerStatsView();
+                     renderLedgerListView();
+                     renderLedgerStatsView();
                 } else if (targetId === 'journal-container' && currentUser) {
                     renderJournalStats(localJournals);
                 }
@@ -589,16 +488,8 @@
             const tagsDocSnap = await tagsDocRef.get();
             if (!tagsDocSnap.exists) {
                 await tagsDocRef.set({
-                    // Modified: entry is now an array of objects to include default timeframes
-                    entry: [
-                        // Ensured all entry tags have a valid timeframes array
-                        { tag: '정배열 돌파', timeframes: ['1H', '4H', '1D'] },
-                        { tag: '낙주 매매', timeframes: ['1H'] },
-                        { tag: '채널 하단', timeframes: ['4H', '1D'] },
-                        { tag: 'OB', timeframes: ['1H', '4H'] },
-                        { tag: '연속저점', timeframes: ['1D'] },
-                        { tag: '주추세', timeframes: ['1D', '1W', '1M'] }
-                    ],
+                    environment: ['개장 직후', '종가 부근', '변동성 확대', 'FOMC'], // 환경 태그 기본값 추가
+                    entry: ['정배열 돌파', '낙주 매매', '채널 하단', 'OB', '4H', '연속저점', '주추세'],
                     psychology: ['FOMO', '확신', '매매중독', '두려움', '사후정당화', '배팅']
                 });
             }
@@ -631,12 +522,12 @@
             unsubscribeTags = tagsDocRef.onSnapshot((doc) => {
                 if (doc.exists) {
                     localTags = doc.data();
-                    // localTags.entry는 객체 배열이므로 변경된 데이터 구조로 함수 호출
+                    renderJournalTags(localTags.environment, 'environment-tags-container', 'environment'); // 환경 태그 렌더링
                     renderJournalTags(localTags.entry, 'entry-tags-container', 'entry');
                     renderJournalTags(localTags.psychology, 'psychology-tags-container', 'psychology');
                 }
             }, (error) => console.error("Error fetching tags:", error));
-
+            
             // 선물 종목 정보 리스너
             if (unsubscribeFuturesInfo) unsubscribeFuturesInfo();
             const futuresDocRef = db.collection("users").doc(userId).collection("journalData").doc("futuresInfo");
@@ -655,63 +546,79 @@
             }
         }
         document.querySelectorAll('#journal-container [data-tab]').forEach(b => b.addEventListener('click', () => switchJournalView(b.dataset.tab)));
-
-        // Asset type toggle (수량/계약수 필드는 HTML에서 통합되어 있지 않으므로 quantity 필드를 contracts로 간주하고 로직 수정 없이 유지)
+        
+        // Asset type toggle (수량/계약수 필드 토글 로직 수정)
         document.querySelectorAll('[data-group="asset-type"] .toggle-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const isSpot = btn.dataset.value === 'spot';
                 
-                // 수량/계약 수 필드를 quantity로 통일하여 사용 (Futures는 contracts로 저장)
+                // 수량/계약 수 필드와 선물 계약 수 필드 토글 (요청 2)
+                document.getElementById('spot-fields').classList.toggle('hidden', !isSpot);
+                document.getElementById('futures-contracts-field').classList.toggle('hidden', isSpot);
                 document.getElementById('futures-fields').classList.toggle('hidden', isSpot);
                 
                 const quantityInput = document.getElementById('quantity');
+                const contractsInput = document.getElementById('contracts');
                 const tickValueInput = document.getElementById('tick-value');
                 const tickSizeInput = document.getElementById('tick-size');
                 
-                // Set required attribute based on type
-                quantityInput.required = true; // quantity input을 spot/futures 모두 사용
+                // 필드 이름 라벨 변경 (quantity 필드를 spot의 '수량'과 futures의 '계약 수'로 재사용)
+                document.querySelector('label[for="quantity"]').textContent = isSpot ? '수량' : '수량 (사용 안 함)'; // contracts 필드가 생겼으므로 quantity는 숨김
+                document.querySelector('label[for="quantity"]').textContent = '수량'; // contracts 필드 추가로 quantity 필드 숨김/표시 전환
+
+                quantityInput.required = isSpot;
+                contractsInput.required = !isSpot;
                 tickValueInput.required = !isSpot;
                 tickSizeInput.required = !isSpot;
-                
-                // 선물 타입 선택 시
-                if (!isSpot) {
-                    const currentTicker = document.getElementById('ticker').value.trim().toUpperCase();
-                    if (localFuturesInfo[currentTicker]) {
-                        quantityInput.value = quantityInput.value || 1; // 계약수 없으면 1로 자동 채움
+
+                if (!isSpot) { // 선물 타입 선택 시
+                     const currentTicker = document.getElementById('ticker').value.trim().toUpperCase();
+                     if (localFuturesInfo[currentTicker]) {
+                        contractsInput.value = contractsInput.value || 1; 
                         document.getElementById('futures-info-select').value = currentTicker;
                         tickValueInput.value = formatNumber(localFuturesInfo[currentTicker].tickValue);
                         tickSizeInput.value = formatNumber(localFuturesInfo[currentTicker].tickSize);
                         document.getElementById('delete-futures-info-btn').disabled = false;
-                    } else {
-                        quantityInput.value = '';
+                     } else {
+                        contractsInput.value = '';
                         document.getElementById('futures-info-select').value = '';
                         tickValueInput.value = '';
                         tickSizeInput.value = '';
                         document.getElementById('delete-futures-info-btn').disabled = true;
-                    }
+                     }
+                     quantityInput.value = '';
+                     document.querySelector('label[for="quantity"]').textContent = '수량 (현물용)';
+                     quantityInput.classList.add('hidden');
+                     document.querySelector('label[for="quantity"]').classList.add('hidden');
+
                 } else { // 현물 타입 선택 시
-                    document.getElementById('futures-info-select').value = '';
-                    tickValueInput.value = '';
-                    tickSizeInput.value = '';
-                    document.getElementById('delete-futures-info-btn').disabled = true;
-                    // quantityInput.value = ''; // 현물도 quantity 사용하므로 값 유지
+                     document.getElementById('futures-info-select').value = '';
+                     tickValueInput.value = '';
+                     tickSizeInput.value = '';
+                     document.getElementById('delete-futures-info-btn').disabled = true;
+                     contractsInput.value = '';
+                     document.querySelector('label[for="quantity"]').textContent = '수량';
+                     quantityInput.classList.remove('hidden');
+                     document.querySelector('label[for="quantity"]').classList.remove('hidden');
                 }
             });
         });
-
+        
         // 선물 정보 Select 박스 렌더링 및 리스너
         function renderFuturesInfoSelect() {
             const select = document.getElementById('futures-info-select');
             const tickerInput = document.getElementById('ticker');
             const deleteBtn = document.getElementById('delete-futures-info-btn');
-            const quantityInput = document.getElementById('quantity');
+            const contractsInput = document.getElementById('contracts');
             const tickValueInput = document.getElementById('tick-value');
             const tickSizeInput = document.getElementById('tick-size');
+            
             deleteBtn.disabled = true; 
             
             select.innerHTML = '<option value="">- 종목 선택 (틱가치/단위 불러오기) -</option>';
             
             const currentTicker = tickerInput.value.trim().toUpperCase();
+
             Object.entries(localFuturesInfo).sort((a,b) => a[0].localeCompare(b[0])).forEach(([ticker, info]) => {
                 const option = document.createElement('option');
                 option.value = ticker;
@@ -723,6 +630,7 @@
                     deleteBtn.disabled = false;
                 }
             });
+            
             select.onchange = (e) => {
                 const selectedTicker = e.target.value;
                 const info = localFuturesInfo[selectedTicker];
@@ -733,13 +641,14 @@
                     tickerInput.value = selectedTicker;
                     tickValueInput.value = formatNumber(info.tickValue);
                     tickSizeInput.value = formatNumber(info.tickSize);
-                    quantityInput.value = quantityInput.value || 1; // 계약수 없으면 1로 자동 채움
+                    contractsInput.value = contractsInput.value || 1; // 계약수 없으면 1로 자동 채움
                     showToast(`종목 '${selectedTicker}' 정보가 채워졌습니다.`);
                 } else {
                     tickValueInput.value = '';
                     tickSizeInput.value = '';
                 }
             };
+            
             tickerInput.oninput = () => {
                 const newTicker = tickerInput.value.trim().toUpperCase();
                 const isFutures = !document.getElementById('futures-fields').classList.contains('hidden');
@@ -751,7 +660,7 @@
                     tickValueInput.value = formatNumber(localFuturesInfo[newTicker].tickValue);
                     tickSizeInput.value = formatNumber(localFuturesInfo[newTicker].tickSize);
                 } else if (isFutures) {
-                    select.value = '';
+                     select.value = '';
                 }
             }
         }
@@ -784,7 +693,6 @@
                     await db.collection("users").doc(currentUser.uid).collection("journalData").doc("futuresInfo").set(updatedInfo);
                     
                     showToast(`선물 종목 정보가 ${action}되었습니다.`);
-            
                     tickValueInput.value = formatNumber(tickValue);
                     tickSizeInput.value = formatNumber(tickSize);
                     document.getElementById('futures-info-select').value = ticker; 
@@ -799,6 +707,7 @@
 
         async function handleDeleteFuturesInfo() {
             const ticker = document.getElementById('futures-info-select').value;
+
             if (!ticker) {
                 showToast("삭제할 종목을 선택해주세요.", "error");
                 return;
@@ -808,6 +717,7 @@
                 journal.assetType === 'futures' && 
                 journal.ticker.toUpperCase() === ticker.toUpperCase()
             );
+
             if (isUsedInJournal) {
                 showToast(`'${ticker}' 종목은 현재 매매일지에 사용 중이므로 삭제할 수 없습니다.`, "error");
                 return;
@@ -833,9 +743,7 @@
 
 
         function calculatePnl(journal, exit) {
-            const priceDiff = journal.position === 'long' ?
-            (exit.price - journal.entryPrice) : (journal.entryPrice - exit.price);
-            // const totalAmount = journal.assetType === 'spot' ? journal.quantity : journal.contracts;
+            const priceDiff = journal.position === 'long' ? (exit.price - journal.entryPrice) : (journal.entryPrice - exit.price);
             const exitQuantity = exit.quantity;
 
             if (journal.assetType === 'futures') {
@@ -845,8 +753,7 @@
                 return priceDiff * exitQuantity;
             }
         }
-        
-        // Stability Fix: Strengthened data rendering in renderJournals
+
         function renderJournals(journals) {
             journalList.innerHTML = '';
             if (journals.length === 0) {
@@ -856,21 +763,19 @@
 
             journals.forEach(journal => {
                 const isSpot = journal.assetType === 'spot';
-                // Use quantity for spot and contracts for futures
-                const totalAmount = isSpot ? (journal.quantity || 0) : (journal.contracts || 0); 
-                
+                // contracts를 기본값 0으로 설정하여 널 방지
+                const totalAmount = isSpot ? journal.quantity : (journal.contracts || 0); 
                 const exitedAmount = journal.exits ? journal.exits.reduce((sum, exit) => sum + exit.quantity, 0) : 0;
                 const isClosed = (totalAmount - exitedAmount) <= 1e-9;
                 
                 let totalPnl = 0;
                 if (journal.exits && journal.exits.length > 0) {
-                    totalPnl = journal.exits.reduce((sum, exit) => sum + calculatePnl(journal, exit), 0);
+                     totalPnl = journal.exits.reduce((sum, exit) => sum + calculatePnl(journal, exit), 0);
                 }
                 const totalPnlInKRW = journal.currency === 'USD' ? totalPnl * exchangeRate : totalPnl;
                 const pnlClass = totalPnlInKRW > 0 ? 'text-green-500' : totalPnlInKRW < 0 ? 'text-red-500' : 'text-gray-500';
-                 
-                const borderColor = isClosed ?
-                (totalPnlInKRW > 0 ? 'border-green-500' : 'border-red-500') : 'border-yellow-500';
+                
+                const borderColor = isClosed ? (totalPnlInKRW > 0 ? 'border-green-500' : 'border-red-500') : 'border-yellow-500';
                 const card = document.createElement('div');
                 card.className = `bg-white dark:bg-[#1E1E1E] p-5 rounded-xl shadow-md border-l-4 ${borderColor} flex flex-col justify-between`;
                 
@@ -888,13 +793,11 @@
                 }
 
                 // Quick Edit 버튼 및 아이콘
-                const memoIndicator = journal.memo ?
-                `<i data-lucide="message-square" class="w-4 h-4 text-blue-500 quick-edit-btn"></i>` : `<i data-lucide="message-square" class="w-4 h-4 text-gray-400 hover:text-blue-500 quick-edit-btn"></i>`;
+                const memoIndicator = journal.memo ? `<i data-lucide="message-square" class="w-4 h-4 text-blue-500 quick-edit-btn"></i>` : `<i data-lucide="message-square" class="w-4 h-4 text-gray-400 hover:text-blue-500 quick-edit-btn"></i>`;
                 const tagEditIcon = `<i data-lucide="tags" class="w-4 h-4 text-gray-400 hover:text-purple-500 quick-edit-btn"></i>`;
 
 
-                const exitsHtml = journal.exits && journal.exits.length > 0 ?
-                `
+                const exitsHtml = journal.exits && journal.exits.length > 0 ? `
                     <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-1 text-xs">
                         <h5 class="font-semibold mb-1 text-gray-600 dark:text-gray-400">청산 내역</h5>
                         ${journal.exits.map(exit => {
@@ -902,41 +805,42 @@
                             const exitPnlClass = exitPnl > 0 ? 'text-green-500' : exitPnl < 0 ? 'text-red-500' : 'text-gray-500';
                             const exitDate = exit.date.toDate ? exit.date.toDate() : new Date(exit.date);
                             const amountLabel = isSpot ? '주' : '계약';
+                            // 청산 내역의 흰색 강조(border, hover, bg-gray-50) 제거 (요청 3)
                             return `<div class="flex justify-between items-center p-1 rounded"><span>${exitDate.toLocaleDateString()} @ ${formatPrice(exit.price, journal.currency)} (${formatNumber(exit.quantity)} ${amountLabel})</span><span class="${exitPnlClass} font-medium">${formatPrice(exitPnl, journal.currency)}</span></div>`
                         }).join('')}
                     </div>` : '';
-
+                
                 const amountLabel = isSpot ? '수량' : '계약';
-                const futuresInfoHtml = !isSpot ?
-                `<p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><strong>틱가치/단위:</strong> ${formatPrice(journal.tickValue, journal.currency)} / ${formatNumber(journal.tickSize)}</p>` : '';
-
-                // Stability Fix: Enhanced rendering of tags with null/undefined checks
-                const entryTagsWithTimeframes = (journal.entryTags || []).filter(t => t && t.timeframe && t.tag);
-                const visibleTags = entryTagsWithTimeframes.slice(0, 4);
-                const hiddenTagsCount = Math.max(0, entryTagsWithTimeframes.length - 4);
+                const futuresInfoHtml = !isSpot ? 
+                    `<p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><strong>틱가치/단위:</strong> ${formatPrice(journal.tickValue, journal.currency)} / ${formatNumber(journal.tickSize)}</p>` : '';
                 
-                // Final Markup for Tag + Timeframe display (Restored original style classes)
-                const tagHtml = `<div class="flex flex-wrap gap-1">${visibleTags.map(tagData => `
-                                    <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 text-xs font-medium px-2.5 py-0.5 rounded-full flex flex-col items-center">
-                                        <span class="text-xs font-extrabold text-blue-500 dark:text-blue-300 leading-none mb-0.5">${tagData.timeframe}</span>
-                                        <span class="leading-none">${tagData.tag}</span>
-                                    </span>
-                                `).join('')}
-                                ${hiddenTagsCount > 0 ?
-                                `<span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2.5 py-0.5 rounded-full">+${hiddenTagsCount}</span>` : ''}</div>`;
+                // 태그 렌더링 (환경, 진입, 심리)
+                const renderTags = (tags, maxCount, baseClass, textColor) => {
+                    const visibleTags = (tags || []).slice(0, maxCount);
+                    const hiddenTags = (tags || []).slice(maxCount);
+                    const hiddenTagsCount = hiddenTags.length;
+                    
+                    let tagHtml = `<div class="flex flex-wrap gap-1">`;
+                    tagHtml += visibleTags.map(tag => `<span class="${baseClass} ${textColor} text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('');
 
-                // 심리 상태 태그 렌더링 (기존 유지)
-                const visiblePsyTags = (journal.psychologyTags || []).slice(0, 4);
-                const hiddenPsyTagsCount = Math.max(0, (journal.psychologyTags || []).length - 4);
-                const psyTagHtml = `<div class="flex flex-wrap gap-1">${visiblePsyTags.map(tag => `<span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}
-                                ${hiddenPsyTagsCount > 0 ?
-                `<span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2.5 py-0.5 rounded-full">+${hiddenPsyTagsCount}</span>` : ''}</div>`;
-                
+                    if (hiddenTagsCount > 0) {
+                        // 요청 3: +n 대신 모든 태그 표시
+                        const allTagsText = (tags || []).join(', ');
+                        tagHtml += `<span title="${allTagsText}" class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2.5 py-0.5 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full">+${hiddenTagsCount}</span>`;
+                    }
+                    tagHtml += `</div>`;
+                    return tagHtml;
+                };
+
+                const environmentTagHtml = renderTags(journal.environmentTags, 4, 'bg-yellow-100 dark:bg-yellow-900', 'text-yellow-800 dark:text-yellow-300');
+                const entryTagHtml = renderTags(journal.entryTags, 4, 'bg-green-100 dark:bg-green-900', 'text-green-800 dark:text-green-300');
+                const psyTagHtml = renderTags(journal.psychologyTags, 4, 'bg-purple-100 dark:bg-purple-900', 'text-purple-800 dark:text-purple-300');
+
+
                 card.innerHTML = `
-                    <div> 
-                        <div class="flex justify-between items-start mb-3 border-b border-gray-100 dark:border-gray-800 pb-2">
+                    <div> <div class="flex justify-between items-start mb-3 border-b border-gray-100 dark:border-gray-800 pb-2">
                             <div>
-                                <p class="font-bold text-lg text-gray-800 dark:text-white">${dateDisplay}</p>
+                                <p class="font-bold text-lg text-gray-800 dark:text-gray-200">${dateDisplay}</p>
                                 <div class="flex items-center space-x-2">
                                     <p class="font-extrabold text-xl text-gray-800 dark:text-white">${journal.ticker} <span class="text-xs font-medium text-gray-400 align-top">${isSpot ? '현물' : '선물'}</span></p>
                                     <span class="text-base font-bold ${journal.position === 'long' ? 'text-green-500' : 'text-red-500'}">${journal.position === 'long' ? '🟢 롱' : '🔴 숏'}</span>
@@ -953,12 +857,12 @@
                             <p><strong>진입:</strong> ${formatPrice(journal.entryPrice, journal.currency)} / <strong>${amountLabel}:</strong> ${formatNumber(totalAmount)}</p>
                             <p><strong>목표/손절:</strong> ${formatPrice(journal.targetPrice, journal.currency)} / ${formatPrice(journal.stopLoss, journal.currency)}</p>
                             ${futuresInfoHtml}
-                            ${journal.exits && journal.exits.length > 0 ?
-                            `<p class="font-extrabold text-xl pt-2 ${pnlClass}"><strong>총 실현 손익:</strong> ${formatDualCurrency(totalPnlInKRW, journal.currency)}</p>` : ''}
+                            ${journal.exits && journal.exits.length > 0 ? `<p class="font-extrabold text-xl pt-2 ${pnlClass}"><strong>총 실현 손익:</strong> ${formatDualCurrency(totalPnlInKRW, journal.currency)}</p>` : ''}
                         </div>
                         
                         <div class="space-y-2 mb-4">
-                            <div><h4 class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">진입 근거</h4>${tagHtml}</div>
+                            <div><h4 class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">환경 태그</h4>${environmentTagHtml}</div>
+                            <div><h4 class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">진입 근거</h4>${entryTagHtml}</div>
                             <div><h4 class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">심리 상태</h4>${psyTagHtml}</div>
                         </div>
                         
@@ -987,8 +891,10 @@
             const journal = await getJournalById(journalId);
             if (journal) {
                 document.getElementById('tag-edit-journal-id').value = journalId;
-                // entryTags가 객체 배열이므로 .map(t => t.tag)로 문자열 배열로 변환하여 전달
-                renderTagEditOptions('tag-edit-entry-tags', 'entry', (journal.entryTags || []).map(t => t.tag));
+                
+                // 태그 목록 렌더링 함수 호출
+                renderTagEditOptions('tag-edit-environment-tags', 'environment', journal.environmentTags || []); // 환경 태그
+                renderTagEditOptions('tag-edit-entry-tags', 'entry', journal.entryTags || []);
                 renderTagEditOptions('tag-edit-psychology-tags', 'psychology', journal.psychologyTags || []);
 
                 openModal('tag-edit-modal');
@@ -1001,28 +907,31 @@
             
             const availableTags = localTags[type] || [];
             
-            availableTags.forEach(tagData => {
-                // entry 태그는 객체에서 tag 속성을, psychology 태그는 문자열 자체를 사용
-                const tag = type === 'entry' ? tagData.tag : tagData;
+            let baseColor, textBaseColor;
+            if (type === 'environment') { baseColor = 'bg-yellow-500'; textBaseColor = 'text-yellow-600'; }
+            else if (type === 'entry') { baseColor = 'bg-green-500'; textBaseColor = 'text-green-600'; }
+            else { baseColor = 'bg-purple-500'; textBaseColor = 'text-purple-600'; }
+
+
+            availableTags.forEach(tag => {
                 const isSelected = selectedTags.includes(tag);
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.dataset.tag = tag;
-               
                 button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors ${
                     isSelected 
-                        ? (type === 'entry' ? 'bg-green-500 text-white' : 'bg-purple-500 text-white')
+                        ? `${baseColor} text-white`
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-[#4F4F4F] dark:text-gray-200 dark:hover:bg-[#666]'
                 }`;
 
                 button.textContent = tag;
                 button.addEventListener('click', () => {
-                    if (button.classList.contains('bg-green-500') || button.classList.contains('bg-purple-500')) {
+                    if (button.classList.contains(baseColor)) {
                         // Deselect
-                        button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-[#4F4F4F] dark:text-gray-200 dark:hover:bg-[#666]`;
+                         button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-[#4F4F4F] dark:text-gray-200 dark:hover:bg-[#666]`;
                     } else {
                         // Select
-                         button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors ${type === 'entry' ? 'bg-green-500 text-white' : 'bg-purple-500 text-white'}`;
+                         button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors ${baseColor} text-white`;
                     }
                 });
                 container.appendChild(button);
@@ -1038,22 +947,14 @@
             e.preventDefault();
             const journalId = document.getElementById('tag-edit-journal-id').value;
             
+            const selectedEnvironmentTags = Array.from(document.querySelectorAll('#tag-edit-environment-tags .tag.bg-yellow-500')).map(btn => btn.dataset.tag);
             const selectedEntryTags = Array.from(document.querySelectorAll('#tag-edit-entry-tags .tag.bg-green-500')).map(btn => btn.dataset.tag);
             const selectedPsychologyTags = Array.from(document.querySelectorAll('#tag-edit-psychology-tags .tag.bg-purple-500')).map(btn => btn.dataset.tag);
             
-            // Tag Edit Modal에서는 시간봉 선택이 없으므로, 기존 journal의 시간봉 데이터를 최대한 유지
-            const existingJournal = localJournals.find(j => j.id === journalId);
-            const existingEntryTags = existingJournal?.entryTags || [];
-
-            // 선택된 태그가 기존 목록에 있으면 해당 시간봉을 유지, 없으면 기본값 'N/A' 부여
-            const newEntryTags = selectedEntryTags.map(tag => {
-                const existing = existingEntryTags.find(t => t.tag === tag);
-                return existing || { tag: tag, timeframe: 'N/A' }; 
-            });
-
             try {
                 await db.collection("users").doc(currentUser.uid).collection("journals").doc(journalId).update({
-                    entryTags: newEntryTags,
+                    environmentTags: selectedEnvironmentTags,
+                    entryTags: selectedEntryTags,
                     psychologyTags: selectedPsychologyTags
                 });
                 showToast("태그가 수정되었습니다.");
@@ -1066,6 +967,7 @@
         document.getElementById('close-tag-edit-modal-btn').addEventListener('click', () => closeModal('tag-edit-modal'));
         document.getElementById('tag-edit-modal').addEventListener('click', e => { if (e.target.id === 'tag-edit-modal') closeModal('tag-edit-modal'); });
 
+
         async function getJournalById(id) {
             const docRef = db.collection("users").doc(currentUser.uid).collection("journals").doc(id);
             const docSnap = await docRef.get();
@@ -1076,7 +978,8 @@
                     ...data, 
                     date: data.date.toDate(),
                     // quantity가 없으면 contracts로 채움 (역할 통일)
-                    quantity: data.quantity !== undefined ? data.quantity : (data.contracts !== undefined ? data.contracts : 0) 
+                    quantity: data.quantity !== undefined ? data.quantity : (data.contracts !== undefined ? data.contracts : 0),
+                    contracts: data.contracts !== undefined ? data.contracts : (data.quantity !== undefined ? data.quantity : 0) // contracts 필드도 따로 저장/사용
                 };
             }
             return null;
@@ -1090,120 +993,40 @@
             document.querySelectorAll('#journal-list .tag-edit-btn').forEach(btn => btn.addEventListener('click', handleOpenTagEditModal));
         }
         
-        // Stability Fix: Enhanced event handling and structure for Timeframe selection
         function renderJournalTags(tags, containerId, type) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
+            const container = document.getElementById(containerId); container.innerHTML = '';
             if(!tags) return;
-
-            const isEntryTag = type === 'entry';
-
-            tags.forEach(tagData => {
-                const tag = isEntryTag ? tagData.tag : tagData;
+            tags.forEach(tag => {
                 const button = document.createElement('button');
                 button.type = 'button';
-                // Use original classes + 'relative' for positioning
-                button.className = `tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center dark:bg-[#4F4F4F] dark:text-gray-200 relative ${isEntryTag ? 'entry-tags-container' : 'psychology-tags-container'}`;
+                let baseColor;
+                if (type === 'environment') baseColor = 'bg-yellow-500';
+                else if (type === 'entry') baseColor = 'bg-green-500';
+                else baseColor = 'bg-purple-500';
+
+                button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center dark:bg-[#4F4F4F] dark:text-gray-200';
                 button.dataset.tag = tag;
-                if(isEntryTag) {
-                    // Store available timeframes data for the tag (if available)
-                    button.dataset.availableTf = JSON.stringify(tagData.timeframes || TIME_FRAMES);
-                }
-            
-                // Use inner structure to clearly separate text and delete icon
-                button.innerHTML = `<span class="pl-3 pr-2 py-1 tag-text">${tag}</span><span class="delete-tag-span pr-2 text-gray-500 dark:text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
                 
-                // Main Tag Click Listener (Toggle Selection and Timeframe Selector)
-                button.addEventListener('click', (e) => {
-                    // Prevent button activation if clicking the delete icon (handled by delete-tag-span listener)
-                    if (e.target.closest('.delete-tag-span')) return;
-                    
-                    const isSelected = e.currentTarget.classList.contains('selected');
-                    const selector = e.currentTarget.querySelector('.timeframe-selector');
-                    
-                    if (isEntryTag) {
-                        // 1. Deselect other selected entry tags
-                        container.querySelectorAll('.tag.selected').forEach(t => {
-                             if (t !== e.currentTarget) {
-                                 t.classList.remove('selected');
-                                 t.dataset.timeframe = ''; // Deselecting clears timeframe
-                                 t.querySelector('.timeframe-selector')?.classList.add('hidden');
-                                 t.querySelectorAll('.timeframe-button').forEach(tfb => tfb.classList.remove('selected'));
-                             }
-                        });
+                button.innerHTML = `<span class="pl-3 pr-2 py-1">${tag}</span><span class="delete-tag-span pr-2 text-gray-500 dark:text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
 
-                        if (!isSelected) {
-                            // 2. Select the current tag and show selector
-                            e.currentTarget.classList.add('selected');
-                            selector?.classList.remove('hidden');
-                        } else {
-                            // 3. Deselect the current tag and hide selector
-                            e.currentTarget.classList.remove('selected');
-                            e.currentTarget.dataset.timeframe = '';
-                            selector?.classList.add('hidden');
-                            e.currentTarget.querySelectorAll('.timeframe-button').forEach(tfb => tfb.classList.remove('selected'));
-                        }
-                    } else {
-                        // Psychology tags remain single toggle
-                        e.currentTarget.classList.toggle('selected');
-                    }
-                });
-
-                // Delete Tag Listener
+                button.addEventListener('click', (e) => e.currentTarget.classList.toggle('selected', !e.currentTarget.classList.contains(baseColor)));
                 button.querySelector('.delete-tag-span').addEventListener('click', (e) => {
-                    e.stopPropagation(); // Stop click from propagating to the main button handler
+                    e.stopPropagation();
                     handleDeleteJournalTag(tag, type);
                 });
-                
-                // New: Add Timeframe Selector UI for Entry Tags
-                if (isEntryTag) {
-                    const tfSelector = document.createElement('div');
-                    // Use standard tailwind classes
-                    tfSelector.className = 'timeframe-selector hidden absolute z-20 top-full left-0 mt-1 p-2 bg-white dark:bg-[#2d2d2d] rounded-lg shadow-xl flex flex-wrap gap-1 border border-gray-300 dark:border-[#4F4F4F]';
-                    
-                    const availableTf = tagData.timeframes || TIME_FRAMES;
-                    availableTf.forEach(tf => {
-                        const tfBtn = document.createElement('button');
-                        tfBtn.type = 'button';
-                        tfBtn.textContent = tf;
-                        tfBtn.dataset.tf = tf;
-                        tfBtn.className = 'timeframe-button text-xs px-2 py-1 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors dark:text-gray-200';
-                        
-                        tfBtn.addEventListener('click', (e) => {
-                            e.stopPropagation(); // Stop click from propagating to the main tag button
-                            tfSelector.querySelectorAll('.timeframe-button').forEach(b => b.classList.remove('selected'));
-                            e.currentTarget.classList.add('selected');
-                            
-                            // Set timeframe on the main tag button
-                            button.dataset.timeframe = tf;
-                            
-                            tfSelector.classList.add('hidden'); // Hide selector after selection
-                            
-                            showToast(`'${tag}' 태그에 '${tf}' 시간봉이 선택되었습니다.`);
-                        });
-                        tfSelector.appendChild(tfBtn);
-                    });
-                    
-                    button.appendChild(tfSelector);
-                }
-
                 container.appendChild(button);
             });
             lucide.createIcons();
         }
 
         async function handleDeleteJournalTag(tag, type) {
-            const isEntryTag = type === 'entry';
-            const isTagInUse = localJournals.some(journal => 
-                isEntryTag ? (journal.entryTags || []).some(t => t.tag === tag) : (journal.psychologyTags || []).includes(tag)
-            );
-            
+            const isTagInUse = localJournals.some(journal => (type === 'entry' ? journal.entryTags : (type === 'environment' ? journal.environmentTags : journal.psychologyTags))?.includes(tag));
             if (isTagInUse) {
                 showToast("사용 중인 태그는 삭제할 수 없습니다.", "error");
                 return;
             }
             showConfirmModal(`'${tag}' 태그를 삭제하시겠습니까?`, async () => {
-                const newTags = localTags[type].filter(t => (isEntryTag ? t.tag : t) !== tag);
+                const newTags = localTags[type].filter(t => t !== tag);
                 try {
                     await db.collection("users").doc(currentUser.uid).collection("journalTags").doc("all").update({ [type]: newTags });
                     showToast(`'${tag}' 태그가 삭제되었습니다.`);
@@ -1213,19 +1036,19 @@
         
         async function addJournalTag(type, tag) {
             const tagsDocRef = db.collection("users").doc(currentUser.uid).collection("journalTags").doc("all");
-            const isEntryTag = type === 'entry';
             const currentTags = localTags[type] || [];
-            
-            if (!currentTags.some(t => (isEntryTag ? t.tag : t) === tag)) {
-                
-                // Ensured new entry tags get the full list of timeframes
-                const newTagData = isEntryTag ? { tag: tag, timeframes: TIME_FRAMES } : tag;
-                
-                await tagsDocRef.update({ [type]: [...currentTags, newTagData] });
+            if (!currentTags.includes(tag)) {
+                await tagsDocRef.update({ [type]: [...currentTags, tag] });
                 showToast(`'${tag}' 태그가 추가되었습니다.`);
-            } else { showToast("이미 존재하는 태그입니다.", "error");
-            }
+            } else { showToast("이미 존재하는 태그입니다.", "error"); }
         }
+        
+        // 환경 태그 추가 이벤트 리스너
+        document.querySelector('.add-environment-tag-btn').addEventListener('click', () => {
+            const input = document.getElementById('new-environment-tag');
+            if (input.value.trim()) { addJournalTag('environment', input.value.trim()); input.value = ''; }
+        });
+
         document.querySelector('.add-entry-tag-btn').addEventListener('click', () => {
             const input = document.getElementById('new-entry-tag');
             if (input.value.trim()) { addJournalTag('entry', input.value.trim()); input.value = ''; }
@@ -1234,24 +1057,12 @@
             const input = document.getElementById('new-psychology-tag');
             if (input.value.trim()) { addJournalTag('psychology', input.value.trim()); input.value = ''; }
         });
-        
-        document.getElementById('journal-form').addEventListener('submit', async (e) => {
+
+        journalForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const journalId = document.getElementById('journal-id').value;
             const assetType = document.querySelector('[data-group="asset-type"] .toggle-btn.selected').dataset.value;
             
-            // New: Entry Tags now collect tag and timeframe
-            // Only include entry tags that have both 'selected' class AND a 'data-timeframe'
-            const selectedEntryTags = Array.from(document.querySelectorAll('.entry-tags-container .tag.selected')).map(b => ({
-                tag: b.dataset.tag,
-                timeframe: b.dataset.timeframe || 'N/A' // N/A if timeframe not selected
-            })).filter(t => t.timeframe !== 'N/A'); // Filter out tags where only tag is selected but no timeframe
-
-            if (assetType === 'spot' && selectedEntryTags.length === 0 && Array.from(document.querySelectorAll('.entry-tags-container .tag.selected')).length > 0) {
-                 showToast("선택된 진입 근거 태그의 시간봉을 선택해주세요.", "error");
-                 return;
-            }
-
             const journalData = {
                 assetType: assetType,
                 ticker: document.getElementById('ticker').value.toUpperCase(),
@@ -1262,21 +1073,20 @@
                 entryPrice: parseFloat(unformatNumber(document.getElementById('entry-price').value)),
                 stopLoss: parseFloat(unformatNumber(document.getElementById('stop-loss').value)), 
                 targetPrice: parseFloat(unformatNumber(document.getElementById('target-price').value)),
-                entryTags: selectedEntryTags, // Use the new structure
+                environmentTags: Array.from(document.querySelectorAll('.environment-tags-container .tag.selected')).map(b => b.dataset.tag), // 환경 태그 저장
+                entryTags: Array.from(document.querySelectorAll('.entry-tags-container .tag.selected')).map(b => b.dataset.tag),
                 psychologyTags: Array.from(document.querySelectorAll('.psychology-tags-container .tag.selected')).map(b => b.dataset.tag),
             };
 
-            const quantityInput = document.getElementById('quantity').value;
             
             if (assetType === 'spot') {
-                journalData.quantity = parseFloat(unformatNumber(quantityInput));
+                journalData.quantity = parseFloat(unformatNumber(document.getElementById('quantity').value));
                 // contracts, tickValue, tickSize는 삭제 (clean up)
                 delete journalData.contracts;
                 delete journalData.tickValue;
                 delete journalData.tickSize;
             } else { // futures
-                journalData.contracts = parseFloat(unformatNumber(quantityInput));
-                // quantity input을 contracts로 사용
+                journalData.contracts = parseFloat(unformatNumber(document.getElementById('contracts').value)); // contracts 필드 사용
                 journalData.tickValue = parseFloat(unformatNumber(document.getElementById('tick-value').value));
                 journalData.tickSize = parseFloat(unformatNumber(document.getElementById('tick-size').value));
                 // quantity는 삭제 (clean up)
@@ -1285,7 +1095,7 @@
             
             try {
                 if (journalId) {
-                    // 메모 필드 유지
+                    // 메모 및 청산 필드 유지
                     const existingJournal = localJournals.find(j => j.id === journalId);
                     journalData.exits = existingJournal.exits || [];
                     journalData.memo = existingJournal.memo || '';
@@ -1301,7 +1111,7 @@
                 switchJournalView('list-view');
             } catch (error) { showToast("저장 실패: " + error.message, "error"); }
         });
-
+        
         async function handleDeleteJournal(e) {
             const id = e.currentTarget.dataset.id;
             showConfirmModal("정말로 이 일지를 삭제하시겠습니까?", async () => {
@@ -1310,7 +1120,6 @@
             }, '삭제');
         }
 
-        // Fix for Issue #2: Load correct timeframe data into the form buttons
         async function handleEditJournal(e) {
             const journal = await getJournalById(e.currentTarget.dataset.id);
             if (journal) {
@@ -1318,17 +1127,17 @@
                 document.getElementById('date').value = journal.date.toISOString().split('T')[0];
                 document.getElementById('ticker').value = journal.ticker;
                 
-                // Trigger asset type to correctly show/hide futures fields
                 document.querySelector(`[data-group="asset-type"] .toggle-btn[data-value="${journal.assetType}"]`).click();
 
                 ['position', 'strategy'].forEach(group => document.querySelectorAll(`[data-group="${group}"] .toggle-btn`).forEach(b => b.classList.toggle('selected', b.dataset.value === journal[group])));
                 document.querySelectorAll('[data-group="form-currency"] .toggle-btn').forEach(b => b.classList.toggle('selected', (journal.currency === 'USD' && b.id.includes('usd')) || (journal.currency !== 'USD' && b.id.includes('krw'))));
                 
-                document.getElementById('quantity').value = formatNumber(journal.quantity); // quantity input에 통합된 값 사용
-                
-                if (journal.assetType === 'futures') {
-                    document.getElementById('tick-value').value = formatNumber(journal.tickValue || '');
-                    document.getElementById('tick-size').value = formatNumber(journal.tickSize || '');
+                if (journal.assetType === 'spot') {
+                    document.getElementById('quantity').value = formatNumber(journal.quantity);
+                } else {
+                    document.getElementById('contracts').value = formatNumber(journal.contracts);
+                    document.getElementById('tick-value').value = formatNumber(journal.tickValue);
+                    document.getElementById('tick-size').value = formatNumber(journal.tickSize);
                     
                     const selectEl = document.getElementById('futures-info-select');
                     const ticker = journal.ticker.toUpperCase();
@@ -1339,57 +1148,16 @@
                         selectEl.value = '';
                         document.getElementById('delete-futures-info-btn').disabled = true;
                     }
-                } else {
-                    // Ensure futures fields are cleared when switching to spot view
-                    document.getElementById('tick-value').value = '';
-                    document.getElementById('tick-size').value = '';
                 }
 
                 ['entry-price', 'stop-loss', 'target-price'].forEach(id => document.getElementById(id).value = formatNumber(journal[id.replace('-','')]));
-            
-                // Fix: Load entryTags with timeframe data and select the correct timeframe button
-                ['entryTags', 'psychologyTags'].forEach(type => {
-                    const containerId = type.replace('Tags', '-tags-container');
-                    const tagsContainer = document.getElementById(containerId);
-                    
-                    // 1. Reset all buttons in the container
-                    tagsContainer.querySelectorAll('.tag').forEach(b => {
-                        b.classList.remove('selected');
-                        if (type === 'entryTags') {
-                             b.dataset.timeframe = '';
-                             b.querySelector('.timeframe-selector')?.classList.add('hidden');
-                             b.querySelectorAll('.timeframe-button').forEach(tfb => tfb.classList.remove('selected'));
-                        }
-                    });
-                    
-                    const tags = journal[type] || [];
-                    
-                    if (type === 'entryTags') {
-                        tags.forEach(tagData => {
-                            const tagButton = tagsContainer.querySelector(`.tag[data-tag="${tagData.tag}"]`);
-                            if(tagButton) {
-                                // 2. Select the main tag button
-                                tagButton.classList.add('selected');
-                                
-                                // 3. Set the timeframe data attribute on the main button
-                                const timeframe = tagData.timeframe || '';
-                                tagButton.dataset.timeframe = timeframe;
-
-                                // 4. Select the corresponding timeframe button inside the selector (if exists)
-                                const tfButton = tagButton.querySelector(`.timeframe-button[data-tf="${timeframe}"]`);
-                                if (tfButton) {
-                                    tfButton.classList.add('selected');
-                                }
-                            }
-                        });
-                    } else { // psychologyTags (simpler)
-                        tags.forEach(tag => tagsContainer.querySelector(`.tag[data-tag="${tag}"]`)?.classList.add('selected'));
-                    }
+                
+                ['environmentTags', 'entryTags', 'psychologyTags'].forEach(type => {
+                    const containerClass = `.${type.replace('Tags', '-tags-container')}`;
+                    document.querySelectorAll(`${containerClass} .tag`).forEach(b => b.classList.remove('selected'));
+                    (journal[type] || []).forEach(tag => document.querySelector(`${containerClass} .tag[data-tag="${tag}"]`)?.classList.add('selected'));
                 });
 
-                // Trigger asset type button to ensure all fields are correctly hidden/shown and validated (repeated just in case)
-                document.querySelector(`[data-group="asset-type"] .toggle-btn[data-value="${journal.assetType}"]`).click();
-                
                 switchJournalView('form-view'); window.scrollTo(0, 0);
             }
         }
@@ -1406,6 +1174,7 @@
 
         document.getElementById('close-memo-modal-btn').addEventListener('click', () => closeModal('memo-modal'));
         document.getElementById('memo-modal').addEventListener('click', e => { if (e.target.id === 'memo-modal') closeModal('memo-modal'); });
+
         document.getElementById('memo-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const journalId = document.getElementById('memo-journal-id').value;
@@ -1419,7 +1188,7 @@
                 showToast("메모 저장 실패: " + error.message, "error");
             }
         });
-        
+
         async function handleOpenExitModal(e) {
             const journal = await getJournalById(e.currentTarget.dataset.id);
             if(journal){
@@ -1434,7 +1203,6 @@
                 document.getElementById('exit-quantity').dataset.max = remaining;
                 document.getElementById('exit-quantity').value = formatNumber(remaining);
                 document.getElementById('exit-date').value = new Date().toISOString().split('T')[0];
-                document.getElementById('exit-price').value = ''; // clear price input
                 openModal('exit-modal');
             }
         }
@@ -1451,10 +1219,6 @@
             if (isNaN(quantity) || quantity <= 0 || quantity > maxQuantity + 1e-9) {
                 showToast(`청산 수량/계약 수는 0보다 크고 ${formatNumber(maxQuantity)} 이하여야 합니다.`, "error"); return;
             }
-            if (isNaN(price) || price <= 0) {
-                 showToast("올바른 청산 가격을 입력해주세요.", "error"); return;
-            }
-          
             
             const exitData = { price, quantity, date };
             const updatedExits = [...(journal.exits || []), exitData];
@@ -1462,18 +1226,19 @@
             showToast("청산 기록이 추가되었습니다.");
             closeModal('exit-modal');
         });
-
+        
         function getStats(journals) {
             const completed = journals.filter(j => {
                 const isSpot = j.assetType === 'spot';
-                const totalAmount = isSpot ? (j.quantity || 0) : (j.contracts || 0);
+                const totalAmount = isSpot ? j.quantity : j.contracts;
                 const exitedAmount = j.exits ? j.exits.reduce((s, e) => s + e.quantity, 0) : 0;
-                // Closed if exits exist AND remaining amount is near zero
                 return j.exits && j.exits.length > 0 && (totalAmount - exitedAmount <= 1e-9);
             });
+            
             let winningTrades = 0;
             let totalRealizedPnlKRW = 0;
             const plRatios = [];
+            
             completed.forEach(j => {
                 const totalPnl = j.exits.reduce((sum, exit) => sum + calculatePnl(j, exit), 0);
                 const totalPnlInKRW = j.currency === 'USD' ? totalPnl * exchangeRate : totalPnl;
@@ -1485,8 +1250,10 @@
                 const potentialRisk = Math.abs(j.position === 'long' ? (j.entryPrice - j.stopLoss) : (j.stopLoss - j.entryPrice));
                 if (potentialRisk > 0) plRatios.push(potentialReward / potentialRisk);
             });
+
             const winRate = completed.length > 0 ? (winningTrades / completed.length) * 100 : 0;
             const averagePlRatio = plRatios.length > 0 ? plRatios.reduce((sum, r) => sum + r, 0) / plRatios.length : 0;
+
             return { completed, winRate, averagePlRatio, totalRealizedPnlKRW };
         }
 
@@ -1504,17 +1271,13 @@
             const plRatioEl = document.getElementById('average-pl-ratio');
             const pnlEl = document.getElementById('total-realized-pnl');
 
-            // 직전 기간 대비 컨텍스트 텍스트를 제거합니다.
+            // 직전 기간 대비 컨텍스트 텍스트를 제거합니다. (요청 4)
             document.getElementById('win-rate-context').textContent = '';
             document.getElementById('pl-ratio-context').textContent = '';
             document.getElementById('pnl-context').textContent = '';
 
             if (journals.length === 0) { 
-                winRateEl.textContent = 'N/A';
-                plRatioEl.textContent = 'N/A'; pnlEl.textContent = 'N/A';
-                winRateEl.className = 'text-4xl font-extrabold text-gray-500 dark:text-gray-400';
-                plRatioEl.className = 'text-4xl font-extrabold text-gray-500 dark:text-gray-400';
-                pnlEl.className = 'text-4xl font-extrabold text-gray-500 dark:text-gray-400';
+                winRateEl.textContent = 'N/A'; plRatioEl.textContent = 'N/A'; pnlEl.textContent = 'N/A';
                 return;
             }
             
@@ -1524,6 +1287,7 @@
             
             plRatioEl.textContent = `${averagePlRatio.toFixed(2)} : 1`;
             plRatioEl.className = `text-4xl font-extrabold ${averagePlRatio >= 1 ? 'text-green-500' : 'text-yellow-500'}`;
+
             const pnlValue = totalRealizedPnlKRW * (statsCurrency === 'USD' ? 1 / exchangeRate : 1);
             const pnlClass = pnlValue > 0 ? 'text-green-500' : pnlValue < 0 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400';
             pnlEl.textContent = formatPrice(pnlValue, statsCurrency);
@@ -1531,8 +1295,7 @@
         }
 
         function renderPnlCompositionChart(journals) {
-            let totalProfit = 0;
-            let totalLoss = 0;
+            let totalProfit = 0; let totalLoss = 0;
             journals.forEach(j => {
                 const pnl = j.exits.reduce((s, e) => s + calculatePnl(j, e), 0);
                 const pnlInKRW = j.currency === 'USD' ? pnl * exchangeRate : pnl;
@@ -1543,8 +1306,7 @@
         }
 
         function renderPnlTrendCharts(journals) {
-            const monthlyPnl = {};
-            const quarterlyPnl = {};
+            const monthlyPnl = {}; const quarterlyPnl = {};
             journals.forEach(j => {
                 const date = j.date;
                 const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -1554,10 +1316,12 @@
                 monthlyPnl[month] = (monthlyPnl[month] || 0) + pnlInKRW;
                 quarterlyPnl[quarter] = (quarterlyPnl[quarter] || 0) + pnlInKRW;
             });
+            
             const sortedMonthlyKeys = Object.keys(monthlyPnl).sort();
             const sortedMonthlyValues = sortedMonthlyKeys.map(key => monthlyPnl[key]);
             createJournalChart('monthly-pnl-chart', 'bar', sortedMonthlyKeys, sortedMonthlyValues, '월별 손익');
             renderJournalSummary('monthly-pnl-summary', sortedMonthlyKeys, sortedMonthlyValues);
+
             const sortedQuarterlyKeys = Object.keys(quarterlyPnl).sort();
             const sortedQuarterlyValues = sortedQuarterlyKeys.map(key => quarterlyPnl[key]);
             createJournalChart('quarterly-pnl-chart', 'bar', sortedQuarterlyKeys, sortedQuarterlyValues, '분기별 손익');
@@ -1577,24 +1341,39 @@
         }
 
         function renderWinRateCharts(journals) {
-            const entryTagStats = {}, psychologyTagStats = {}, strategyStats = {}, positionStats = { 'long': { wins: 0, trades: 0 }, 'short': { wins: 0, trades: 0 }};
+            const environmentTagStats = {}, entryTagStats = {}, psychologyTagStats = {}, strategyStats = {}, positionStats = { 'long': { wins: 0, trades: 0 }, 'short': { wins: 0, trades: 0 }};
             journals.forEach(j => {
                 const pnl = j.exits.reduce((s, e) => s + calculatePnl(j,e), 0);
                 const isWin = pnl > 0;
+
+                // 포지션 통계
                 if (positionStats[j.position]) { positionStats[j.position].trades++; if (isWin) positionStats[j.position].wins++; }
-                // entryTags는 객체 배열이므로 .map(t => t.tag)로 태그 이름만 추출
-                const entryTags = (j.entryTags || []).map(t => t.tag);
-                [entryTags, j.psychologyTags, [j.strategy]].forEach((tags, i) => {
-                    const stats = [entryTagStats, psychologyTagStats, strategyStats][i];
+                
+                // 태그 통계
+                [j.environmentTags, j.entryTags, j.psychologyTags, [j.strategy]].forEach((tags, i) => {
+                    const stats = [environmentTagStats, entryTagStats, psychologyTagStats, strategyStats][i];
                     (tags || []).forEach(tag => { if (!stats[tag]) stats[tag] = { wins: 0, trades: 0 }; stats[tag].trades++; if (isWin) stats[tag].wins++; });
                 });
             });
+
             const createData = stats => ({ labels: Object.keys(stats), rates: Object.keys(stats).map(l => (stats[l].trades > 0 ? (stats[l].wins / stats[l].trades) * 100 : 0)) });
-            const entryData = createData(entryTagStats), psychologyData = createData(psychologyTagStats), strategyData = createData(strategyStats), positionData = createData(positionStats);
+            
+            const environmentData = createData(environmentTagStats);
+            const entryData = createData(entryTagStats);
+            const psychologyData = createData(psychologyTagStats);
+            const strategyData = createData(strategyStats);
+            const positionData = createData(positionStats);
+
+            // 환경 태그 차트 렌더링
+            createJournalChart('environment-win-rate-chart', 'bar', environmentData.labels, environmentData.rates, '승률 (%)', true);
+            
             createJournalChart('entry-win-rate-chart', 'bar', entryData.labels, entryData.rates, '승률 (%)', true);
             createJournalChart('psychology-win-rate-chart', 'bar', psychologyData.labels, psychologyData.rates, '승률 (%)', true);
-            createJournalChart('strategy-win-rate-chart', 'bar', strategyData.labels, strategyData.rates, '승률 (%)', true);
-            createJournalChart('position-win-rate-chart', 'bar', positionData.labels, positionData.rates, '승률 (%)', true);
+            
+            // 전략과 포지션을 하나의 차트로 렌더링
+            const combinedLabels = [...strategyData.labels, ...positionData.labels];
+            const combinedRates = [...strategyData.rates, ...positionData.rates];
+            createJournalChart('strategy-position-win-rate-chart', 'bar', combinedLabels, combinedRates, '승률 (%)', true);
         }
 
         function createJournalChart(canvasId, type, labels, data, label, isWinRate = false) {
@@ -1605,18 +1384,19 @@
             const pnlMultiplier = statsCurrency === 'USD' ? 1 / exchangeRate : 1;
             const chartData = isWinRate ? data : data.map(d => d * pnlMultiplier);
             const isDark = document.documentElement.classList.contains('dark');
+            
             const commonOptions = {
                 responsive: true, maintainAspectRatio: false,
                 plugins: { 
                     legend: { display: type === 'doughnut', position: 'bottom' }, 
-                    tooltip: { callbacks: { label: c => isWinRate ?
-            `${c.label}: ${c.parsed.toFixed(2)}%` : `${c.label}: ${formatPrice(c.raw, statsCurrency)}` } } 
+                    tooltip: { callbacks: { label: c => isWinRate ? `${c.label}: ${c.parsed.toFixed(2)}%` : `${c.label}: ${formatPrice(c.raw, statsCurrency)}` } } 
                 },
                 scales: {
                     x: { ticks: { color: isDark ? '#d1d5db' : '#374151' } },
                     y: { ticks: { color: isDark ? '#d1d5db' : '#374151' } }
                 }
             };
+
             if (type === 'doughnut') {
                  charts[canvasId] = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ 
                     label, data: chartData, 
@@ -1626,21 +1406,456 @@
             } else { // bar
                  charts[canvasId] = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label, data: chartData, backgroundColor: chartData.map(d => d >= (isWinRate ? 50 : 0) ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'), borderWidth: 1 }] }, 
                  options: { ...commonOptions, scales: { 
-                    x: { ...commonOptions.scales.x, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } }, 
-                    y: { ...commonOptions.scales.y, beginAtZero: !isWinRate, ticks: { callback: v => isWinRate ? `${v.toFixed(0)}%` : formatPrice(v, statsCurrency) }, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } } } } });
+                     x: { ...commonOptions.scales.x, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } }, 
+                     y: { ...commonOptions.scales.y, beginAtZero: !isWinRate, ticks: { callback: v => isWinRate ? `${v.toFixed(0)}%` : formatPrice(v, statsCurrency) }, grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' } } } } });
             }
         }
+        
+        function resetForm() {
+            journalForm.reset(); 
+            document.getElementById('journal-id').value = '';
+            document.querySelectorAll('#journal-main-content .toggle-btn.selected').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('#journal-form .number-input').forEach(el => el.value = '');
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            
+            document.getElementById('quantity').value = '';
+            document.getElementById('contracts').value = ''; // 계약수 필드 초기화
+
+            // 선물 정보 필드 초기화
+            document.getElementById('futures-info-select').value = '';
+            document.getElementById('tick-value').value = '';
+            document.getElementById('tick-size').value = '';
+            document.getElementById('delete-futures-info-btn').disabled = true; 
+            
+            // Set defaults
+            document.querySelector('[data-group="asset-type"] .toggle-btn[data-value="spot"]').click();
+            document.querySelector('[data-group="position"] .toggle-btn[data-value="long"]').classList.add('selected');
+            document.querySelector('[data-group="strategy"] .toggle-btn[data-value="단타"]').classList.add('selected');
+            document.getElementById('form-currency-usd-btn').classList.add('selected');
+            
+            document.querySelectorAll('.environment-tags-container .tag.selected, .entry-tags-container .tag.selected, .psychology-tags-container .tag.selected').forEach(t => t.classList.remove('selected'));
+        }
+        document.getElementById('clear-form-btn').addEventListener('click', resetForm);
+        
+        // =======================================================
+        // ================== HOUSEHOLD LEDGER LOGIC =============
+        // =======================================================
+
+        async function initializeLedgerDefaults(userId) {
+            const categoriesDocRef = db.collection("users").doc(userId).collection("ledgerData").doc("categories");
+            const docSnap = await categoriesDocRef.get();
+            if (!docSnap.exists) {
+                await categoriesDocRef.set({
+                    expense: ['식비', '교통비', '공과금', '구독료', '자기개발비', '오락/여가', '선물'],
+                    income: ['월급', '부수입', '용돈', '금융소득']
+                });
+            }
+        }
+
+        function attachLedgerListeners(userId) {
+            if (unsubscribeLedger) unsubscribeLedger();
+            unsubscribeLedger = db.collection("users").doc(userId).collection("ledgerEntries").orderBy("date", "desc")
+                .onSnapshot((snapshot) => {
+                    localLedgerEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), date: doc.data().date.toDate() }));
+                    renderLedgerListView();
+                    renderLedgerStatsView();
+                });
+
+            if (unsubscribeLedgerCategories) unsubscribeLedgerCategories();
+            unsubscribeLedgerCategories = db.collection("users").doc(userId).collection("ledgerData").doc("categories")
+                .onSnapshot((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        localLedgerCategories = {
+                            expense: data.expense || data.list || [], 
+                            income: data.income || []
+                        };
+                    } else {
+                        localLedgerCategories = { expense: [], income: [] };
+                    }
+                    renderLedgerCategoryTags(localLedgerCategories.expense, 'expense');
+                    renderLedgerCategoryTags(localLedgerCategories.income, 'income');
+                });
+        }
+        
+        function switchLedgerView(tabId) {
+            document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.classList.toggle('active', btn.dataset.ledgerTab === tabId));
+            ['ledger-form-view', 'ledger-list-view', 'ledger-stats-view'].forEach(viewId => document.getElementById(viewId).classList.toggle('hidden', viewId !== tabId));
+            if(tabId === 'ledger-list-view') renderLedgerListView();
+            if(tabId === 'ledger-stats-view') renderLedgerStatsView();
+            lucide.createIcons();
+        }
+        document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(btn => btn.addEventListener('click', () => switchLedgerView(btn.dataset.ledgerTab)));
+
+        function renderLedgerCategoryTags(categories, type) {
+            const container = document.getElementById(`ledger-${type}-category-tags-container`);
+            container.innerHTML = '';
+            categories.forEach(cat => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center dark:bg-[#4F4F4F] dark:text-gray-200';
+                button.dataset.tag = cat;
+                
+                button.innerHTML = `<span class="pl-3 pr-2 py-1">${cat}</span><span class="delete-tag-span pr-2 text-gray-500 dark:text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
+
+                button.addEventListener('click', () => {
+                    container.querySelectorAll('.tag.selected').forEach(t => t.classList.remove('selected'));
+                    button.classList.add('selected');
+                });
+                button.querySelector('.delete-tag-span').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleDeleteLedgerCategory(cat, type);
+                });
+                container.appendChild(button);
+            });
+            lucide.createIcons();
+        }
+        
+        async function addLedgerCategory(type) {
+            const input = document.getElementById(`new-ledger-${type}-category`);
+            const newCategory = input.value.trim();
+            if (newCategory && !localLedgerCategories[type].includes(newCategory)) {
+                const updatedCategories = { ...localLedgerCategories };
+                updatedCategories[type] = [...updatedCategories[type], newCategory].sort((a,b) => a.localeCompare(b));
+
+                try {
+                    await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(updatedCategories);
+                    showToast(`'${newCategory}' 카테고리가 추가되었습니다.`);
+                    input.value = '';
+                } catch(e) {
+                    showToast("카테고리 추가 실패", "error");
+                }
+            } else if (localLedgerCategories[type].includes(newCategory)) {
+                showToast("이미 존재하는 카테고리입니다.", "error");
+            }
+        }
+        document.getElementById('add-ledger-expense-category-btn').addEventListener('click', () => addLedgerCategory('expense'));
+        document.getElementById('add-ledger-income-category-btn').addEventListener('click', () => addLedgerCategory('income'));
+
+        
+        function handleDeleteLedgerCategory(category, type) {
+            const isCategoryInUse = localLedgerEntries.some(entry => entry.type === type && entry.category === category);
+            if (isCategoryInUse) {
+                showToast("사용 중인 카테고리는 삭제할 수 없습니다.", "error"); return;
+            }
+            showConfirmModal(`'${category}' 카테고리를 삭제하시겠습니까?`, async () => {
+                const updatedCategories = { ...localLedgerCategories };
+                updatedCategories[type] = updatedCategories[type].filter(c => c !== category);
+                try {
+                    await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(updatedCategories);
+                    showToast(`'${category}' 카테고리가 삭제되었습니다.`);
+                } catch(e) {
+                     showToast("카테고리 삭제 실패", "error");
+                }
+            }, '삭제');
+        }
+
+        document.getElementById('ledger-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('ledger-id').value;
+            const type = document.querySelector('[data-group="ledger-type"] .toggle-btn.selected').dataset.value;
+            const selectedCategoryTag = document.querySelector(`#ledger-${type}-category-tags-container .tag.selected`);
+            const amount = parseFloat(unformatNumber(document.getElementById('ledger-amount').value));
+
+            if(!selectedCategoryTag) { showToast("카테고리를 선택해주세요.", "error"); return; }
+            if(isNaN(amount) || amount <= 0) { showToast("올바른 금액을 입력해주세요.", "error"); return; }
+
+            const entryData = {
+                type: type,
+                date: Timestamp.fromDate(new Date(document.getElementById('ledger-date').value)),
+                amount: amount,
+                category: selectedCategoryTag.dataset.tag,
+                memo: document.getElementById('ledger-memo').value.trim()
+            };
+
+            try {
+                const collectionRef = db.collection("users").doc(currentUser.uid).collection("ledgerEntries");
+                if (id) {
+                    await collectionRef.doc(id).update(entryData);
+                    showToast("내역이 수정되었습니다.");
+                } else {
+                    await collectionRef.add(entryData);
+                    showToast("내역이 저장되었습니다.");
+                }
+                resetLedgerForm();
+                switchLedgerView('ledger-list-view');
+            } catch (error) { showToast("저장 실패.", "error"); }
+        });
+        
+        function resetLedgerForm() {
+            document.getElementById('ledger-form').reset();
+            document.getElementById('ledger-id').value = '';
+            document.getElementById('ledger-date').value = new Date().toISOString().split('T')[0];
+            document.querySelectorAll('#ledger-form .tag.selected').forEach(t => t.classList.remove('selected'));
+            document.querySelector('#ledger-form .toggle-btn[data-value="expense"]').click();
+        }
+        document.getElementById('clear-ledger-form-btn').addEventListener('click', resetLedgerForm);
+
+        function renderLedgerListView() {
+            const filterType = document.getElementById('ledger-list-filter-type').value;
+            const displayEl = document.getElementById('ledger-list-period-display');
+            
+            const { start, end, displayString } = getPeriod(ledgerListDate, filterType);
+            displayEl.textContent = displayString;
+            
+            const filteredEntries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
+            
+            // Render Expenses Summary
+            const expensesByCategory = filteredEntries
+                .filter(e => e.type === 'expense')
+                .reduce((acc, curr) => {
+                    const category = curr.category || '미분류';
+                    acc[category] = (acc[category] || 0) + curr.amount;
+                    return acc;
+                }, {});
+
+            const expenseSummaryContainer = document.getElementById('ledger-category-summary');
+            expenseSummaryContainer.innerHTML = '';
+            if(Object.keys(expensesByCategory).length === 0){
+                expenseSummaryContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-center text-sm">지출 내역 없음</p>`;
+            } else {
+                Object.entries(expensesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
+                    const div = document.createElement('div');
+                    div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
+                    div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-red-500">- ${formatPrice(total, 'KRW')}</span>`;
+                    div.onclick = () => {
+                        document.querySelectorAll('#ledger-list-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
+                        document.querySelectorAll('#ledger-list-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
+                        div.classList.add('selected');
+                        renderLedgerDetails(category, 'expense', filteredEntries);
+                    };
+                    expenseSummaryContainer.appendChild(div);
+                });
+            }
+
+            // Render Incomes Summary
+            const incomesByCategory = filteredEntries
+                .filter(e => e.type === 'income')
+                .reduce((acc, curr) => {
+                    const category = curr.category || '미분류'; // Handle uncategorized old entries
+                    acc[category] = (acc[category] || 0) + curr.amount;
+                    return acc;
+                }, {});
+            
+            const incomeSummaryContainer = document.getElementById('ledger-income-summary');
+            incomeSummaryContainer.innerHTML = '';
+            if(Object.keys(incomesByCategory).length === 0) {
+                 incomeSummaryContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-center text-sm">수입 내역 없음</p>`;
+            } else {
+                Object.entries(incomesByCategory).sort((a,b) => b[1] - a[1]).forEach(([category, total]) => {
+                    const div = document.createElement('div');
+                    div.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
+                    div.innerHTML = `<span class="font-medium">${category}</span><span class="font-bold text-green-500">+ ${formatPrice(total, 'KRW')}</span>`;
+                    div.onclick = () => {
+                        document.querySelectorAll('#ledger-list-view #ledger-category-summary .selected').forEach(el => el.classList.remove('selected'));
+                        document.querySelectorAll('#ledger-list-view #ledger-income-summary .selected').forEach(el => el.classList.remove('selected'));
+                        div.classList.add('selected');
+                        renderLedgerDetails(category, 'income', filteredEntries);
+                    };
+                    incomeSummaryContainer.appendChild(div);
+                });
+            }
+            
+            document.getElementById('ledger-entry-details').innerHTML = '';
+            document.getElementById('ledger-detail-title').textContent = '내역 선택';
+        }
+        
+        function renderLedgerDetails(category, type, entries) {
+            document.getElementById('ledger-detail-title').textContent = category;
+            const detailsContainer = document.getElementById('ledger-entry-details');
+            detailsContainer.innerHTML = '';
+
+            let entriesToShow;
+            if (category === '미분류') {
+                entriesToShow = entries.filter(e => e.type === type && !e.category);
+            } else {
+                entriesToShow = entries.filter(e => e.type === type && e.category === category);
+            }
+
+            if(entriesToShow.length === 0) {
+                detailsContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-center">상세 내역이 없습니다.</p>`;
+                return;
+            }
+
+            entriesToShow.sort((a,b) => b.date - a.date)
+                .forEach(entry => {
+                    const div = document.createElement('div');
+                    div.className = 'p-3 rounded-lg border border-gray-200 dark:border-[#4F4F4F] flex justify-between items-center bg-gray-50 dark:bg-[#2d2d2d]';
+                    const amountClass = type === 'income' ? 'text-green-500' : 'text-red-500';
+                    const sign = type === 'income' ? '+' : '-';
+                    div.innerHTML = `
+                        <div>
+                            <p class="font-medium">${entry.date.toLocaleDateString()}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">${entry.memo || (type === 'income' ? '수입' : '메모 없음')}</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="font-bold ${amountClass}">${sign} ${formatPrice(entry.amount, 'KRW')}</span>
+                            <div>
+                                <button class="p-1 hover:text-blue-500 edit-ledger-btn" data-id="${entry.id}"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                                <button class="p-1 hover:text-red-500 delete-ledger-btn" data-id="${entry.id}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>`;
+                    detailsContainer.appendChild(div);
+                });
+            lucide.createIcons();
+            document.querySelectorAll('.edit-ledger-btn').forEach(b => b.addEventListener('click', handleEditLedgerEntry));
+            document.querySelectorAll('.delete-ledger-btn').forEach(b => b.addEventListener('click', handleDeleteLedgerEntry));
+        }
+        
+        function handleEditLedgerEntry(e) {
+            const id = e.currentTarget.dataset.id;
+            const entry = localLedgerEntries.find(item => item.id === id);
+            if (entry) {
+                switchLedgerView('ledger-form-view');
+                document.getElementById('ledger-id').value = entry.id;
+                document.getElementById('ledger-date').value = entry.date.toISOString().split('T')[0];
+                document.getElementById('ledger-amount').value = formatNumber(entry.amount);
+                document.getElementById('ledger-memo').value = entry.memo;
+                document.querySelector(`.toggle-btn[data-value="${entry.type}"]`).click();
+                if(entry.category) {
+                    document.querySelector(`#ledger-${entry.type}-category-tags-container .tag[data-tag="${entry.category}"]`)?.click();
+                }
+            }
+        }
+        
+        function handleDeleteLedgerEntry(e) {
+            const id = e.currentTarget.dataset.id;
+            showConfirmModal('정말로 이 내역을 삭제하시겠습니까?', () => {
+                db.collection("users").doc(currentUser.uid).collection("ledgerEntries").doc(id).delete()
+                  .then(() => showToast("내역이 삭제되었습니다."))
+                  .catch(() => showToast("삭제 실패", "error"));
+            }, '삭제');
+        }
+
+        function updateLedgerListDate(offset) {
+            const filterType = document.getElementById('ledger-list-filter-type').value;
+            if (filterType === 'month') ledgerListDate.setMonth(ledgerListDate.getMonth() + offset);
+            else if (filterType === 'quarter') ledgerListDate.setMonth(ledgerListDate.getMonth() + offset * 3);
+            else ledgerListDate.setFullYear(ledgerListDate.getFullYear() + offset);
+            renderLedgerListView();
+        }
+        document.getElementById('ledger-list-prev-btn').addEventListener('click', () => updateLedgerListDate(-1));
+        document.getElementById('ledger-list-next-btn').addEventListener('click', () => updateLedgerListDate(1));
+        document.getElementById('ledger-list-filter-type').addEventListener('change', () => {
+            ledgerListDate = new Date(); 
+            renderLedgerListView();
+        });
+
+        function renderLedgerStatsView() {
+            const filterType = document.getElementById('ledger-stats-filter-type').value;
+            const displayEl = document.getElementById('ledger-stats-period-display');
+            
+            const { start, end, displayString } = getPeriod(ledgerStatsDate, filterType);
+            displayEl.textContent = displayString;
+
+            const entries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
+            
+            let totalIncome = 0, totalExpense = 0;
+            const expenseByCategory = {};
+            const incomeByCategory = {};
+
+
+            entries.forEach(e => {
+                if (e.type === 'income') {
+                    totalIncome += e.amount;
+                    const category = e.category || '미분류';
+                    incomeByCategory[category] = (incomeByCategory[category] || 0) + e.amount;
+                }
+                else {
+                    totalExpense += e.amount;
+                    const category = e.category || '미분류';
+                    expenseByCategory[category] = (expenseByCategory[category] || 0) + e.amount;
+                }
+            });
+
+            document.getElementById('ledger-total-income').textContent = formatPrice(totalIncome, 'KRW');
+            document.getElementById('ledger-total-expense').textContent = formatPrice(totalExpense, 'KRW');
+            const balance = totalIncome - totalExpense;
+            const balanceEl = document.getElementById('ledger-balance');
+            balanceEl.textContent = formatPrice(balance, 'KRW');
+            balanceEl.className = `text-3xl font-bold ${balance >= 0 ? 'text-blue-500' : 'text-red-500'}`;
+            
+            // Trend Chart
+            let trendLabels, trendIncomeData, trendExpenseData;
+            if(filterType === 'year') {
+                document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 월별 추이`;
+                trendLabels = Array.from({length: 12}, (_, i) => `${i + 1}월`);
+                const monthlyData = trendLabels.map(() => ({income: 0, expense: 0}));
+                entries.forEach(e => {
+                    const month = e.date.getMonth();
+                    if (e.type === 'income') monthlyData[month].income += e.amount;
+                    else monthlyData[month].expense += e.amount;
+                });
+                trendIncomeData = monthlyData.map(d => d.income);
+                trendExpenseData = monthlyData.map(d => d.expense);
+            } else { // month or quarter
+                document.getElementById('ledger-trend-chart-title').textContent = `${displayString} 일별 추이`;
+                const days = (end - start) / (1000 * 60 * 60 * 24);
+                trendLabels = Array.from({length: Math.ceil(days) + 1}, (_, i) => {
+                    const d = new Date(start);
+                    d.setDate(d.getDate() + i);
+                    return `${d.getMonth()+1}/${d.getDate()}`;
+                });
+                const dailyData = Object.fromEntries(trendLabels.map(l => [l, {income: 0, expense: 0}]));
+                entries.forEach(e => {
+                    const dayLabel = `${e.date.getMonth()+1}/${e.date.getDate()}`;
+                    if(dailyData[dayLabel]) {
+                        if (e.type === 'income') dailyData[dayLabel].income += e.amount;
+                        else dailyData[dayLabel].expense += e.amount;
+                    }
+                });
+                trendIncomeData = Object.values(dailyData).map(d => d.income);
+                trendExpenseData = Object.values(dailyData).map(d => d.expense);
+            }
+            
+            createLedgerChart('ledger-monthly-pnl-chart', 'bar', trendLabels,
+                [{ label: '수입', data: trendIncomeData, backgroundColor: 'rgba(75, 192, 192, 0.6)' },
+                 { label: '지출', data: trendExpenseData, backgroundColor: 'rgba(255, 99, 132, 0.6)' }]
+            );
+
+            // Expense Category Chart
+            document.getElementById('ledger-expense-chart-title').textContent = `${displayString} 지출 구성`;
+            const sortedExpense = Object.entries(expenseByCategory).sort((a,b) => b[1] - a[1]);
+            createLedgerChart('ledger-expense-chart', 'pie', 
+                sortedExpense.map(c => c[0]), 
+                [{ label: '지출', data: sortedExpense.map(c => c[1]) }]
+            );
+
+            // Income Category Chart
+            document.getElementById('ledger-income-chart-title').textContent = `${displayString} 수입 구성`;
+            const sortedIncome = Object.entries(incomeByCategory).sort((a,b) => b[1] - a[1]);
+            createLedgerChart('ledger-income-chart', 'pie', 
+                sortedIncome.map(c => c[0]), 
+                [{ label: '수입', data: sortedIncome.map(c => c[1]) }]
+            );
+        }
+        
+        function updateLedgerStatsDate(offset) {
+            const filterType = document.getElementById('ledger-stats-filter-type').value;
+            if (filterType === 'month') ledgerStatsDate.setMonth(ledgerStatsDate.getMonth() + offset);
+            else if (filterType === 'quarter') ledgerStatsDate.setMonth(ledgerStatsDate.getMonth() + offset * 3);
+            else ledgerStatsDate.setFullYear(ledgerStatsDate.getFullYear() + offset);
+            renderLedgerStatsView();
+        }
+        document.getElementById('ledger-stats-prev-btn').addEventListener('click', () => updateLedgerStatsDate(-1));
+        document.getElementById('ledger-stats-next-btn').addEventListener('click', () => updateLedgerStatsDate(1));
+        document.getElementById('ledger-stats-filter-type').addEventListener('change', () => {
+            ledgerStatsDate = new Date();
+            renderLedgerStatsView();
+        });
         
         function createLedgerChart(canvasId, type, labels, datasets) {
             if (charts[canvasId]) charts[canvasId].destroy();
             const ctx = document.getElementById(canvasId)?.getContext('2d');
             if(!ctx) return;
             const isDark = document.documentElement.classList.contains('dark');
+
             const defaultColors = [
               'rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)',
               'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)',
               'rgba(199, 199, 199, 0.7)', 'rgba(83, 102, 255, 0.7)', 'rgba(40, 159, 64, 0.7)'
             ];
+
             const chartDatasets = datasets.map((ds, index) => ({
                 ...ds,
                 backgroundColor: ds.backgroundColor || (type === 'pie' ? defaultColors : defaultColors[index % defaultColors.length]),
@@ -1713,8 +1928,7 @@
             const modal = document.getElementById(modalId);
             modal.classList.remove('hidden');
             setTimeout(() => { modal.classList.remove('opacity-0'); modal.firstElementChild.classList.remove('scale-95'); }, 10);
-            if (modalId === 'tag-edit-modal') { lucide.createIcons();
-            }
+            if (modalId === 'tag-edit-modal') { lucide.createIcons(); }
         }
 
         function closeModal(modalId) {
@@ -1725,7 +1939,7 @@
         
         document.getElementById('close-modal-btn').addEventListener('click', () => closeModal('exit-modal'));
         document.getElementById('exit-modal').addEventListener('click', e => { if (e.target.id === 'exit-modal') closeModal('exit-modal'); });
-        
+
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             toast.firstElementChild.textContent = message;
@@ -1742,20 +1956,13 @@
             confirmCallback = callback;
             openModal('confirm-modal');
         }
-        document.getElementById('confirm-ok-btn').addEventListener('click', () => { 
-            if (confirmCallback) {
-                 // The callback is executed first
-                 confirmCallback(); 
-                 // Then the modal is closed
-                 closeModal('confirm-modal'); 
-             }
-        });
+        document.getElementById('confirm-ok-btn').addEventListener('click', () => { if (confirmCallback) confirmCallback(); closeModal('confirm-modal'); });
         document.getElementById('confirm-cancel-btn').addEventListener('click', () => closeModal('confirm-modal'));
 
         document.querySelectorAll('.number-input').forEach(input => {
             input.addEventListener('input', (e) => { e.target.value = formatNumber(e.target.value); });
         });
-
+        
         document.querySelectorAll('.exchange-rate-input').forEach(input => {
             input.addEventListener('input', (e) => {
                 const value = unformatNumber(e.target.value);
@@ -1785,34 +1992,47 @@
                         const isExpense = button.dataset.value === 'expense';
                         document.getElementById('ledger-expense-category-section').classList.toggle('hidden', !isExpense);
                         document.getElementById('ledger-income-category-section').classList.toggle('hidden', isExpense);
+                    }
+                    if (group.dataset.group === 'asset-type') {
+                        const isSpot = button.dataset.value === 'spot';
                         
-                        // Clear category selection when type is toggled
-                        document.querySelectorAll(`#ledger-expense-category-tags-container .tag.selected`).forEach(t => t.classList.remove('selected'));
-                        document.querySelectorAll(`#ledger-income-category-tags-container .tag.selected`).forEach(t => t.classList.remove('selected'));
+                        // 요청 2: 선물 계약 수 필드 표시 로직 업데이트
+                        document.getElementById('spot-fields').classList.toggle('hidden', !isSpot);
+                        document.getElementById('futures-contracts-field').classList.toggle('hidden', isSpot);
+                        document.getElementById('futures-fields').classList.toggle('hidden', isSpot);
+
+                        document.getElementById('quantity').required = isSpot;
+                        document.getElementById('contracts').required = !isSpot;
+                        document.getElementById('tick-value').required = !isSpot;
+                        document.getElementById('tick-size').required = !isSpot;
+
+                        // 현물/선물 필드 정리
+                        const quantityInput = document.getElementById('quantity');
+                        const contractsInput = document.getElementById('contracts');
+
+                        if (!isSpot) {
+                             document.querySelector('label[for="quantity"]').textContent = '수량 (현물용)';
+                             quantityInput.classList.add('hidden');
+                             document.querySelector('label[for="quantity"]').classList.add('hidden');
+                        } else {
+                             document.querySelector('label[for="quantity"]').textContent = '수량';
+                             quantityInput.classList.remove('hidden');
+                             document.querySelector('label[for="quantity"]').classList.remove('hidden');
+                        }
                     }
                 }
             }
         });
-
+        
         window.addEventListener('DOMContentLoaded', () => {
-            // Apply initial theme setting based on localStorage or system preference
-            const savedTheme = localStorage.getItem('theme');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
-            
-            // Check if login view should be visible on load
-            if (document.getElementById('login-view').classList.contains('hidden') && !currentUser) {
-                 document.getElementById('login-view').classList.remove('hidden');
-            }
-
-            setTheme(initialTheme);
+            setTheme(localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
             lucide.createIcons();
             switchJournalView('form-view');
             switchLedgerView('ledger-form-view');
             document.querySelectorAll('.exchange-rate-input').forEach(input => input.value = formatNumber(exchangeRate));
             resetForm(); 
         });
-        
+
         function setTheme(theme) {
             document.documentElement.classList.toggle('dark', theme === 'dark');
             localStorage.setItem('theme', theme);
@@ -1831,6 +2051,7 @@
             }
         }
         document.getElementById('theme-toggle').addEventListener('click', () => setTheme(localStorage.getItem('theme') === 'dark' ? 'light' : 'dark'));
+
     </script>
 </body>
 </html>
