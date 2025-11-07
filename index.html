@@ -54,6 +54,7 @@
         .dark .tag.selected { background-color: #3b82f6; color: #ffffff; }
         .dark .entry-tags-container .tag.selected { background-color: #16a34a; }
         .dark .psychology-tags-container .tag.selected { background-color: #9333ea; }
+        .dark .environment-tags-container .tag.selected { background-color: #f59e0b; } /* 새로운 환경 태그 색상 */
         .dark .border-blue-200 { border-color: #3b82f6; }
         .dark .border-green-200 { border-color: #16a34a; }
         .dark .border-purple-200 { border-color: #9333ea; }
@@ -67,6 +68,8 @@
         .dark .text-green-800 { color: #4ade80; }
         .dark .bg-purple-100 { background-color: rgba(147, 51, 234, 0.2); }
         .dark .text-purple-800 { color: #c084fc; }
+        .dark .bg-yellow-100 { background-color: rgba(245, 158, 11, 0.2); }
+        .dark .text-yellow-800 { color: #facc15; }
         .dark .border-gray-200 { border-color: #4F4F4F; }
         .dark .bg-gray-50 { background-color: #2d2d2d; }
         .dark .hover\:bg-gray-100:hover { background-color: #2d2d2d; }
@@ -168,8 +171,13 @@
                             
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                                 <div id="spot-fields" class="space-y-3">
-                                    <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">수량</label>
+                                    <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">수량 / 계약 수</label>
                                     <input type="text" inputmode="numeric" id="quantity" placeholder="예: 100" class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]">
+                                </div>
+
+                                <div id="futures-contracts-field" class="hidden space-y-3">
+                                    <label for="contracts" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">계약 수</label>
+                                    <input type="text" inputmode="numeric" id="contracts" placeholder="예: 1" class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]">
                                 </div>
                                 
                                 <div class="space-y-3">
@@ -195,7 +203,7 @@
                                             <select id="futures-info-select" class="flex-grow p-3 border border-gray-300 dark:border-[#4F4F4F] rounded-lg bg-white dark:bg-[#1E1E1E] text-base">
                                                 <option value="">- 종목 선택 (틱가치/단위 불러오기) -</option>
                                             </select>
-                                            <button type="button" id="save-futures-info-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition text-sm font-semibold">정보 저장</button>
+                                            <button type="button" id="save-futures-info-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition text-sm">정보 저장</button>
                                         </div>
                                         <div class="grid grid-cols-2 gap-4">
                                             <div><label for="tick-value" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">틱가치 ($)</label><input type="text" inputmode="decimal" id="tick-value" placeholder="예: 1" required class="number-input w-full p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#1E1E1E]"></div>
@@ -205,15 +213,21 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <h2 class="text-2xl font-bold border-b-2 border-yellow-200 pb-2 flex items-center"><i data-lucide="cloud-sun" class="mr-3 text-yellow-500"></i>환경 태그</h2>
+                            <div id="environment-tags-container" class="flex flex-wrap gap-2 mb-2 environment-tags-container"></div>
+                            <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-environment-tag" placeholder="새로운 태그 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" class="add-environment-tag-btn bg-yellow-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition">추가</button></div>
+                        </div>
                         
                         <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <h2 class="text-2xl font-bold border-b-2 border-green-200 pb-2 flex items-center"><i data-lucide="siren" class="mr-3 text-green-500"></i>진입 근거 (환경/기술적 분석 태그)</h2>
+                            <h2 class="text-2xl font-bold border-b-2 border-green-200 pb-2 flex items-center"><i data-lucide="siren" class="mr-3 text-green-500"></i>진입 근거</h2>
                             <div id="entry-tags-container" class="flex flex-wrap gap-2 mb-2 entry-tags-container"></div>
                             <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-entry-tag" placeholder="새로운 태그 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" class="add-entry-tag-btn bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition">추가</button></div>
                         </div>
                         
                         <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <h2 class="text-2xl font-bold border-b-2 border-purple-200 pb-2 flex items-center"><i data-lucide="brain-circuit" class="mr-3 text-purple-500"></i>심리 상태 (감정/태도 태그)</h2>
+                            <h2 class="text-2xl font-bold border-b-2 border-purple-200 pb-2 flex items-center"><i data-lucide="brain-circuit" class="mr-3 text-purple-500"></i>심리 상태</h2>
                             <div id="psychology-tags-container" class="flex flex-wrap gap-2 mb-2 psychology-tags-container"></div>
                             <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-psychology-tag" placeholder="새로운 태그 추가" class="flex-grow p-3 border border-gray-300 rounded-lg bg-white dark:bg-[#2d2d2d]"><button type="button" class="add-psychology-tag-btn bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-600 transition">추가</button></div>
                         </div>
@@ -247,11 +261,11 @@
                     </div>
                     <div class="grid grid-cols-1"><div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">분기별 손익</h3><div class="chart-container"><canvas id="quarterly-pnl-chart"></canvas></div><div id="quarterly-pnl-summary" class="mt-4 text-sm text-center"></div></div></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">환경 태그별 승률</h3><div class="chart-container"><canvas id="environment-win-rate-chart"></canvas></div></div>
                         <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">진입 근거별 승률</h3><div class="chart-container"><canvas id="entry-win-rate-chart"></canvas></div></div>
                         <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">심리 상태별 승률</h3><div class="chart-container"><canvas id="psychology-win-rate-chart"></canvas></div></div>
-                        <div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">매매 전략별 승률</h3><div class="chart-container"><canvas id="strategy-win-rate-chart"></canvas></div></div>
                     </div>
-                    <div class="grid grid-cols-1"><div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">롱/숏 포지션 승률</h3><div class="chart-container"><canvas id="position-win-rate-chart"></canvas></div></div></div>
+                    <div class="grid grid-cols-1"><div class="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl shadow-lg"><h3 class="text-xl font-bold mb-4">매매 전략별 승률 및 롱/숏 포지션 승률</h3><div class="chart-container"><canvas id="strategy-position-win-rate-chart"></canvas></div></div></div>
                 </div>
             </main>
         </div>
@@ -353,7 +367,7 @@
     
     <div id="memo-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-xl modal-content transform scale-95"><h2 class="text-2xl font-bold mb-4 flex items-center"><i data-lucide="book-open-text" class="mr-3 text-blue-500"></i> 매매 복기 및 소감</h2><form id="memo-form"><input type="hidden" id="memo-journal-id"><div class="space-y-4"><div><label for="memo-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">복기 내용 (당시 소감, 감정 등)</label><textarea id="memo-content" rows="8" class="mt-1 w-full p-3 border border-gray-300 dark:border-[#4F4F4F] bg-white dark:bg-[#2d2d2d] rounded-lg resize-none text-base" placeholder="매매를 복기하며 느낀 소감이나 당시 감정, 차트 분석 내용 등을 자유롭게 기록하세요."></textarea></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-memo-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">메모 저장</button></div></form></div></div>
     
-    <div id="tag-edit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-xl modal-content transform scale-95"><h2 class="text-2xl font-bold mb-6 flex items-center"><i data-lucide="tag" class="mr-3 text-purple-500"></i> 태그 수정</h2><form id="tag-edit-form"><input type="hidden" id="tag-edit-journal-id"><div class="space-y-6"><div id="tag-edit-entry-container"><h3 class="text-xl font-bold mb-3 border-b border-green-200 dark:border-green-700 pb-2 flex items-center text-green-600"><i data-lucide="siren" class="mr-2 w-5 h-5"></i> 진입 근거 (환경/기술적 분석)</h3><div id="tag-edit-entry-tags" class="flex flex-wrap gap-2"></div></div><div id="tag-edit-psychology-container"><h3 class="text-xl font-bold mb-3 border-b border-purple-200 dark:border-purple-700 pb-2 flex items-center text-purple-600"><i data-lucide="brain-circuit" class="mr-2 w-5 h-5"></i> 심리 상태 (감정/태도)</h3><div id="tag-edit-psychology-tags" class="flex flex-wrap gap-2"></div></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-tag-edit-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">태그 저장</button></div></form></div></div>
+    <div id="tag-edit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-xl modal-content transform scale-95"><h2 class="text-2xl font-bold mb-6 flex items-center"><i data-lucide="tag" class="mr-3 text-purple-500"></i> 태그 수정</h2><form id="tag-edit-form"><input type="hidden" id="tag-edit-journal-id"><div class="space-y-6"><div id="tag-edit-environment-container"><h3 class="text-xl font-bold mb-3 border-b border-yellow-200 dark:border-yellow-700 pb-2 flex items-center text-yellow-600"><i data-lucide="cloud-sun" class="mr-2 w-5 h-5"></i> 환경 태그</h3><div id="tag-edit-environment-tags" class="flex flex-wrap gap-2"></div></div><div id="tag-edit-entry-container"><h3 class="text-xl font-bold mb-3 border-b border-green-200 dark:border-green-700 pb-2 flex items-center text-green-600"><i data-lucide="siren" class="mr-2 w-5 h-5"></i> 진입 근거</h3><div id="tag-edit-entry-tags" class="flex flex-wrap gap-2"></div></div><div id="tag-edit-psychology-container"><h3 class="text-xl font-bold mb-3 border-b border-purple-200 dark:border-purple-700 pb-2 flex items-center text-purple-600"><i data-lucide="brain-circuit" class="mr-2 w-5 h-5"></i> 심리 상태</h3><div id="tag-edit-psychology-tags" class="flex flex-wrap gap-2"></div></div></div><div class="mt-8 flex justify-end space-x-3"><button type="button" id="close-tag-edit-modal-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">취소</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">태그 저장</button></div></form></div></div>
     
     <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop opacity-0"><div class="bg-white dark:bg-[#1E1E1E] p-8 rounded-2xl shadow-2xl w-full max-w-sm modal-content transform scale-95"><h2 id="confirm-title" class="text-xl font-bold mb-4">확인</h2><p id="confirm-message" class="text-gray-600 dark:text-gray-300 mb-6"></p><div class="flex justify-end space-x-3"><button type="button" id="confirm-cancel-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 font-semibold">취소</button><button type="button" id="confirm-ok-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 font-semibold">확인</button></div></div></div>
     <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"><p id="toast-message"></p></div>
@@ -384,8 +398,9 @@
         
         // Trading Journal State
         let unsubscribeJournals = null, unsubscribeTags = null;
-        let localJournals = [], localTags = { entry: [], psychology: [] };
-        let localFuturesInfo = {}; // { ticker: { tickValue: number, tickSize: number } } 
+        // environment 태그 추가
+        let localJournals = [], localTags = { environment: [], entry: [], psychology: [] }; 
+        let localFuturesInfo = {}; 
         let unsubscribeFuturesInfo = null;
         let statsCurrency = 'KRW', exchangeRate = 1380;
         
@@ -473,6 +488,7 @@
             const tagsDocSnap = await tagsDocRef.get();
             if (!tagsDocSnap.exists) {
                 await tagsDocRef.set({
+                    environment: ['개장 직후', '종가 부근', '변동성 확대', 'FOMC'], // 환경 태그 기본값 추가
                     entry: ['정배열 돌파', '낙주 매매', '채널 하단', 'OB', '4H', '연속저점', '주추세'],
                     psychology: ['FOMO', '확신', '매매중독', '두려움', '사후정당화', '배팅']
                 });
@@ -506,6 +522,7 @@
             unsubscribeTags = tagsDocRef.onSnapshot((doc) => {
                 if (doc.exists) {
                     localTags = doc.data();
+                    renderJournalTags(localTags.environment, 'environment-tags-container', 'environment'); // 환경 태그 렌더링
                     renderJournalTags(localTags.entry, 'entry-tags-container', 'entry');
                     renderJournalTags(localTags.psychology, 'psychology-tags-container', 'psychology');
                 }
@@ -530,46 +547,59 @@
         }
         document.querySelectorAll('#journal-container [data-tab]').forEach(b => b.addEventListener('click', () => switchJournalView(b.dataset.tab)));
         
-        // Asset type toggle (수량/계약수 필드는 HTML에서 통합되어 있지 않으므로 quantity 필드를 contracts로 간주하고 로직 수정 없이 유지)
+        // Asset type toggle (수량/계약수 필드 토글 로직 수정)
         document.querySelectorAll('[data-group="asset-type"] .toggle-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const isSpot = btn.dataset.value === 'spot';
                 
-                // 수량/계약 수 필드를 quantity로 통일하여 사용 (Futures는 contracts로 저장)
+                // 수량/계약 수 필드와 선물 계약 수 필드 토글 (요청 2)
                 document.getElementById('spot-fields').classList.toggle('hidden', !isSpot);
+                document.getElementById('futures-contracts-field').classList.toggle('hidden', isSpot);
                 document.getElementById('futures-fields').classList.toggle('hidden', isSpot);
                 
                 const quantityInput = document.getElementById('quantity');
+                const contractsInput = document.getElementById('contracts');
                 const tickValueInput = document.getElementById('tick-value');
                 const tickSizeInput = document.getElementById('tick-size');
                 
-                // Set required attribute based on type
-                quantityInput.required = true; // quantity input을 spot/futures 모두 사용
+                // 필드 이름 라벨 변경 (quantity 필드를 spot의 '수량'과 futures의 '계약 수'로 재사용)
+                document.querySelector('label[for="quantity"]').textContent = isSpot ? '수량' : '수량 (사용 안 함)'; // contracts 필드가 생겼으므로 quantity는 숨김
+                document.querySelector('label[for="quantity"]').textContent = '수량'; // contracts 필드 추가로 quantity 필드 숨김/표시 전환
+
+                quantityInput.required = isSpot;
+                contractsInput.required = !isSpot;
                 tickValueInput.required = !isSpot;
                 tickSizeInput.required = !isSpot;
-                
-                // 선물 타입 선택 시
-                if (!isSpot) {
+
+                if (!isSpot) { // 선물 타입 선택 시
                      const currentTicker = document.getElementById('ticker').value.trim().toUpperCase();
                      if (localFuturesInfo[currentTicker]) {
-                        quantityInput.value = quantityInput.value || 1; // 계약수 없으면 1로 자동 채움
+                        contractsInput.value = contractsInput.value || 1; 
                         document.getElementById('futures-info-select').value = currentTicker;
                         tickValueInput.value = formatNumber(localFuturesInfo[currentTicker].tickValue);
                         tickSizeInput.value = formatNumber(localFuturesInfo[currentTicker].tickSize);
                         document.getElementById('delete-futures-info-btn').disabled = false;
                      } else {
-                        quantityInput.value = '';
+                        contractsInput.value = '';
                         document.getElementById('futures-info-select').value = '';
                         tickValueInput.value = '';
                         tickSizeInput.value = '';
                         document.getElementById('delete-futures-info-btn').disabled = true;
                      }
+                     quantityInput.value = '';
+                     document.querySelector('label[for="quantity"]').textContent = '수량 (현물용)';
+                     quantityInput.classList.add('hidden');
+                     document.querySelector('label[for="quantity"]').classList.add('hidden');
+
                 } else { // 현물 타입 선택 시
                      document.getElementById('futures-info-select').value = '';
                      tickValueInput.value = '';
                      tickSizeInput.value = '';
                      document.getElementById('delete-futures-info-btn').disabled = true;
-                     quantityInput.value = '';
+                     contractsInput.value = '';
+                     document.querySelector('label[for="quantity"]').textContent = '수량';
+                     quantityInput.classList.remove('hidden');
+                     document.querySelector('label[for="quantity"]').classList.remove('hidden');
                 }
             });
         });
@@ -579,7 +609,7 @@
             const select = document.getElementById('futures-info-select');
             const tickerInput = document.getElementById('ticker');
             const deleteBtn = document.getElementById('delete-futures-info-btn');
-            const quantityInput = document.getElementById('quantity');
+            const contractsInput = document.getElementById('contracts');
             const tickValueInput = document.getElementById('tick-value');
             const tickSizeInput = document.getElementById('tick-size');
             
@@ -611,7 +641,7 @@
                     tickerInput.value = selectedTicker;
                     tickValueInput.value = formatNumber(info.tickValue);
                     tickSizeInput.value = formatNumber(info.tickSize);
-                    quantityInput.value = quantityInput.value || 1; // 계약수 없으면 1로 자동 채움
+                    contractsInput.value = contractsInput.value || 1; // 계약수 없으면 1로 자동 채움
                     showToast(`종목 '${selectedTicker}' 정보가 채워졌습니다.`);
                 } else {
                     tickValueInput.value = '';
@@ -714,7 +744,6 @@
 
         function calculatePnl(journal, exit) {
             const priceDiff = journal.position === 'long' ? (exit.price - journal.entryPrice) : (journal.entryPrice - exit.price);
-            const totalAmount = journal.assetType === 'spot' ? journal.quantity : journal.contracts;
             const exitQuantity = exit.quantity;
 
             if (journal.assetType === 'futures') {
@@ -734,8 +763,8 @@
 
             journals.forEach(journal => {
                 const isSpot = journal.assetType === 'spot';
-                // journal.quantity는 spot의 수량, journal.contracts는 futures의 계약수를 의미합니다.
-                const totalAmount = isSpot ? journal.quantity : journal.contracts; 
+                // contracts를 기본값 0으로 설정하여 널 방지
+                const totalAmount = isSpot ? journal.quantity : (journal.contracts || 0); 
                 const exitedAmount = journal.exits ? journal.exits.reduce((sum, exit) => sum + exit.quantity, 0) : 0;
                 const isClosed = (totalAmount - exitedAmount) <= 1e-9;
                 
@@ -785,17 +814,27 @@
                 const futuresInfoHtml = !isSpot ? 
                     `<p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><strong>틱가치/단위:</strong> ${formatPrice(journal.tickValue, journal.currency)} / ${formatNumber(journal.tickSize)}</p>` : '';
                 
-                // 태그 렌더링 (최대 4개만 표시)
-                const visibleTags = (journal.entryTags || []).slice(0, 4);
-                const hiddenTagsCount = Math.max(0, (journal.entryTags || []).length - 4);
-                const tagHtml = `<div class="flex flex-wrap gap-1">${visibleTags.map(tag => `<span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}
-                                ${hiddenTagsCount > 0 ? `<span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2.5 py-0.5 rounded-full">+${hiddenTagsCount}</span>` : ''}</div>`;
-                
-                // 심리 상태 태그 렌더링 (최대 4개만 표시)
-                const visiblePsyTags = (journal.psychologyTags || []).slice(0, 4);
-                const hiddenPsyTagsCount = Math.max(0, (journal.psychologyTags || []).length - 4);
-                const psyTagHtml = `<div class="flex flex-wrap gap-1">${visiblePsyTags.map(tag => `<span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}
-                                ${hiddenPsyTagsCount > 0 ? `<span class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2.5 py-0.5 rounded-full">+${hiddenPsyTagsCount}</span>` : ''}</div>`;
+                // 태그 렌더링 (환경, 진입, 심리)
+                const renderTags = (tags, maxCount, baseClass, textColor) => {
+                    const visibleTags = (tags || []).slice(0, maxCount);
+                    const hiddenTags = (tags || []).slice(maxCount);
+                    const hiddenTagsCount = hiddenTags.length;
+                    
+                    let tagHtml = `<div class="flex flex-wrap gap-1">`;
+                    tagHtml += visibleTags.map(tag => `<span class="${baseClass} ${textColor} text-xs font-medium px-2.5 py-0.5 rounded-full">${tag}</span>`).join('');
+
+                    if (hiddenTagsCount > 0) {
+                        // 요청 3: +n 대신 모든 태그 표시
+                        const allTagsText = (tags || []).join(', ');
+                        tagHtml += `<span title="${allTagsText}" class="text-xs font-medium text-gray-500 dark:text-gray-400 px-2.5 py-0.5 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full">+${hiddenTagsCount}</span>`;
+                    }
+                    tagHtml += `</div>`;
+                    return tagHtml;
+                };
+
+                const environmentTagHtml = renderTags(journal.environmentTags, 4, 'bg-yellow-100 dark:bg-yellow-900', 'text-yellow-800 dark:text-yellow-300');
+                const entryTagHtml = renderTags(journal.entryTags, 4, 'bg-green-100 dark:bg-green-900', 'text-green-800 dark:text-green-300');
+                const psyTagHtml = renderTags(journal.psychologyTags, 4, 'bg-purple-100 dark:bg-purple-900', 'text-purple-800 dark:text-purple-300');
 
 
                 card.innerHTML = `
@@ -822,7 +861,8 @@
                         </div>
                         
                         <div class="space-y-2 mb-4">
-                            <div><h4 class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">진입 근거</h4>${tagHtml}</div>
+                            <div><h4 class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">환경 태그</h4>${environmentTagHtml}</div>
+                            <div><h4 class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">진입 근거</h4>${entryTagHtml}</div>
                             <div><h4 class="font-semibold text-xs text-gray-500 dark:text-gray-400 mb-1">심리 상태</h4>${psyTagHtml}</div>
                         </div>
                         
@@ -853,6 +893,7 @@
                 document.getElementById('tag-edit-journal-id').value = journalId;
                 
                 // 태그 목록 렌더링 함수 호출
+                renderTagEditOptions('tag-edit-environment-tags', 'environment', journal.environmentTags || []); // 환경 태그
                 renderTagEditOptions('tag-edit-entry-tags', 'entry', journal.entryTags || []);
                 renderTagEditOptions('tag-edit-psychology-tags', 'psychology', journal.psychologyTags || []);
 
@@ -865,6 +906,12 @@
             container.innerHTML = '';
             
             const availableTags = localTags[type] || [];
+            
+            let baseColor, textBaseColor;
+            if (type === 'environment') { baseColor = 'bg-yellow-500'; textBaseColor = 'text-yellow-600'; }
+            else if (type === 'entry') { baseColor = 'bg-green-500'; textBaseColor = 'text-green-600'; }
+            else { baseColor = 'bg-purple-500'; textBaseColor = 'text-purple-600'; }
+
 
             availableTags.forEach(tag => {
                 const isSelected = selectedTags.includes(tag);
@@ -873,18 +920,18 @@
                 button.dataset.tag = tag;
                 button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors ${
                     isSelected 
-                        ? (type === 'entry' ? 'bg-green-500 text-white' : 'bg-purple-500 text-white')
+                        ? `${baseColor} text-white`
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-[#4F4F4F] dark:text-gray-200 dark:hover:bg-[#666]'
                 }`;
 
                 button.textContent = tag;
                 button.addEventListener('click', () => {
-                    if (button.classList.contains('bg-green-500') || button.classList.contains('bg-purple-500')) {
+                    if (button.classList.contains(baseColor)) {
                         // Deselect
                          button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-[#4F4F4F] dark:text-gray-200 dark:hover:bg-[#666]`;
                     } else {
                         // Select
-                         button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors ${type === 'entry' ? 'bg-green-500 text-white' : 'bg-purple-500 text-white'}`;
+                         button.className = `tag text-sm inline-flex items-center rounded-full px-3 py-1 font-medium transition-colors ${baseColor} text-white`;
                     }
                 });
                 container.appendChild(button);
@@ -900,11 +947,13 @@
             e.preventDefault();
             const journalId = document.getElementById('tag-edit-journal-id').value;
             
+            const selectedEnvironmentTags = Array.from(document.querySelectorAll('#tag-edit-environment-tags .tag.bg-yellow-500')).map(btn => btn.dataset.tag);
             const selectedEntryTags = Array.from(document.querySelectorAll('#tag-edit-entry-tags .tag.bg-green-500')).map(btn => btn.dataset.tag);
             const selectedPsychologyTags = Array.from(document.querySelectorAll('#tag-edit-psychology-tags .tag.bg-purple-500')).map(btn => btn.dataset.tag);
             
             try {
                 await db.collection("users").doc(currentUser.uid).collection("journals").doc(journalId).update({
+                    environmentTags: selectedEnvironmentTags,
                     entryTags: selectedEntryTags,
                     psychologyTags: selectedPsychologyTags
                 });
@@ -929,7 +978,8 @@
                     ...data, 
                     date: data.date.toDate(),
                     // quantity가 없으면 contracts로 채움 (역할 통일)
-                    quantity: data.quantity !== undefined ? data.quantity : (data.contracts !== undefined ? data.contracts : 0) 
+                    quantity: data.quantity !== undefined ? data.quantity : (data.contracts !== undefined ? data.contracts : 0),
+                    contracts: data.contracts !== undefined ? data.contracts : (data.quantity !== undefined ? data.quantity : 0) // contracts 필드도 따로 저장/사용
                 };
             }
             return null;
@@ -949,12 +999,17 @@
             tags.forEach(tag => {
                 const button = document.createElement('button');
                 button.type = 'button';
+                let baseColor;
+                if (type === 'environment') baseColor = 'bg-yellow-500';
+                else if (type === 'entry') baseColor = 'bg-green-500';
+                else baseColor = 'bg-purple-500';
+
                 button.className = 'tag bg-gray-200 text-gray-700 rounded-full text-sm inline-flex items-center dark:bg-[#4F4F4F] dark:text-gray-200';
                 button.dataset.tag = tag;
                 
                 button.innerHTML = `<span class="pl-3 pr-2 py-1">${tag}</span><span class="delete-tag-span pr-2 text-gray-500 dark:text-gray-300 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-3 h-3 pointer-events-none"></i></span>`;
 
-                button.addEventListener('click', (e) => e.currentTarget.classList.toggle('selected'));
+                button.addEventListener('click', (e) => e.currentTarget.classList.toggle('selected', !e.currentTarget.classList.contains(baseColor)));
                 button.querySelector('.delete-tag-span').addEventListener('click', (e) => {
                     e.stopPropagation();
                     handleDeleteJournalTag(tag, type);
@@ -965,7 +1020,7 @@
         }
 
         async function handleDeleteJournalTag(tag, type) {
-            const isTagInUse = localJournals.some(journal => (type === 'entry' ? journal.entryTags : journal.psychologyTags)?.includes(tag));
+            const isTagInUse = localJournals.some(journal => (type === 'entry' ? journal.entryTags : (type === 'environment' ? journal.environmentTags : journal.psychologyTags))?.includes(tag));
             if (isTagInUse) {
                 showToast("사용 중인 태그는 삭제할 수 없습니다.", "error");
                 return;
@@ -987,6 +1042,13 @@
                 showToast(`'${tag}' 태그가 추가되었습니다.`);
             } else { showToast("이미 존재하는 태그입니다.", "error"); }
         }
+        
+        // 환경 태그 추가 이벤트 리스너
+        document.querySelector('.add-environment-tag-btn').addEventListener('click', () => {
+            const input = document.getElementById('new-environment-tag');
+            if (input.value.trim()) { addJournalTag('environment', input.value.trim()); input.value = ''; }
+        });
+
         document.querySelector('.add-entry-tag-btn').addEventListener('click', () => {
             const input = document.getElementById('new-entry-tag');
             if (input.value.trim()) { addJournalTag('entry', input.value.trim()); input.value = ''; }
@@ -1011,20 +1073,20 @@
                 entryPrice: parseFloat(unformatNumber(document.getElementById('entry-price').value)),
                 stopLoss: parseFloat(unformatNumber(document.getElementById('stop-loss').value)), 
                 targetPrice: parseFloat(unformatNumber(document.getElementById('target-price').value)),
+                environmentTags: Array.from(document.querySelectorAll('.environment-tags-container .tag.selected')).map(b => b.dataset.tag), // 환경 태그 저장
                 entryTags: Array.from(document.querySelectorAll('.entry-tags-container .tag.selected')).map(b => b.dataset.tag),
                 psychologyTags: Array.from(document.querySelectorAll('.psychology-tags-container .tag.selected')).map(b => b.dataset.tag),
             };
 
-            const quantityInput = document.getElementById('quantity').value;
             
             if (assetType === 'spot') {
-                journalData.quantity = parseFloat(unformatNumber(quantityInput));
+                journalData.quantity = parseFloat(unformatNumber(document.getElementById('quantity').value));
                 // contracts, tickValue, tickSize는 삭제 (clean up)
                 delete journalData.contracts;
                 delete journalData.tickValue;
                 delete journalData.tickSize;
             } else { // futures
-                journalData.contracts = parseFloat(unformatNumber(quantityInput)); // quantity input을 contracts로 사용
+                journalData.contracts = parseFloat(unformatNumber(document.getElementById('contracts').value)); // contracts 필드 사용
                 journalData.tickValue = parseFloat(unformatNumber(document.getElementById('tick-value').value));
                 journalData.tickSize = parseFloat(unformatNumber(document.getElementById('tick-size').value));
                 // quantity는 삭제 (clean up)
@@ -1033,7 +1095,7 @@
             
             try {
                 if (journalId) {
-                    // 메모 필드 유지
+                    // 메모 및 청산 필드 유지
                     const existingJournal = localJournals.find(j => j.id === journalId);
                     journalData.exits = existingJournal.exits || [];
                     journalData.memo = existingJournal.memo || '';
@@ -1070,10 +1132,10 @@
                 ['position', 'strategy'].forEach(group => document.querySelectorAll(`[data-group="${group}"] .toggle-btn`).forEach(b => b.classList.toggle('selected', b.dataset.value === journal[group])));
                 document.querySelectorAll('[data-group="form-currency"] .toggle-btn').forEach(b => b.classList.toggle('selected', (journal.currency === 'USD' && b.id.includes('usd')) || (journal.currency !== 'USD' && b.id.includes('krw'))));
                 
-                
-                document.getElementById('quantity').value = formatNumber(journal.quantity); // quantity input에 통합된 값 사용
-                
-                if (journal.assetType === 'futures') {
+                if (journal.assetType === 'spot') {
+                    document.getElementById('quantity').value = formatNumber(journal.quantity);
+                } else {
+                    document.getElementById('contracts').value = formatNumber(journal.contracts);
                     document.getElementById('tick-value').value = formatNumber(journal.tickValue);
                     document.getElementById('tick-size').value = formatNumber(journal.tickSize);
                     
@@ -1090,7 +1152,7 @@
 
                 ['entry-price', 'stop-loss', 'target-price'].forEach(id => document.getElementById(id).value = formatNumber(journal[id.replace('-','')]));
                 
-                ['entryTags', 'psychologyTags'].forEach(type => {
+                ['environmentTags', 'entryTags', 'psychologyTags'].forEach(type => {
                     const containerClass = `.${type.replace('Tags', '-tags-container')}`;
                     document.querySelectorAll(`${containerClass} .tag`).forEach(b => b.classList.remove('selected'));
                     (journal[type] || []).forEach(tag => document.querySelector(`${containerClass} .tag[data-tag="${tag}"]`)?.classList.add('selected'));
@@ -1279,22 +1341,39 @@
         }
 
         function renderWinRateCharts(journals) {
-            const entryTagStats = {}, psychologyTagStats = {}, strategyStats = {}, positionStats = { 'long': { wins: 0, trades: 0 }, 'short': { wins: 0, trades: 0 }};
+            const environmentTagStats = {}, entryTagStats = {}, psychologyTagStats = {}, strategyStats = {}, positionStats = { 'long': { wins: 0, trades: 0 }, 'short': { wins: 0, trades: 0 }};
             journals.forEach(j => {
                 const pnl = j.exits.reduce((s, e) => s + calculatePnl(j,e), 0);
                 const isWin = pnl > 0;
+
+                // 포지션 통계
                 if (positionStats[j.position]) { positionStats[j.position].trades++; if (isWin) positionStats[j.position].wins++; }
-                [j.entryTags, j.psychologyTags, [j.strategy]].forEach((tags, i) => {
-                    const stats = [entryTagStats, psychologyTagStats, strategyStats][i];
+                
+                // 태그 통계
+                [j.environmentTags, j.entryTags, j.psychologyTags, [j.strategy]].forEach((tags, i) => {
+                    const stats = [environmentTagStats, entryTagStats, psychologyTagStats, strategyStats][i];
                     (tags || []).forEach(tag => { if (!stats[tag]) stats[tag] = { wins: 0, trades: 0 }; stats[tag].trades++; if (isWin) stats[tag].wins++; });
                 });
             });
+
             const createData = stats => ({ labels: Object.keys(stats), rates: Object.keys(stats).map(l => (stats[l].trades > 0 ? (stats[l].wins / stats[l].trades) * 100 : 0)) });
-            const entryData = createData(entryTagStats), psychologyData = createData(psychologyTagStats), strategyData = createData(strategyStats), positionData = createData(positionStats);
+            
+            const environmentData = createData(environmentTagStats);
+            const entryData = createData(entryTagStats);
+            const psychologyData = createData(psychologyTagStats);
+            const strategyData = createData(strategyStats);
+            const positionData = createData(positionStats);
+
+            // 환경 태그 차트 렌더링
+            createJournalChart('environment-win-rate-chart', 'bar', environmentData.labels, environmentData.rates, '승률 (%)', true);
+            
             createJournalChart('entry-win-rate-chart', 'bar', entryData.labels, entryData.rates, '승률 (%)', true);
             createJournalChart('psychology-win-rate-chart', 'bar', psychologyData.labels, psychologyData.rates, '승률 (%)', true);
-            createJournalChart('strategy-win-rate-chart', 'bar', strategyData.labels, strategyData.rates, '승률 (%)', true);
-            createJournalChart('position-win-rate-chart', 'bar', positionData.labels, positionData.rates, '승률 (%)', true);
+            
+            // 전략과 포지션을 하나의 차트로 렌더링
+            const combinedLabels = [...strategyData.labels, ...positionData.labels];
+            const combinedRates = [...strategyData.rates, ...positionData.rates];
+            createJournalChart('strategy-position-win-rate-chart', 'bar', combinedLabels, combinedRates, '승률 (%)', true);
         }
 
         function createJournalChart(canvasId, type, labels, data, label, isWinRate = false) {
@@ -1339,8 +1418,8 @@
             document.querySelectorAll('#journal-form .number-input').forEach(el => el.value = '');
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
             
-            // quantity input 값 초기화
             document.getElementById('quantity').value = '';
+            document.getElementById('contracts').value = ''; // 계약수 필드 초기화
 
             // 선물 정보 필드 초기화
             document.getElementById('futures-info-select').value = '';
@@ -1354,7 +1433,7 @@
             document.querySelector('[data-group="strategy"] .toggle-btn[data-value="단타"]').classList.add('selected');
             document.getElementById('form-currency-usd-btn').classList.add('selected');
             
-            document.querySelectorAll('.entry-tags-container .tag.selected, .psychology-tags-container .tag.selected').forEach(t => t.classList.remove('selected'));
+            document.querySelectorAll('.environment-tags-container .tag.selected, .entry-tags-container .tag.selected, .psychology-tags-container .tag.selected').forEach(t => t.classList.remove('selected'));
         }
         document.getElementById('clear-form-btn').addEventListener('click', resetForm);
         
@@ -1913,6 +1992,33 @@
                         const isExpense = button.dataset.value === 'expense';
                         document.getElementById('ledger-expense-category-section').classList.toggle('hidden', !isExpense);
                         document.getElementById('ledger-income-category-section').classList.toggle('hidden', isExpense);
+                    }
+                    if (group.dataset.group === 'asset-type') {
+                        const isSpot = button.dataset.value === 'spot';
+                        
+                        // 요청 2: 선물 계약 수 필드 표시 로직 업데이트
+                        document.getElementById('spot-fields').classList.toggle('hidden', !isSpot);
+                        document.getElementById('futures-contracts-field').classList.toggle('hidden', isSpot);
+                        document.getElementById('futures-fields').classList.toggle('hidden', isSpot);
+
+                        document.getElementById('quantity').required = isSpot;
+                        document.getElementById('contracts').required = !isSpot;
+                        document.getElementById('tick-value').required = !isSpot;
+                        document.getElementById('tick-size').required = !isSpot;
+
+                        // 현물/선물 필드 정리
+                        const quantityInput = document.getElementById('quantity');
+                        const contractsInput = document.getElementById('contracts');
+
+                        if (!isSpot) {
+                             document.querySelector('label[for="quantity"]').textContent = '수량 (현물용)';
+                             quantityInput.classList.add('hidden');
+                             document.querySelector('label[for="quantity"]').classList.add('hidden');
+                        } else {
+                             document.querySelector('label[for="quantity"]').textContent = '수량';
+                             quantityInput.classList.remove('hidden');
+                             document.querySelector('label[for="quantity"]').classList.remove('hidden');
+                        }
                     }
                 }
             }
