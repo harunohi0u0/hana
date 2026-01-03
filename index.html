@@ -34,11 +34,11 @@
         
         /* Dark Mode Colors - Deep & High Contrast */
         .dark body {
-            background-color: #08060B; /* PancakeSwap Dark Background */
+            background-color: #08060B; /* Deep Background */
             color: #F4EEFF;
         }
         .dark .ps-card, .dark .bg-white {
-            background-color: #27262C; /* PancakeSwap Card Dark */
+            background-color: #27262C; /* Card Background */
             border-color: #383241;
             box-shadow: 0px 2px 0px 0px #383241;
             color: #F4EEFF;
@@ -46,9 +46,9 @@
         
         /* Inputs in Dark Mode */
         .dark input, .dark select, .dark textarea {
-            background-color: #372F47; /* Dark Input Bg */
+            background-color: #372F47; /* Input Bg */
             border-color: #4F4F4F;
-            color: #FFFFFF; /* High Contrast Text */
+            color: #FFFFFF; /* Text Input White */
         }
         .dark input::placeholder, .dark textarea::placeholder {
             color: #9A9A9A;
@@ -58,21 +58,19 @@
             box-shadow: 0 0 0 1px #1FC7D4;
         }
 
-        /* Fixed Text Colors for Readability */
-        .dark .text-gray-600, .dark .text-gray-500, .dark .text-gray-700, .dark .text-slate-500 {
-            color: #D1D5DB !important; /* Bright Gray */
+        /* Text Contrast Fixes */
+        .dark .text-gray-700, .dark .text-gray-600, .dark .text-gray-500 {
+            color: #E0E0E0 !important; /* Very Light Gray for labels */
         }
         .dark .text-gray-800, .dark .text-gray-900, .dark .text-slate-800 {
-            color: #FFFFFF !important; /* Pure White */
+            color: #FFFFFF !important; /* Pure White for headings */
         }
         
-        /* Specific Element Fixes (Problem 3 Solved) */
-        .dark .bg-gray-50, .dark .bg-slate-50, .dark .bg-blue-50 {
-            background-color: #3B3646 !important; /* Darker inner containers */
+        /* Box Fixes */
+        .dark .bg-gray-50, .dark .bg-slate-50, .dark .bg-blue-50, .dark .bg-gray-100 {
+            background-color: #372F47 !important; /* Container Bg */
             border-color: #4F4F4F !important;
-        }
-        .dark .bg-gray-100 {
-            background-color: #372F47 !important;
+            color: #F4EEFF !important;
         }
 
         /* Tab Navigation */
@@ -93,13 +91,13 @@
         .dark .main-tab-btn { color: #B8ADD2; }
         
         .main-tab-btn.active {
-            background-color: #1FC7D4; /* Pancake Cyan */
+            background-color: #1FC7D4; /* Cyan */
             color: white;
             box-shadow: 0 2px 0 rgba(0,0,0,0.1);
         }
         .dark .main-tab-btn.active {
              background-color: #1FC7D4;
-             color: #08060B; /* Dark text on Cyan for readability */
+             color: #08060B;
              font-weight: 800;
         }
         .main-tab-btn:not(.active):hover {
@@ -122,27 +120,25 @@
         .dark .toggle-btn { color: #B8ADD2; }
         
         .toggle-btn.selected { 
-            background-color: #1FC7D4 !important; /* Cyan */
+            background-color: #1FC7D4 !important;
             color: white !important; 
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         .dark .toggle-btn.selected {
             background-color: #1FC7D4 !important;
-            color: #08060B !important; /* High contrast on button */
+            color: #08060B !important;
         }
 
         /* Tags */
         .tag { border-radius: 12px; transition: all 0.2s; font-weight: 600; font-size: 0.9rem; padding: 6px 12px; border: 2px solid transparent; }
         
-        /* Tag Colors - Visible in Dark Mode */
-        .tag.selected-environment { background-color: #FFB237 !important; color: #280D5F !important; border-color: #FFB237 !important; } /* Yellow */
-        .tag.selected-entry { background-color: #31D0AA !important; color: white !important; border-color: #31D0AA !important; } /* Green */
-        .tag.selected-psychology { background-color: #7645D9 !important; color: white !important; border-color: #7645D9 !important; } /* Purple */
+        .tag.selected-environment { background-color: #FFB237 !important; color: #280D5F !important; }
+        .tag.selected-entry { background-color: #31D0AA !important; color: white !important; }
+        .tag.selected-psychology { background-color: #7645D9 !important; color: white !important; }
         
         .tag.selected-major { background-color: #7645D9 !important; color: white !important; transform: scale(1.05); } 
         .tag.selected-minor { background-color: #1FC7D4 !important; color: #08060B !important; }
 
-        /* Default Tag State */
         .tag-default {
             background-color: #EFF4F5;
             color: #7A6EAA;
@@ -225,7 +221,7 @@
                             
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                                 <div class="sm:col-span-2 space-y-3">
-                                    <span class="block text-sm font-bold text-[#280D5F] dark:text-[#E0E0E0] mb-1">자산 유형</span>
+                                    <span class="block text-sm font-bold text-[#280D5F] dark:text-white mb-1">자산 유형</span>
                                     <div class="toggle-group" data-group="asset-type">
                                         <button type="button" data-value="spot" class="toggle-btn selected">현물</button>
                                         <button type="button" data-value="futures" class="toggle-btn">선물</button>
@@ -233,22 +229,22 @@
                                 </div>
 
                                 <div class="sm:col-span-2 space-y-3">
-                                    <label for="ticker" class="block text-sm font-bold text-[#280D5F] dark:text-[#E0E0E0] mb-1">종목 이름</label>
+                                    <label for="ticker" class="block text-sm font-bold text-[#280D5F] dark:text-white mb-1">종목 이름</label>
                                     <input type="text" id="ticker" placeholder="예: 삼성전자, NG" required class="w-full p-3 border border-[#E7E3EB] dark:border-[#4F4F4F] rounded-xl bg-[#F4F4F4] dark:bg-[#372F47] text-base">
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div><label for="date" class="block text-sm font-bold text-[#280D5F] dark:text-[#E0E0E0] mb-2">날짜</label><input type="date" id="date" required class="w-full p-3 border border-[#E7E3EB] dark:border-[#4F4F4F] rounded-xl bg-[#F4F4F4] dark:bg-[#372F47]"></div>
+                                <div><label for="date" class="block text-sm font-bold text-[#280D5F] dark:text-white mb-2">날짜</label><input type="date" id="date" required class="w-full p-3 border border-[#E7E3EB] dark:border-[#4F4F4F] rounded-xl bg-[#F4F4F4] dark:bg-[#372F47]"></div>
                                 
-                                <div><span class="block text-sm font-bold text-[#280D5F] dark:text-[#E0E0E0] mb-2">포지션</span>
+                                <div><span class="block text-sm font-bold text-[#280D5F] dark:text-white mb-2">포지션</span>
                                     <div class="toggle-group" data-group="position">
                                         <button type="button" data-value="long" class="toggle-btn selected">🟢 롱</button>
                                         <button type="button" data-value="short" class="toggle-btn">🔴 숏</button>
                                     </div>
                                 </div>
                                 
-                                <div><span class="block text-sm font-bold text-[#280D5F] dark:text-[#E0E0E0] mb-2">매매 전략</span>
+                                <div><span class="block text-sm font-bold text-[#280D5F] dark:text-white mb-2">매매 전략</span>
                                     <div class="toggle-group" data-group="strategy">
                                         <button type="button" data-value="단타" class="toggle-btn selected">단타</button>
                                         <button type="button" data-value="스윙" class="toggle-btn">스윙</button>
@@ -259,32 +255,31 @@
                             
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                                 <div id="spot-fields" class="space-y-3">
-                                    <label for="quantity" class="block text-sm font-bold text-[#280D5F] dark:text-[#E0E0E0] mb-1">수량</label>
+                                    <label for="quantity" class="block text-sm font-bold text-[#280D5F] dark:text-white mb-1">수량</label>
                                     <input type="text" inputmode="numeric" id="quantity" placeholder="예: 100" class="number-input w-full p-3 border border-[#E7E3EB] dark:border-[#4F4F4F] rounded-xl bg-[#F4F4F4] dark:bg-[#372F47]">
                                 </div>
 
                                 <div id="futures-contracts-field" class="hidden space-y-3">
-                                    <label for="contracts" class="block text-sm font-bold text-[#280D5F] dark:text-[#E0E0E0] mb-1">계약 수</label>
+                                    <label for="contracts" class="block text-sm font-bold text-[#280D5F] dark:text-white mb-1">계약 수</label>
                                     <input type="text" inputmode="numeric" id="contracts" placeholder="예: 1" class="number-input w-full p-3 border border-[#E7E3EB] dark:border-[#4F4F4F] rounded-xl bg-[#F4F4F4] dark:bg-[#372F47]">
                                 </div>
                                 
                                 <div class="space-y-3">
-                                    <span class="block text-sm font-bold text-[#280D5F] dark:text-[#E0E0E0] mb-1">입력 통화</span>
+                                    <span class="block text-sm font-bold text-[#280D5F] dark:text-white mb-1">입력 통화</span>
                                     <div class="toggle-group" data-group="form-currency">
                                         <button type="button" id="form-currency-krw-btn" class="toggle-btn">원 (₩)</button>
                                         <button type="button" id="form-currency-usd-btn" class="toggle-btn selected">달러 ($)</button>
                                     </div>
                                 </div>
 
-                                <div><label for="entry-price" class="block text-sm font-bold text-[#280D5F] dark:text-[#E0E0E0] mb-1">진입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="0" required class="number-input w-full p-3 border border-[#E7E3EB] dark:border-[#4F4F4F] rounded-xl bg-[#F4F4F4] dark:bg-[#372F47]"></div>
-                                <div><label for="target-price" class="block text-sm font-bold text-[#280D5F] dark:text-[#E0E0E0] mb-1">목표가</label><input type="text" inputmode="decimal" id="target-price" placeholder="0" required class="number-input w-full p-3 border border-[#E7E3EB] dark:border-[#4F4F4F] rounded-xl bg-[#F4F4F4] dark:bg-[#372F47]"></div>
-                                <div class="sm:col-span-2"><label for="stop-loss" class="block text-sm font-bold text-[#280D5F] dark:text-[#E0E0E0] mb-1">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="0" required class="number-input w-full p-3 border border-[#E7E3EB] dark:border-[#4F4F4F] rounded-xl bg-[#F4F4F4] dark:bg-[#372F47]"></div>
+                                <div><label for="entry-price" class="block text-sm font-bold text-[#280D5F] dark:text-white mb-1">진입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="0" required class="number-input w-full p-3 border border-[#E7E3EB] dark:border-[#4F4F4F] rounded-xl bg-[#F4F4F4] dark:bg-[#372F47]"></div>
+                                <div><label for="target-price" class="block text-sm font-bold text-[#280D5F] dark:text-white mb-1">목표가</label><input type="text" inputmode="decimal" id="target-price" placeholder="0" required class="number-input w-full p-3 border border-[#E7E3EB] dark:border-[#4F4F4F] rounded-xl bg-[#F4F4F4] dark:bg-[#372F47]"></div>
+                                <div class="sm:col-span-2"><label for="stop-loss" class="block text-sm font-bold text-[#280D5F] dark:text-white mb-1">손절가</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="0" required class="number-input w-full p-3 border border-[#E7E3EB] dark:border-[#4F4F4F] rounded-xl bg-[#F4F4F4] dark:bg-[#372F47]"></div>
                             </div>
                             
                             <div id="futures-fields" class="hidden sm:col-span-2 space-y-4">
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                                    <!-- 문제 3 해결: 다크모드에서 하얀 박스 제거 -->
-                                    <div class="sm:col-span-3 bg-[#F4F4F4] dark:bg-[#3B3646] p-4 rounded-xl border border-[#E7E3EB] dark:border-[#4F4F4F]">
+                                    <div class="sm:col-span-3 bg-[#F4F4F4] dark:bg-[#372F47] p-4 rounded-xl border border-[#E7E3EB] dark:border-[#4F4F4F]">
                                         <h3 class="text-base font-semibold mb-3 flex justify-between items-center text-[#280D5F] dark:text-white">
                                             선물 종목 정보 (틱가치/단위)
                                             <button type="button" id="delete-futures-info-btn" class="text-[#ED4B9E] px-3 py-1 rounded-lg hover:bg-[#ED4B9E] hover:text-white transition text-xs font-bold border border-[#ED4B9E] disabled:opacity-50">삭제</button>
@@ -387,7 +382,7 @@
                                 <div><label for="ledger-amount" class="block text-sm font-bold text-[#7A6EAA] dark:text-[#E0E0E0] mb-2">금액</label><input type="text" inputmode="numeric" id="ledger-amount" placeholder="0" required class="number-input w-full p-4 border border-[#E7E3EB] dark:border-[#4F4F4F] rounded-2xl bg-[#F4F4F4] dark:bg-[#372F47]"></div>
                             </div>
                                 
-                            <!-- 대분류/소분류 카테고리 섹션 (문제 2 해결: 즉시 렌더링되도록 수정) -->
+                            <!-- 대분류/소분류 카테고리 섹션 -->
                             <div class="sm:col-span-2 space-y-6 pt-6 border-t border-[#E7E3EB] dark:border-[#372F47]">
                                 <div id="ledger-category-section">
                                     <h3 id="ledger-category-title" class="text-lg font-bold mb-2 text-[#280D5F] dark:text-[#E0E0E0]">📂 카테고리 (대분류)</h3>
@@ -397,7 +392,7 @@
                                         <button type="button" id="add-ledger-major-category-btn" class="bg-[#7645D9] text-white px-5 py-3 rounded-xl font-bold hover:opacity-80 transition shadow-sm">추가</button>
                                     </div>
 
-                                    <div id="ledger-minor-category-wrapper" class="hidden mt-6 p-4 bg-[#F4F4F4] dark:bg-[#3B3646] rounded-xl border border-dashed border-[#E7E3EB] dark:border-[#4F4F4F]">
+                                    <div id="ledger-minor-category-wrapper" class="hidden mt-6 p-4 bg-[#F4F4F4] dark:bg-[#372F47] rounded-xl border border-dashed border-[#E7E3EB] dark:border-[#4F4F4F]">
                                         <h3 class="text-sm font-bold mb-2 text-[#7A6EAA] dark:text-[#E0E0E0] flex items-center"><i data-lucide="corner-down-right" class="w-4 h-4 mr-1"></i> <span id="selected-major-name"></span>의 소분류</h3>
                                         <div id="ledger-minor-category-container" class="flex flex-wrap gap-2 mb-3"></div>
                                         <div class="flex gap-2">
@@ -960,16 +955,6 @@
                        button.classList.remove('tag-default');
                        button.classList.add(...selectedClass.split(' '));
                    }
-                   // Toggle logic simplified for single class management
-                   if(button.className.includes('selected-')) {
-                        // Already selected, re-applying full class string is safe or just toggle specific class
-                   } else {
-                        // pass
-                   }
-                   // Re-render handled by class toggling above
-                   // Better: just toggle a bool and re-apply classes
-                   const isNowSelected = !isSelected; // This is local state, but we rely on DOM classes for submission
-                   // Actually, for simplicity in vanilla JS:
                    if (button.classList.contains('tag-default')) {
                         button.className = `tag text-sm inline-flex items-center px-3 py-1.5 font-bold transition-all ${selectedClass}`;
                    } else {
@@ -1247,7 +1232,7 @@
         }
 
         function createJournalChart(canvasId, type, labels, data, label) {
-            const colors = ['#1FC7D4', '#ED4B9E', '#FFB237', '#7645D9'];
+            const colors = ['#0EA5E9', '#F472B6', '#F59E0B', '#8B5CF6'];
             if (charts[canvasId]) charts[canvasId].destroy();
             const ctx = document.getElementById(canvasId)?.getContext('2d');
             if(!ctx) return;
@@ -1255,12 +1240,12 @@
             const chartData = data.map(d => d * pnlMult);
             
             const isDark = document.documentElement.classList.contains('dark');
-            const gridColor = isDark ? '#4F4F4F' : '#E7E3EB';
-            const tickColor = isDark ? '#B8ADD2' : '#7A6EAA';
+            const gridColor = isDark ? '#404040' : '#E5E7EB';
+            const tickColor = isDark ? '#BDBDBD' : '#6B7280';
 
             charts[canvasId] = new Chart(ctx, { 
                 type, 
-                data: { labels, datasets: [{ label, data: chartData, backgroundColor: type==='doughnut'?colors:chartData.map(d=>d>=0?'#31D0AA':'#ED4B9E'), borderRadius: 4 }] }, 
+                data: { labels, datasets: [{ label, data: chartData, backgroundColor: type==='doughnut'?colors:chartData.map(d=>d>=0?'#22C55E':'#EF4444'), borderRadius: 4 }] }, 
                 options: { 
                     responsive: true, maintainAspectRatio: false, 
                     plugins: { legend: { display: type==='doughnut', labels: { color: tickColor } } }, 
@@ -1350,7 +1335,6 @@
                         selectedMajorCategory = cat;
                         renderLedgerMinorCategories(type, cat);
                     }
-                    // Re-render all to update classes
                     renderLedgerMajorCategories(type);
                 });
                 
@@ -1417,7 +1401,7 @@
                     await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(updatedCategories);
                     showToast(`대분류 '${newCategory}' 추가 완료!`);
                     input.value = '';
-                    // The onSnapshot will trigger re-render
+                    renderLedgerMajorCategories(type); // 즉시 렌더링
                 } catch(e) { showToast("추가 실패", "error"); }
             }
         }
@@ -1508,7 +1492,6 @@
             selectedMajorCategory = null;
             document.getElementById('ledger-minor-category-wrapper').classList.add('hidden');
             document.querySelector('#ledger-form .toggle-btn[data-value="expense"]').click();
-            // 탭 리셋 시 카테고리 렌더링도 초기화
             renderLedgerMajorCategories('expense'); 
         }
         document.getElementById('clear-ledger-form-btn').addEventListener('click', resetLedgerForm);
@@ -1758,6 +1741,21 @@
         document.getElementById('confirm-cancel-btn').addEventListener('click', () => closeModal('confirm-modal'));
         document.querySelectorAll('.number-input').forEach(i => i.addEventListener('input', e => e.target.value = formatNumber(e.target.value)));
         
+        // 환율 입력 이벤트 리스너 수정
+        document.querySelectorAll('.exchange-rate-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const val = unformatNumber(e.target.value);
+                const rate = parseFloat(val);
+                if (rate > 0) {
+                    exchangeRate = rate;
+                    document.querySelectorAll('.exchange-rate-input').forEach(i => {
+                        if(i !== e.target) i.value = formatNumber(val);
+                    });
+                    if (currentUser) renderJournalStats(localJournals);
+                }
+            });
+        });
+
         // 토글 버튼 리스너
         document.addEventListener('click', function(event) {
             const button = event.target.closest('.toggle-btn');
