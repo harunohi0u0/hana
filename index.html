@@ -1482,4 +1482,54 @@
         function openModal(id) { const m = document.getElementById(id); m.classList.remove('hidden'); setTimeout(() => { m.classList.remove('opacity-0'); m.firstElementChild.classList.remove('scale-95'); }, 10); if(id==='tag-edit-modal') lucide.createIcons(); }
         function closeModal(id) { const m = document.getElementById(id); m.firstElementChild.classList.add('scale-95'); m.classList.add('opacity-0'); setTimeout(() => m.classList.add('hidden'), 300); }
         document.getElementById('close-modal-btn').addEventListener('click', () => closeModal('exit-modal'));
-        document.getElementById('exit-modal').
+        document.getElementById('exit-modal').addEventListener('click', e => { if (e.target.id === 'exit-modal') closeModal('exit-modal'); });
+        document.getElementById('close-memo-modal-btn').addEventListener('click', () => closeModal('memo-modal'));
+        document.getElementById('memo-modal').addEventListener('click', e => { if (e.target.id === 'memo-modal') closeModal('memo-modal'); });
+        document.getElementById('close-tag-edit-modal-btn').addEventListener('click', () => closeModal('tag-edit-modal'));
+        document.getElementById('tag-edit-modal').addEventListener('click', e => { if (e.target.id === 'tag-edit-modal') closeModal('tag-edit-modal'); });
+
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            t.lastElementChild.textContent = msg;
+            t.className = `fixed bottom-10 left-1/2 transform -translate-x-1/2 px-8 py-3 rounded-full shadow-2xl translate-y-20 opacity-0 transition-all duration-300 font-bold z-50 flex items-center ${type === 'success' ? 'bg-[#27262C] text-white border border-[#31D0AA]' : 'bg-[#27262C] text-[#ED4B9E] border border-[#ED4B9E]'}`;
+            t.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
+        }
+
+        function showConfirmModal(msg, cb, type='확인') {
+            document.getElementById('confirm-message').textContent = msg;
+            const ok = document.getElementById('confirm-ok-btn');
+            ok.textContent = type;
+            ok.className = `text-white px-6 py-2 rounded-xl font-bold shadow-md ${type === '삭제' ? 'bg-[#ED4B9E] hover:opacity-80' : 'bg-[#1FC7D4] hover:opacity-80'}`;
+            confirmCallback = cb; openModal('confirm-modal');
+        }
+        document.getElementById('confirm-ok-btn').addEventListener('click', () => { if (confirmCallback) confirmCallback(); closeModal('confirm-modal'); });
+        document.getElementById('confirm-cancel-btn').addEventListener('click', () => closeModal('confirm-modal'));
+        document.querySelectorAll('.number-input').forEach(i => i.addEventListener('input', e => e.target.value = formatNumber(e.target.value)));
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            setTheme(localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+            lucide.createIcons();
+            switchJournalView('form-view');
+            switchLedgerView('ledger-form-view');
+            document.querySelectorAll('.exchange-rate-input').forEach(i => i.value = formatNumber(exchangeRate));
+            resetForm(); 
+        });
+
+        function setTheme(t) {
+            document.documentElement.classList.toggle('dark', t === 'dark'); localStorage.setItem('theme', t);
+            document.getElementById('sun-icon').style.display = t === 'dark' ? 'block' : 'none';
+            document.getElementById('moon-icon').style.display = t === 'dark' ? 'none' : 'block';
+            updateChartTheme();
+        }
+        function updateChartTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            Chart.defaults.borderColor = isDark ? '#383241' : '#E7E3EB';
+            Chart.defaults.color = isDark ? '#b8add2' : '#7A6EAA';
+            Chart.defaults.font.family = "'Noto Sans KR', sans-serif";
+            if (currentUser) { renderJournalStats(localJournals); renderLedgerAnalysisView(); }
+        }
+        document.getElementById('theme-toggle').addEventListener('click', () => setTheme(localStorage.getItem('theme') === 'dark' ? 'light' : 'dark'));
+    </script>
+</body>
+</html>
