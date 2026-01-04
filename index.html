@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pancake Journal - 매매일지 & 가계부</title>
+    <title>Pancake Journal V4 - 매매일지 & 가계부</title>
     
     <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -88,7 +88,7 @@
 
         /* Buttons - The "Pancake Button" */
         .pc-btn {
-            font-family: 'Noto Sans KR', sans-serif; /* 한글 폰트로 변경 */
+            font-family: 'Noto Sans KR', sans-serif; 
             font-weight: 700;
             border-radius: 16px;
             padding: 10px 20px;
@@ -227,12 +227,16 @@
         }
         
         /* Tags */
-        .tag { border-radius: 12px; transition: all 0.2s; font-weight: 600; font-size: 0.85rem; padding: 4px 10px; border: 2px solid transparent; cursor: pointer; }
+        .tag { border-radius: 12px; transition: all 0.2s; font-weight: 600; font-size: 0.85rem; padding: 4px 10px; border: 2px solid transparent; cursor: pointer; display: inline-flex; items-center: center; gap: 6px; }
         .tag-default { background-color: #EFF4F5; color: #7A6EAA; border: 1px solid #E7E3EB; }
         .dark .tag-default { background-color: #372F47; color: #B8ADD2; border-color: #4F4F4F; }
         .tag.selected-environment { background-color: #FFB237 !important; color: #280D5F !important; }
         .tag.selected-entry { background-color: #31D0AA !important; color: white !important; }
         .tag.selected-psychology { background-color: #7645D9 !important; color: white !important; }
+        
+        /* Tag Delete Button */
+        .tag-delete-btn { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background-color: rgba(0,0,0,0.1); transition: background-color 0.2s; }
+        .tag-delete-btn:hover { background-color: #ED4B9E; color: white; }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -327,7 +331,7 @@
             <!-- Content Area -->
             <main id="journal-main-content">
                 
-                <!-- 1. Journal Form (FUSION: Old Layout + New Design) -->
+                <!-- 1. Journal Form -->
                 <div id="form-view">
                     <form id="journal-form" class="pc-card space-y-8 relative">
                          <!-- Decorative Blob -->
@@ -459,17 +463,36 @@
 
                 <!-- 3. Stats View (Enhanced) -->
                 <div id="stats-view" class="hidden space-y-8">
-                     <div class="pc-card p-4 flex flex-col sm:flex-row justify-center items-center gap-4">
-                        <div class="pc-toggle-group" data-group="stats-currency">
-                            <button id="stats-currency-krw-btn" class="pc-toggle-btn selected">원 (KRW)</button>
-                            <button id="stats-currency-usd-btn" class="pc-toggle-btn">달러 (USD)</button>
+                     <div class="pc-card p-4 flex flex-col xl:flex-row justify-between items-center gap-4 sticky top-0 z-10 shadow-sm border border-pancake-border dark:border-pancake-borderDark">
+                         <!-- Stats Filter -->
+                        <div class="flex items-center gap-2">
+                             <select id="stats-filter-type" class="pc-input w-auto font-bold cursor-pointer py-1.5 pl-3 pr-8">
+                                <option value="month">월별 보기</option>
+                                <option value="quarter">분기별 보기</option>
+                                <option value="year">연도별 보기</option>
+                                <option value="all">전체 보기</option>
+                            </select>
+                            <div class="flex items-center bg-pancake-input dark:bg-pancake-inputDark rounded-xl p-1">
+                                <button id="stats-prev-btn" class="p-1 hover:bg-white dark:hover:bg-pancake-cardDark rounded-lg"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                                <span id="stats-period-display" class="font-bold text-sm min-w-[100px] text-center px-2"></span>
+                                <button id="stats-next-btn" class="p-1 hover:bg-white dark:hover:bg-pancake-cardDark rounded-lg"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+                            </div>
                         </div>
-                         <div class="flex items-center gap-2">
-                            <span class="text-sm font-bold">환율:</span>
-                            <input type="text" id="stats-exchange-rate" value="1,380" class="exchange-rate-input pc-input w-24 text-center font-bold py-1">
-                         </div>
+
+                        <!-- Currency & Rate -->
+                         <div class="flex items-center gap-4">
+                            <div class="pc-toggle-group" data-group="stats-currency">
+                                <button id="stats-currency-krw-btn" class="pc-toggle-btn selected">원 (KRW)</button>
+                                <button id="stats-currency-usd-btn" class="pc-toggle-btn">달러 (USD)</button>
+                            </div>
+                             <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold text-gray-400">환율</span>
+                                <input type="text" id="stats-exchange-rate" value="1,380" class="exchange-rate-input pc-input w-20 text-center font-bold py-1 text-sm">
+                             </div>
+                        </div>
                     </div>
 
+                    <!-- Summary Cards -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="pc-card text-center py-6 border-b-4 border-pancake-cyan">
                             <h4 class="text-pancake-textSub dark:text-pancake-textSubDark font-bold text-sm mb-1">총 승률</h4>
@@ -485,34 +508,31 @@
                         </div>
                     </div>
                     
-                    <!-- NEW: Tag Based Win Rates -->
-                    <div class="pc-card">
-                        <h3 class="text-lg font-bold mb-4 text-pancake-text dark:text-white">🏷️ 태그별 승률 분석</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <h4 class="text-sm font-bold text-pancake-warning mb-2 text-center">환경 태그 승률</h4>
-                                <div id="env-tag-stats" class="space-y-2"></div>
-                            </div>
-                            <div class="border-t md:border-t-0 md:border-l border-pancake-border dark:border-pancake-borderDark pt-4 md:pt-0 md:pl-6">
-                                <h4 class="text-sm font-bold text-pancake-success mb-2 text-center">진입 근거 승률</h4>
-                                <div id="entry-tag-stats" class="space-y-2"></div>
-                            </div>
-                            <div class="border-t md:border-t-0 md:border-l border-pancake-border dark:border-pancake-borderDark pt-4 md:pt-0 md:pl-6">
-                                <h4 class="text-sm font-bold text-pancake-purple mb-2 text-center">심리 상태 승률</h4>
-                                <div id="psy-tag-stats" class="space-y-2"></div>
-                            </div>
-                        </div>
-                    </div>
-
+                    <!-- Middle: Charts -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="pc-card lg:col-span-1 min-h-[300px]">
                             <h3 class="font-bold mb-4">손익 구성</h3>
                             <div class="h-64 relative w-full"><canvas id="pnl-composition-chart"></canvas></div>
                         </div>
                         <div class="pc-card lg:col-span-2 min-h-[300px]">
-                            <h3 class="font-bold mb-4">월별 손익 추이</h3>
+                            <h3 class="font-bold mb-4">손익 추이</h3>
                             <div class="h-64 relative w-full"><canvas id="monthly-pnl-chart"></canvas></div>
                             <div id="monthly-pnl-summary" class="mt-4 text-xs font-mono text-center opacity-70"></div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom: Tag Analysis (Graph) -->
+                    <div class="pc-card">
+                        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                            <h3 class="text-lg font-bold text-pancake-text dark:text-white flex items-center"><i data-lucide="tags" class="w-5 h-5 mr-2"></i>태그별 승률 분석</h3>
+                            <div class="pc-toggle-group w-full sm:w-auto" data-group="tag-analysis-type">
+                                <button class="pc-toggle-btn selected" data-value="environment">환경</button>
+                                <button class="pc-toggle-btn" data-value="entry">진입</button>
+                                <button class="pc-toggle-btn" data-value="psychology">심리</button>
+                            </div>
+                        </div>
+                        <div class="h-80 relative w-full">
+                            <canvas id="tag-win-rate-chart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -617,28 +637,28 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="pc-card h-[300px]">
-                            <h3 class="font-bold mb-2">월별 추이</h3>
-                            <div class="relative h-56 w-full"><canvas id="ledger-monthly-pnl-chart"></canvas></div>
+                        <div class="pc-card p-4 lg:col-span-1 space-y-4">
+                            <h3 class="font-bold">지출 구성 상세</h3>
+                            <div class="flex justify-between text-xs font-bold pb-2 border-b border-pancake-border dark:border-pancake-borderDark">
+                                <span>카테고리</span>
+                                <span>금액 (비중)</span>
+                            </div>
+                            <div id="ledger-category-summary" class="space-y-2 h-[260px] overflow-y-auto pr-2 custom-scrollbar"></div>
+                            <div class="pt-2 text-right border-t border-pancake-border dark:border-pancake-borderDark">
+                                <span class="text-xs text-gray-500">총 지출:</span> <span id="ledger-breakdown-total" class="font-bold text-pancake-failure">0</span>
+                            </div>
                         </div>
-                        <div class="pc-card h-[300px]">
-                            <h3 class="font-bold mb-2">지출 구성</h3>
-                            <div class="relative h-56 w-full"><canvas id="ledger-expense-chart"></canvas></div>
+                        <div class="pc-card h-[380px]">
+                            <h3 class="font-bold mb-2">지출 차트</h3>
+                            <div class="relative h-72 w-full"><canvas id="ledger-expense-chart"></canvas></div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="pc-card p-4 lg:col-span-1 space-y-4">
-                            <h3 class="font-bold">Top 카테고리</h3>
-                            <div><span class="text-xs font-bold text-pancake-failure">지출 Top 5</span><div id="ledger-category-summary" class="mt-2 space-y-1"></div></div>
-                            <div><span class="text-xs font-bold text-pancake-success">수입 Top 5</span><div id="ledger-income-summary" class="mt-2 space-y-1"></div></div>
+                    <div class="pc-card p-4">
+                         <div class="flex justify-between items-center mb-4">
+                            <h3 id="ledger-detail-title" class="font-bold">전체 내역</h3>
                         </div>
-                        <div class="pc-card p-4 lg:col-span-2">
-                             <div class="flex justify-between items-center mb-4">
-                                <h3 id="ledger-detail-title" class="font-bold">전체 내역</h3>
-                            </div>
-                            <div id="ledger-entry-details" class="space-y-2 max-h-[500px] overflow-y-auto pr-1"></div>
-                        </div>
+                        <div id="ledger-entry-details" class="space-y-2 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar"></div>
                     </div>
                 </div>
             </main>
@@ -704,25 +724,6 @@
         </div>
     </div>
     
-    <!-- 4. Tag Edit Modal -->
-    <div id="tag-edit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden pointer-events-none">
-        <div class="pc-card w-full max-w-md m-4 pointer-events-auto shadow-2xl transform scale-95 transition-all opacity-0">
-             <h2 class="text-xl font-bold mb-4">태그 수정</h2>
-             <form id="tag-edit-form">
-                 <input type="hidden" id="tag-edit-journal-id">
-                 <div class="space-y-4">
-                     <div><h3 class="text-xs font-bold text-pancake-warning mb-2">환경 태그</h3><div id="tag-edit-environment-tags" class="flex flex-wrap gap-2"></div></div>
-                     <div><h3 class="text-xs font-bold text-pancake-success mb-2">진입 근거</h3><div id="tag-edit-entry-tags" class="flex flex-wrap gap-2"></div></div>
-                     <div><h3 class="text-xs font-bold text-pancake-purple mb-2">심리 상태</h3><div id="tag-edit-psychology-tags" class="flex flex-wrap gap-2"></div></div>
-                 </div>
-                 <div class="flex justify-end gap-2 mt-6">
-                    <button type="button" onclick="closeModal('tag-edit-modal')" class="pc-btn pc-btn-secondary">취소</button>
-                    <button type="submit" class="pc-btn pc-btn-primary">저장</button>
-                </div>
-             </form>
-        </div>
-    </div>
-
     <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-pancake-cardDark text-white px-6 py-3 rounded-full shadow-xl translate-y-20 opacity-0 transition-all duration-300 font-bold z-[60] flex items-center border border-pancake-cyan pointer-events-none">
         <span class="mr-2 text-xl">🥞</span><p id="toast-message" class="text-sm"></p>
@@ -756,6 +757,7 @@
         let localFuturesInfo = {}; 
         let unsubscribeFuturesInfo = null;
         let statsCurrency = 'KRW', exchangeRate = 1380;
+        let statsDate = new Date();
         
         let unsubscribeLedger = null, unsubscribeLedgerCategories = null;
         let localLedgerEntries = [];
@@ -799,7 +801,6 @@
             if (!currentUser) return;
             const userId = currentUser.uid;
             
-            // Default Data Checks
             const tagsRef = db.collection("users").doc(userId).collection("journalTags").doc("all");
             const tagsSnap = await tagsRef.get();
             if(!tagsSnap.exists) await tagsRef.set({ environment: ['개장 직후', '변동성 확대', 'FOMC'], entry: ['정배열', '지지선', '과매도'], psychology: ['뇌동매매', '복수심', '차분함'] });
@@ -835,7 +836,7 @@
                         renderJournalTags(localTags.environment, 'environment-tags-container', 'environment');
                         renderJournalTags(localTags.entry, 'entry-tags-container', 'entry');
                         renderJournalTags(localTags.psychology, 'psychology-tags-container', 'psychology');
-                        renderJournalStats(localJournals); // Re-render stats when tags change
+                        renderJournalStats(localJournals);
                     }
                 });
 
@@ -857,7 +858,7 @@
                 .onSnapshot(doc => {
                     if(doc.exists) {
                         const d = doc.data();
-                        localLedgerCategories = Array.isArray(d.expense) ? {expense:{}, income:{}} : d; // Simple migration
+                        localLedgerCategories = Array.isArray(d.expense) ? {expense:{}, income:{}} : d; 
                     }
                     const activeType = document.querySelector('[data-group="ledger-type"] .selected').dataset.value;
                     renderLedgerMajorCategories(activeType);
@@ -904,21 +905,17 @@
         });
 
         // --- Journal Logic ---
-        // Asset Type Toggle
         document.querySelectorAll('[data-group="asset-type"] button').forEach(btn => {
             btn.addEventListener('click', () => {
                 const isSpot = btn.dataset.value === 'spot';
                 document.getElementById('spot-fields').classList.toggle('hidden', !isSpot);
                 document.getElementById('futures-contracts-field').classList.toggle('hidden', isSpot);
                 document.getElementById('futures-fields').classList.toggle('hidden', isSpot);
-                
-                // Required toggle logic
                 document.getElementById('quantity').required = isSpot;
                 document.getElementById('contracts').required = !isSpot;
             });
         });
         
-        // Futures Info Select
         function renderFuturesInfoSelect() {
             const sel = document.getElementById('futures-info-select');
             sel.innerHTML = '<option value="">종목 선택</option>';
@@ -1002,9 +999,6 @@
                         <button class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark hover:text-pancake-cyan flex items-center gap-1 memo-btn" data-id="${j.id}">
                             <i data-lucide="message-square" class="w-3 h-3 ${j.memo?'text-pancake-cyan':''}"></i> 메모
                         </button>
-                        <button class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark hover:text-pancake-purple flex items-center gap-1 tag-btn" data-id="${j.id}">
-                            <i data-lucide="tag" class="w-3 h-3"></i> 태그
-                        </button>
                     </div>
                 `;
                 container.appendChild(card);
@@ -1015,7 +1009,6 @@
             document.querySelectorAll('.edit-btn').forEach(b => b.addEventListener('click', e => loadJournalToForm(e.currentTarget.dataset.id)));
             document.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', e => confirmDelete(e.currentTarget.dataset.id, 'journal')));
             document.querySelectorAll('.memo-btn').forEach(b => b.addEventListener('click', e => openMemoModal(e.currentTarget.dataset.id)));
-            document.querySelectorAll('.tag-btn').forEach(b => b.addEventListener('click', e => openTagModal(e.currentTarget.dataset.id)));
         }
 
         // --- Ledger Logic ---
@@ -1048,8 +1041,13 @@
                  btn.className = `px-3 py-1 rounded-lg text-xs font-medium border transition bg-white dark:bg-pancake-dark text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-pancake-cyan`;
                  btn.textContent = sub;
                  btn.onclick = () => {
-                     document.querySelectorAll('#ledger-minor-category-container button').forEach(b=>b.classList.remove('border-pancake-cyan', 'text-pancake-cyan', 'selected-minor'));
-                     btn.classList.add('border-pancake-cyan', 'text-pancake-cyan', 'selected-minor');
+                     document.querySelectorAll('#ledger-minor-category-container button').forEach(b=> {
+                         b.classList.remove('bg-pancake-cyan', 'text-white', 'border-transparent', 'selected-minor');
+                         b.classList.add('bg-white', 'dark:bg-pancake-dark', 'text-gray-600', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-700');
+                     });
+                     // Visual Select Fix
+                     btn.classList.remove('bg-white', 'dark:bg-pancake-dark', 'text-gray-600', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-700');
+                     btn.classList.add('bg-pancake-cyan', 'text-white', 'border-transparent', 'selected-minor');
                  };
                  container.appendChild(btn);
              });
@@ -1078,22 +1076,8 @@
         
         // Ledger List & Analysis
         function renderLedgerAnalysisView() {
-            // Simplified Filter Logic
             const filter = document.getElementById('ledger-analysis-filter-type').value;
-            const d = ledgerAnalysisDate; 
-            let start, end, label;
-            
-            if(filter === 'month') {
-                start = new Date(d.getFullYear(), d.getMonth(), 1); end = new Date(d.getFullYear(), d.getMonth()+1, 0, 23, 59, 59);
-                label = `${d.getFullYear()}년 ${d.getMonth()+1}월`;
-            } else if (filter === 'year') {
-                start = new Date(d.getFullYear(), 0, 1); end = new Date(d.getFullYear(), 11, 31, 23, 59, 59);
-                label = `${d.getFullYear()}년`;
-            } else { // Quarter
-                 const q = Math.floor(d.getMonth()/3);
-                 start = new Date(d.getFullYear(), q*3, 1); end = new Date(d.getFullYear(), (q+1)*3, 0, 23, 59, 59);
-                 label = `${d.getFullYear()}년 ${q+1}분기`;
-            }
+            const { start, end, label } = getPeriod(ledgerAnalysisDate, filter);
             document.getElementById('ledger-analysis-period-display').textContent = label;
             
             const entries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
@@ -1109,7 +1093,8 @@
             document.getElementById('ledger-total-income').textContent = formatPrice(inc, 'KRW');
             document.getElementById('ledger-total-expense').textContent = formatPrice(exp, 'KRW');
             document.getElementById('ledger-balance').textContent = formatPrice(inc - exp, 'KRW');
-            
+            document.getElementById('ledger-breakdown-total').textContent = formatPrice(exp, 'KRW');
+
             // List
             const listEl = document.getElementById('ledger-entry-details'); listEl.innerHTML = '';
             if(entries.length === 0) listEl.innerHTML = '<p class="text-center text-gray-400 py-4">내역이 없습니다.</p>';
@@ -1140,53 +1125,49 @@
             // Charts (Simplified)
             updateLedgerCharts(entries, expCat, incCat);
             
-            // Summary Lists
-            const renderSum = (elId, obj) => {
+            // Summary Lists (with %)
+            const renderSum = (elId, obj, total) => {
                 const el = document.getElementById(elId); el.innerHTML = '';
-                Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5).forEach(([k,v]) => {
-                    el.innerHTML += `<div class="flex justify-between text-xs"><span class="opacity-80">${k}</span><span class="font-bold">${formatPrice(v,'KRW')}</span></div>`;
+                Object.entries(obj).sort((a,b)=>b[1]-a[1]).forEach(([k,v]) => {
+                    const pct = total > 0 ? ((v/total)*100).toFixed(1) : 0;
+                    el.innerHTML += `
+                        <div class="flex justify-between text-xs py-1 hover:bg-gray-50 dark:hover:bg-pancake-inputDark rounded px-1">
+                            <span class="opacity-80 font-medium">${k}</span>
+                            <div class="text-right">
+                                <span class="font-bold block">${formatPrice(v,'KRW')}</span>
+                                <span class="text-[10px] text-gray-400 block">(${pct}%)</span>
+                            </div>
+                        </div>`;
                 });
             };
-            renderSum('ledger-category-summary', expCat);
-            renderSum('ledger-income-summary', incCat);
+            renderSum('ledger-category-summary', expCat, exp);
         }
 
         function updateLedgerCharts(entries, expCat, incCat) {
              const chartColor = document.documentElement.classList.contains('dark') ? '#B8ADD2' : '#7A6EAA';
-             // Bar Chart (Trend)
-             const ctx1 = document.getElementById('ledger-monthly-pnl-chart').getContext('2d');
-             if(charts['l1']) charts['l1'].destroy();
-             const days = {}; entries.forEach(e => {
-                 const k = e.date.getDate();
-                 if(!days[k]) days[k] = {i:0, e:0};
-                 if(e.type==='income') days[k].i += e.amount; else days[k].e += e.amount;
-             });
-             const labels = Object.keys(days).sort((a,b)=>a-b);
-             charts['l1'] = new Chart(ctx1, {
-                 type: 'bar',
-                 data: {
-                     labels,
-                     datasets: [
-                         {label:'수입', data:labels.map(l=>days[l].i), backgroundColor:'#31D0AA', borderRadius:4},
-                         {label:'지출', data:labels.map(l=>days[l].e), backgroundColor:'#ED4B9E', borderRadius:4}
-                     ]
-                 },
-                 options: { responsive:true, maintainAspectRatio:false, scales:{x:{grid:{display:false}, ticks:{color:chartColor}}, y:{display:false}}, plugins:{legend:{display:false}}}
-             });
-
              // Doughnut (Expense)
              const ctx2 = document.getElementById('ledger-expense-chart').getContext('2d');
              if(charts['l2']) charts['l2'].destroy();
              const eLabels = Object.keys(expCat);
              charts['l2'] = new Chart(ctx2, {
                  type: 'doughnut',
-                 data: { labels: eLabels, datasets: [{data: Object.values(expCat), backgroundColor: ['#ED4B9E', '#FFB237', '#7645D9', '#1FC7D4'], borderWidth:0}] },
-                 options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right', labels:{boxWidth:10, font:{size:10}, color:chartColor}}}}
+                 data: { labels: eLabels, datasets: [{data: Object.values(expCat), backgroundColor: ['#ED4B9E', '#FFB237', '#7645D9', '#1FC7D4', '#31D0AA'], borderWidth:0}] },
+                 options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:10}, color:chartColor}}}}
              });
         }
         
-        document.getElementById('ledger-analysis-prev-btn').addEventListener('click', () => { ledgerAnalysisDate.setMonth(ledgerAnalysisDate.getMonth()-1); renderLedgerAnalysisView(); });
-        document.getElementById('ledger-analysis-next-btn').addEventListener('click', () => { ledgerAnalysisDate.setMonth(ledgerAnalysisDate.getMonth()+1); renderLedgerAnalysisView(); });
+        document.getElementById('ledger-analysis-prev-btn').addEventListener('click', () => { updateLedgerDate(-1); });
+        document.getElementById('ledger-analysis-next-btn').addEventListener('click', () => { updateLedgerDate(1); });
+        
+        function updateLedgerDate(offset) {
+            const filter = document.getElementById('ledger-analysis-filter-type').value;
+            if(filter === 'month') ledgerAnalysisDate.setMonth(ledgerAnalysisDate.getMonth() + offset);
+            else if(filter === 'quarter') ledgerAnalysisDate.setMonth(ledgerAnalysisDate.getMonth() + (offset*3));
+            else ledgerAnalysisDate.setFullYear(ledgerAnalysisDate.getFullYear() + offset);
+            renderLedgerAnalysisView();
+        }
+        document.getElementById('ledger-analysis-filter-type').addEventListener('change', () => { ledgerAnalysisDate = new Date(); renderLedgerAnalysisView(); });
+
         
         // Ledger Actions
         window.deleteLedger = (id) => confirmDelete(id, 'ledger');
@@ -1252,7 +1233,28 @@
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'tag tag-default';
-                btn.textContent = t;
+                
+                // Text Span
+                const text = document.createElement('span');
+                text.textContent = t;
+                btn.appendChild(text);
+
+                // Delete Span (Icon)
+                const del = document.createElement('span');
+                del.className = 'tag-delete-btn hidden group-hover:flex';
+                del.innerHTML = '<i data-lucide="x" class="w-3 h-3"></i>';
+                
+                // Add Delete Logic
+                if (id.includes('tags-container') && !id.includes('tag-edit')) { // Only in form view
+                    del.classList.remove('hidden');
+                    del.style.marginLeft = '4px';
+                    del.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteJournalTag(type, t);
+                    });
+                    btn.appendChild(del);
+                }
+
                 btn.onclick = () => {
                     const selectedClass = type === 'environment' ? 'selected-environment' : (type === 'entry' ? 'selected-entry' : 'selected-psychology');
                     btn.classList.toggle('tag-default');
@@ -1260,6 +1262,16 @@
                 };
                 el.appendChild(btn);
             });
+            lucide.createIcons();
+        }
+        
+        async function deleteJournalTag(type, tag) {
+             showConfirmModal(`'${tag}' 태그를 삭제하시겠습니까?`, async () => {
+                 const key = type; // environment, entry, psychology
+                 const newTags = localTags[key].filter(t => t !== tag);
+                 await db.collection("users").doc(currentUser.uid).collection("journalTags").doc("all").update({[key]: newTags});
+                 showToast("태그 삭제 완료");
+             });
         }
         
         // --- Modals ---
@@ -1328,12 +1340,13 @@
             if(j.assetType === 'spot') document.getElementById('quantity').value = formatNumber(j.quantity);
             else document.getElementById('contracts').value = formatNumber(j.contracts);
             
-            // Restore Tags (Visual)
+            // Restore Tags
             const restoreTags = (tags, containerId, type) => {
                 const container = document.getElementById(containerId);
                 const selectedClass = type === 'environment' ? 'selected-environment' : (type === 'entry' ? 'selected-entry' : 'selected-psychology');
                 Array.from(container.children).forEach(btn => {
-                    if (tags.includes(btn.textContent)) {
+                    const textSpan = btn.querySelector('span');
+                    if (textSpan && tags.includes(textSpan.textContent)) {
                         btn.classList.remove('tag-default');
                         btn.classList.add(selectedClass);
                     } else {
@@ -1362,7 +1375,7 @@
         document.querySelector('.add-entry-tag-btn').addEventListener('click', () => { const v = document.getElementById('new-entry-tag').value; if(v) addJournalTag('entry', v); });
         document.querySelector('.add-psychology-tag-btn').addEventListener('click', () => { const v = document.getElementById('new-psychology-tag').value; if(v) addJournalTag('psychology', v); });
         
-        // Journal Submit Logic (Updated for Fusion Form)
+        // Journal Submit Logic
         document.getElementById('journal-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('journal-id').value;
@@ -1371,8 +1384,8 @@
             const strategy = document.querySelector('[data-group="strategy"] .selected').dataset.value;
             const isUsd = document.querySelector('[data-group="form-currency"] .selected').id.includes('usd');
             
-            // Get Tags
-            const getTags = (id, cls) => Array.from(document.querySelectorAll(`#${id} .${cls}`)).map(b => b.textContent);
+            // Get Tags (Need to handle text content inside button because of delete icon)
+            const getTags = (id, cls) => Array.from(document.querySelectorAll(`#${id} .${cls}`)).map(b => b.firstChild.textContent);
             const envTags = getTags('environment-tags-container', 'selected-environment');
             const entryTags = getTags('entry-tags-container', 'selected-entry');
             const psyTags = getTags('psychology-tags-container', 'selected-psychology');
@@ -1440,20 +1453,26 @@
                 btn.parentElement.querySelectorAll('.pc-toggle-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
                 if(btn.parentElement.dataset.group === 'ledger-type') renderLedgerMajorCategories(btn.dataset.value);
+                if(btn.parentElement.dataset.group === 'tag-analysis-type') renderTagWinRateChart();
             }
         });
         
-        // --- Enhanced Stats Logic (Fixed & Tag Based) ---
+        // --- Enhanced Stats Logic (Date Filter + Graph) ---
         function renderJournalStats(list) {
+             const filterType = document.getElementById('stats-filter-type').value;
+             const { start, end, label } = getPeriod(statsDate, filterType);
+             document.getElementById('stats-period-display').textContent = label;
+
              const completed = list.filter(j => {
                  const total = j.assetType==='spot' ? j.quantity : j.contracts;
                  const exited = (j.exits||[]).reduce((a,b)=>a+b.quantity,0);
-                 return (j.exits||[]).length > 0 && Math.abs(total-exited) < 1e-9;
+                 const isCompleted = (j.exits||[]).length > 0 && Math.abs(total-exited) < 1e-9;
+                 return isCompleted && j.date >= start && j.date <= end;
              });
 
              // 1. Basic Stats
              const wins = completed.filter(j => (j.exits||[]).reduce((a,b)=>a+calculatePnl(j,b),0) > 0).length;
-             document.getElementById('total-win-rate').textContent = completed.length ? `${((wins/completed.length)*100).toFixed(0)}%` : '0%';
+             document.getElementById('total-win-rate').textContent = completed.length ? `${((wins/completed.length)*100).toFixed(1)}%` : '0%';
              
              let totalPnl = 0;
              completed.forEach(j => {
@@ -1464,28 +1483,84 @@
              const isStatsUsd = document.querySelector('[data-group="stats-currency"] .selected').id.includes('usd');
              const displayPnl = isStatsUsd ? totalPnl/exchangeRate : totalPnl;
              document.getElementById('total-realized-pnl').textContent = formatPrice(displayPnl, isStatsUsd?'USD':'KRW');
-
-             // 2. Tag Stats Helpers
-             const calcTagWinRate = (tagList, tagTypeKey) => {
-                 let html = '';
-                 tagList.forEach(tag => {
-                     const relevant = completed.filter(j => (j[tagTypeKey]||[]).includes(tag));
-                     if(relevant.length > 0) {
-                         const w = relevant.filter(j => (j.exits||[]).reduce((a,b)=>a+calculatePnl(j,b),0) > 0).length;
-                         const rate = ((w/relevant.length)*100).toFixed(0);
-                         let color = rate >= 50 ? 'text-pancake-success' : 'text-pancake-failure';
-                         html += `<div class="flex justify-between text-xs px-2 py-1 bg-gray-50 dark:bg-pancake-inputDark rounded"><span class="font-medium">${tag} (${relevant.length})</span><span class="font-bold ${color}">${rate}%</span></div>`;
-                     }
-                 });
-                 return html || '<p class="text-xs text-center opacity-50">데이터 없음</p>';
-             };
              
-             document.getElementById('env-tag-stats').innerHTML = calcTagWinRate(localTags.environment, 'environmentTags');
-             document.getElementById('entry-tag-stats').innerHTML = calcTagWinRate(localTags.entry, 'entryTags');
-             document.getElementById('psy-tag-stats').innerHTML = calcTagWinRate(localTags.psychology, 'psychologyTags');
+             // Avg P/L Ratio (Simplified)
+             let ratios = [];
+             completed.forEach(j => {
+                 const diff = Math.abs(j.targetPrice - j.entryPrice);
+                 const risk = Math.abs(j.entryPrice - j.stopLoss);
+                 if(risk > 0) ratios.push(diff/risk);
+             });
+             const avgRatio = ratios.length ? ratios.reduce((a,b)=>a+b,0)/ratios.length : 0;
+             document.getElementById('average-pl-ratio').textContent = avgRatio.toFixed(2);
 
-             // 3. Charts
+             // 3. Charts & Graphs
              updateJournalCharts(completed, isStatsUsd);
+             renderTagWinRateChart(completed); // Initial render with current data
+        }
+
+        function renderTagWinRateChart(filteredList = null) {
+            // Need the list. If not provided, re-filter from localJournals
+            let list = filteredList;
+            if(!list) {
+                 const filterType = document.getElementById('stats-filter-type').value;
+                 const { start, end } = getPeriod(statsDate, filterType);
+                 list = localJournals.filter(j => {
+                     const total = j.assetType==='spot' ? j.quantity : j.contracts;
+                     const exited = (j.exits||[]).reduce((a,b)=>a+b.quantity,0);
+                     const isCompleted = (j.exits||[]).length > 0 && Math.abs(total-exited) < 1e-9;
+                     return isCompleted && j.date >= start && j.date <= end;
+                 });
+            }
+
+            const activeTypeBtn = document.querySelector('[data-group="tag-analysis-type"] .selected');
+            const typeKey = activeTypeBtn ? activeTypeBtn.dataset.value + 'Tags' : 'environmentTags'; // e.g. environmentTags
+            
+            // Calculate Win Rates for each tag in this category
+            const tagStats = {};
+            const tagList = typeKey === 'environmentTags' ? localTags.environment : (typeKey === 'entryTags' ? localTags.entry : localTags.psychology);
+            
+            tagList.forEach(tag => {
+                const relevant = list.filter(j => (j[typeKey]||[]).includes(tag));
+                if (relevant.length > 0) {
+                    const wins = relevant.filter(j => (j.exits||[]).reduce((a,b)=>a+calculatePnl(j,b),0) > 0).length;
+                    tagStats[tag] = (wins / relevant.length) * 100;
+                }
+            });
+            
+            // Sort
+            const sortedTags = Object.keys(tagStats).sort((a,b) => tagStats[b] - tagStats[a]);
+            const data = sortedTags.map(t => tagStats[t]);
+            
+            const ctx = document.getElementById('tag-win-rate-chart').getContext('2d');
+            if(charts['tagWin']) charts['tagWin'].destroy();
+            
+            const isDark = document.documentElement.classList.contains('dark');
+            const tickColor = isDark ? '#B8ADD2' : '#7A6EAA';
+
+            charts['tagWin'] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedTags,
+                    datasets: [{
+                        label: '승률 (%)',
+                        data: data,
+                        backgroundColor: data.map(v => v >= 50 ? '#31D0AA' : '#ED4B9E'),
+                        borderRadius: 4,
+                        barThickness: 20
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { beginAtZero: true, max: 100, ticks: { color: tickColor }, grid: { display: false } },
+                        y: { ticks: { color: tickColor, font: { weight: 'bold' } }, grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
         }
 
         function updateJournalCharts(completed, isUsd) {
@@ -1508,7 +1583,7 @@
                  options: { responsive:true, maintainAspectRatio:false, plugins: { legend: { position:'right', labels: { color: chartColor, boxWidth: 10 } } } }
              });
 
-             // Monthly Trend (Fixed: Dynamic Month)
+             // Monthly Trend
              const ctx2 = document.getElementById('monthly-pnl-chart').getContext('2d');
              if(charts['j2']) charts['j2'].destroy();
              
@@ -1538,16 +1613,41 @@
                      plugins: { legend: { display: false } }
                  }
              });
-             
-             // Summary Text
-             const sumHtml = sortedMonths.map(m => `<span class="mx-2">${m}: <span class="${months[m]>=0?'text-pancake-success':'text-pancake-failure'} font-bold">${formatPrice(months[m], isUsd?'USD':'KRW')}</span></span>`).join('');
-             document.getElementById('monthly-pnl-summary').innerHTML = sumHtml || '데이터가 없습니다.';
         }
         
+        // Stats Date Navigation
+        document.getElementById('stats-prev-btn').addEventListener('click', () => updateStatsDate(-1));
+        document.getElementById('stats-next-btn').addEventListener('click', () => updateStatsDate(1));
+        
+        function updateStatsDate(offset) {
+            const filter = document.getElementById('stats-filter-type').value;
+            if(filter === 'month') statsDate.setMonth(statsDate.getMonth() + offset);
+            else if(filter === 'quarter') statsDate.setMonth(statsDate.getMonth() + (offset*3));
+            else if(filter === 'year') statsDate.setFullYear(statsDate.getFullYear() + offset);
+            renderJournalStats(localJournals);
+        }
+        document.getElementById('stats-filter-type').addEventListener('change', () => { statsDate = new Date(); renderJournalStats(localJournals); });
+
+        // Helper: Get Period
+        function getPeriod(date, filterType) {
+            const year = date.getFullYear(); const month = date.getMonth();
+            let start, end, label;
+            if (filterType === 'month') { 
+                label = `${year}년 ${month + 1}월`; start = new Date(year, month, 1); end = new Date(year, month + 1, 0, 23, 59, 59); 
+            } else if (filterType === 'quarter') { 
+                const q = Math.floor(month / 3) + 1; label = `${year}년 ${q}분기`; start = new Date(year, (q - 1) * 3, 1); end = new Date(year, q * 3, 0, 23, 59, 59); 
+            } else if (filterType === 'year') { 
+                label = `${year}년`; start = new Date(year, 0, 1); end = new Date(year, 11, 31, 23, 59, 59); 
+            } else {
+                label = "전체 기간"; start = new Date(1970, 0, 1); end = new Date(2100, 11, 31);
+            }
+            return { start, end, label };
+        }
+
         // Listener for Stats Currency Toggle
         document.querySelectorAll('[data-group="stats-currency"] button').forEach(b => {
             b.addEventListener('click', () => {
-                setTimeout(() => renderJournalStats(localJournals), 50); // wait for toggle class update
+                setTimeout(() => renderJournalStats(localJournals), 50); 
             });
         });
 
@@ -1561,37 +1661,6 @@
                 renderJournalStats(localJournals);
                 renderLedgerAnalysisView();
             }
-        });
-        
-        // Modal Tag Edit Form open helper
-        function openTagModal(id) {
-            const j = localJournals.find(x=>x.id===id); if(!j) return;
-            document.getElementById('tag-edit-journal-id').value = id;
-            const createTagBtn = (t, type, selected) => {
-                const b = document.createElement('button'); b.type='button';
-                b.className = `tag ${selected?'selected-'+type:'tag-default'}`; b.textContent = t;
-                b.onclick = () => { b.classList.toggle('tag-default'); b.classList.toggle('selected-'+type); };
-                return b;
-            };
-            const fill = (cid, type, current) => {
-                const c = document.getElementById(cid); c.innerHTML='';
-                localTags[type].forEach(t => c.appendChild(createTagBtn(t, type, current.includes(t))));
-            };
-            fill('tag-edit-environment-tags', 'environment', j.environmentTags||[]);
-            fill('tag-edit-entry-tags', 'entry', j.entryTags||[]);
-            fill('tag-edit-psychology-tags', 'psychology', j.psychologyTags||[]);
-            openModal('tag-edit-modal');
-        }
-        document.getElementById('tag-edit-form').addEventListener('submit', async(e)=>{
-            e.preventDefault();
-            const id = document.getElementById('tag-edit-journal-id').value;
-            const getT = (cid, type) => Array.from(document.querySelectorAll(`#${cid} .selected-${type}`)).map(b=>b.textContent);
-            await db.collection("users").doc(currentUser.uid).collection("journals").doc(id).update({
-                environmentTags: getT('tag-edit-environment-tags', 'environment'),
-                entryTags: getT('tag-edit-entry-tags', 'entry'),
-                psychologyTags: getT('tag-edit-psychology-tags', 'psychology')
-            });
-            closeModal('tag-edit-modal'); showToast("태그 수정됨");
         });
         
         // Memo Modal helper
