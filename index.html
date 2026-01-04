@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- Fonts: Kanit (Official Pancake Font) & Noto Sans KR -->
+    <!-- Fonts: Kanit (Brand) & Noto Sans KR (Body) -->
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     
     <!-- Firebase SDKs -->
@@ -27,18 +27,24 @@
                         pancake: {
                             cyan: '#1FC7D4',
                             purple: '#7645D9',
-                            // 다크모드 배경색 변경: 회색빛이 도는 부드러운 다크 (#18171C)
-                            dark: '#18171C', 
+                            // V6 Background Colors
+                            bgLight: '#F0FDFA', // Soft Mint
+                            bgDark: '#232136',  // Deep Lavender Grey
+                            
                             card: '#FFFFFF',
-                            cardDark: '#27262C',
+                            cardDark: '#2D2B3B', // Slightly lighter than bg
+                            
                             text: '#280D5F',
                             textSub: '#7A6EAA',
-                            textDark: '#F4EEFF',
+                            textDark: '#EAE9F0',
                             textSubDark: '#B8ADD2',
+                            
                             input: '#EEEAF4',
-                            inputDark: '#372F47',
+                            inputDark: '#373546',
+                            
                             border: '#E7E3EB',
-                            borderDark: '#383241',
+                            borderDark: '#454252',
+                            
                             success: '#31D0AA',
                             failure: '#ED4B9E',
                             warning: '#FFB237'
@@ -65,25 +71,24 @@
     </script>
 
     <style>
-        /* --- Pancake Design System Overrides --- */
+        /* --- Styles --- */
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: #EFF4F5; /* Light Theme Bg */
+            background-color: #F0FDFA; /* Soft Mint Base */
             color: #280D5F;
             transition: background-color 0.3s, color 0.3s;
         }
 
         .dark body {
-            background-color: #18171C; /* New Softer Dark Bg */
-            color: #F4EEFF;
+            background-color: #232136; /* Deep Lavender Base */
+            color: #EAE9F0;
         }
 
-        /* Titles use Kanit */
         h1, h2, h3, .font-brand {
             font-family: 'Kanit', sans-serif;
         }
 
-        /* Card Style - The "Pancake Panel" */
+        /* Card Style */
         .pc-card {
             background: #FFFFFF;
             border: 1px solid #E7E3EB;
@@ -93,12 +98,12 @@
             transition: all 0.2s ease-in-out;
         }
         .dark .pc-card {
-            background: #27262C;
-            border-color: #383241;
-            color: #F4EEFF;
+            background: #2D2B3B;
+            border-color: #454252;
+            color: #EAE9F0;
         }
 
-        /* Buttons - The "Pancake Button" */
+        /* Buttons */
         .pc-btn {
             font-family: 'Noto Sans KR', sans-serif; 
             font-weight: 700;
@@ -112,54 +117,25 @@
             border: none;
             box-shadow: 0px 2px 0px rgba(0,0,0,0.1);
         }
-        .pc-btn:active {
-            transform: translateY(2px);
-            box-shadow: none;
-        }
-        .pc-btn-primary {
-            background-color: #1FC7D4;
-            color: white;
-            box-shadow: 0px 4px 0px #139ea8;
-        }
+        .pc-btn:active { transform: translateY(2px); box-shadow: none; }
+        
+        .pc-btn-primary { background-color: #1FC7D4; color: white; box-shadow: 0px 4px 0px #139ea8; }
         .pc-btn-primary:active { box-shadow: 0px 0px 0px #139ea8; }
         
-        /* Secondary Button (비활성 탭) - CSS로 스타일 통합하여 충돌 방지 */
         .pc-btn-secondary {
-            background-color: #FFFFFF;
-            color: #7A6EAA; /* Pancake Text Sub */
-            border: 1px solid transparent; /* 공간 확보용 */
-            box-shadow: none;
+            background-color: #FFFFFF; color: #7A6EAA; border: 1px solid transparent; box-shadow: none;
         }
-        .pc-btn-secondary:hover { 
-            opacity: 0.8; 
-            border-color: #1FC7D4;
-            color: #1FC7D4;
-        }
-        .dark .pc-btn-secondary {
-            background-color: transparent;
-            color: #B8ADD2;
-            border: 1px solid #383241;
-        }
-        .dark .pc-btn-secondary:hover {
-            border-color: #1FC7D4;
-            color: #1FC7D4;
-        }
+        .pc-btn-secondary:hover { opacity: 0.8; border-color: #1FC7D4; color: #1FC7D4; }
+        .dark .pc-btn-secondary { background-color: transparent; color: #B8ADD2; border: 1px solid #454252; }
+        .dark .pc-btn-secondary:hover { border-color: #1FC7D4; color: #1FC7D4; }
         
-        .pc-btn-purple {
-            background-color: #7645D9;
-            color: white;
-            box-shadow: 0px 4px 0px #522f99;
-        }
+        .pc-btn-purple { background-color: #7645D9; color: white; box-shadow: 0px 4px 0px #522f99; }
         .pc-btn-purple:active { box-shadow: 0px 0px 0px #522f99; }
 
-        .pc-btn-danger {
-            background-color: #ED4B9E;
-            color: white;
-            box-shadow: 0px 4px 0px #bd2975;
-        }
+        .pc-btn-danger { background-color: #ED4B9E; color: white; box-shadow: 0px 4px 0px #bd2975; }
         .pc-btn-danger:active { box-shadow: 0px 0px 0px #bd2975; }
 
-        /* Inputs - Clean & Round */
+        /* Inputs */
         .pc-input {
             background-color: #EEEAF4;
             border: 1px solid #D7CAEC;
@@ -170,112 +146,49 @@
             width: 100%;
             transition: box-shadow 0.2s;
         }
-        .pc-input:focus {
-            outline: none;
-            box-shadow: 0px 0px 0px 4px rgba(118, 69, 217, 0.2);
-            border-color: #7645D9;
-        }
-        .dark .pc-input {
-            background-color: #372F47;
-            border-color: #383241;
-            color: #FFFFFF;
-        }
-        .dark .pc-input:focus {
-            box-shadow: 0px 0px 0px 4px rgba(31, 199, 212, 0.2);
-            border-color: #1FC7D4;
-        }
+        .pc-input:focus { outline: none; box-shadow: 0px 0px 0px 4px rgba(118, 69, 217, 0.2); border-color: #7645D9; }
+        .dark .pc-input { background-color: #373546; border-color: #454252; color: #FFFFFF; }
+        .dark .pc-input:focus { box-shadow: 0px 0px 0px 4px rgba(31, 199, 212, 0.2); border-color: #1FC7D4; }
         
-        /* Select & Date Dark Mode Fixes */
-        .dark select option { background-color: #372F47; color: white; }
-        .dark input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            cursor: pointer;
-        }
+        .dark select option { background-color: #373546; color: white; }
+        .dark input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
 
-        /* Segmented Control (Tabs) */
-        .pc-tab-container {
-            background-color: #EFF4F5;
-            border-radius: 24px;
-            padding: 4px;
-            display: inline-flex;
-        }
-        .dark .pc-tab-container { background-color: #372F47; }
+        /* Tabs */
+        .pc-tab-container { background-color: rgba(255, 255, 255, 0.6); border-radius: 24px; padding: 4px; display: inline-flex; }
+        .dark .pc-tab-container { background-color: rgba(45, 43, 59, 0.6); }
         
-        .pc-tab {
-            padding: 8px 24px;
-            border-radius: 20px;
-            font-family: 'Kanit', sans-serif;
-            font-weight: 600;
-            color: #7A6EAA;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+        .pc-tab { padding: 8px 24px; border-radius: 20px; font-family: 'Kanit', sans-serif; font-weight: 600; color: #7A6EAA; cursor: pointer; transition: all 0.2s; }
         .dark .pc-tab { color: #B8ADD2; }
-        
-        .pc-tab.active {
-            background-color: #7A6EAA;
-            color: white;
-        }
-        .dark .pc-tab.active {
-            background-color: #1FC7D4;
-            color: #08060B;
-        }
+        .pc-tab.active { background-color: #7A6EAA; color: white; }
+        .dark .pc-tab.active { background-color: #1FC7D4; color: #08060B; }
 
-        /* Toggle Button Group */
-        .pc-toggle-group {
-            display: flex;
-            background-color: #EEEAF4;
-            border-radius: 16px;
-            padding: 2px;
-        }
-        .dark .pc-toggle-group { background-color: #372F47; }
-        
-        .pc-toggle-btn {
-            flex: 1;
-            text-align: center;
-            padding: 8px;
-            border-radius: 14px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #7A6EAA;
-            transition: all 0.2s;
-        }
+        /* Toggle */
+        .pc-toggle-group { display: flex; background-color: #EEEAF4; border-radius: 16px; padding: 2px; }
+        .dark .pc-toggle-group { background-color: #373546; }
+        .pc-toggle-btn { flex: 1; text-align: center; padding: 8px; border-radius: 14px; font-size: 14px; font-weight: 600; color: #7A6EAA; transition: all 0.2s; }
         .dark .pc-toggle-btn { color: #B8ADD2; }
-        
-        .pc-toggle-btn.selected {
-            background-color: #1FC7D4;
-            color: white;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .dark .pc-toggle-btn.selected {
-            background-color: #1FC7D4;
-            color: #08060B;
-        }
+        .pc-toggle-btn.selected { background-color: #1FC7D4; color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .dark .pc-toggle-btn.selected { background-color: #1FC7D4; color: #08060B; }
         
         /* Tags */
         .tag { border-radius: 12px; transition: all 0.2s; font-weight: 600; font-size: 0.85rem; padding: 4px 10px; border: 2px solid transparent; cursor: pointer; display: inline-flex; items-center: center; gap: 6px; }
         .tag-default { background-color: #EFF4F5; color: #7A6EAA; border: 1px solid #E7E3EB; }
-        .dark .tag-default { background-color: #372F47; color: #B8ADD2; border-color: #4F4F4F; }
+        .dark .tag-default { background-color: #373546; color: #B8ADD2; border-color: #454252; }
         .tag.selected-environment { background-color: #FFB237 !important; color: #280D5F !important; }
         .tag.selected-entry { background-color: #31D0AA !important; color: white !important; }
         .tag.selected-psychology { background-color: #7645D9 !important; color: white !important; }
-        
-        /* Tag Delete Button */
         .tag-delete-btn { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background-color: rgba(0,0,0,0.1); transition: background-color 0.2s; }
         .tag-delete-btn:hover { background-color: #ED4B9E; color: white; }
 
-        /* Custom Scrollbar */
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #E7E3EB; border-radius: 3px; }
-        .dark ::-webkit-scrollbar-thumb { background: #372F47; }
+        .dark ::-webkit-scrollbar-thumb { background: #373546; }
         ::-webkit-scrollbar-thumb:hover { background: #1FC7D4; }
 
         /* Animation */
-        @keyframes bounce-slow {
-            0%, 100% { transform: translateY(-5%); }
-            50% { transform: translateY(5%); }
-        }
+        @keyframes bounce-slow { 0%, 100% { transform: translateY(-5%); } 50% { transform: translateY(5%); } }
         .mascot-bounce { animation: bounce-slow 3s infinite ease-in-out; }
     </style>
 
@@ -290,11 +203,10 @@
 </head>
 <body class="min-h-screen pb-20 selection:bg-pancake-cyan selection:text-white transition-colors duration-300">
 
-    <!-- Background Blobs (은은하게 조정됨) -->
+    <!-- Background Blobs (Soft Pastel Tone) -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        <!-- 사이즈 30%로 축소, 투명도 5%로 낮춤 -->
-        <div class="absolute top-[-10%] left-[-10%] w-[30%] h-[30%] bg-pancake-cyan rounded-full mix-blend-multiply filter blur-[128px] opacity-5 dark:opacity-5 animate-blob"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-pancake-purple rounded-full mix-blend-multiply filter blur-[128px] opacity-5 dark:opacity-7 animate-blob animation-delay-2000"></div>
+        <div class="absolute top-[-10%] left-[-10%] w-[30%] h-[30%] bg-pancake-cyan rounded-full mix-blend-multiply filter blur-[128px] opacity-10 dark:opacity-10 animate-blob"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-pancake-purple rounded-full mix-blend-multiply filter blur-[128px] opacity-10 dark:opacity-15 animate-blob animation-delay-2000"></div>
     </div>
 
     <!-- 1. Login View -->
@@ -302,12 +214,9 @@
         <div class="z-10 text-center w-full max-w-sm">
             <div class="mb-8 mascot-bounce relative inline-block">
                 <span class="text-8xl">🍰</span>
-                <div class="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-20 h-4 bg-black opacity-10 rounded-[100%] blur-sm"></div>
             </div>
-            
             <h1 class="text-3xl font-bold mb-2 text-pancake-text dark:text-white font-brand">매매일지&가계부 🍰</h1>
             <p class="text-pancake-textSub dark:text-pancake-textSubDark mb-10 font-medium">달콤한 수익을 위한 기록 습관</p>
-            
             <div class="pc-card">
                 <button id="login-btn" class="w-full pc-btn pc-btn-primary text-lg py-4 shadow-lg hover:shadow-xl transition-shadow">
                     <span class="mr-2 text-xl">🥞</span> 구글 계정으로 시작
@@ -342,19 +251,15 @@
 
         <!-- Main Navigation Tabs -->
         <div class="flex justify-center mb-8">
-            <div class="pc-tab-container shadow-sm bg-white/50 dark:bg-pancake-cardDark/50 backdrop-blur-sm">
-                <button data-main-tab="journal-container" class="pc-tab active flex items-center gap-2">
-                    <span>📈</span> 매매일지
-                </button>
-                <button data-main-tab="ledger-container" class="pc-tab flex items-center gap-2">
-                    <span>💰</span> 가계부
-                </button>
+            <div class="pc-tab-container shadow-sm backdrop-blur-sm">
+                <button data-main-tab="journal-container" class="pc-tab active flex items-center gap-2"><span>📈</span> 매매일지</button>
+                <button data-main-tab="ledger-container" class="pc-tab flex items-center gap-2"><span>💰</span> 가계부</button>
             </div>
         </div>
 
         <!-- ================= JOURNAL SECTION ================= -->
         <div id="journal-container" class="space-y-6">
-            <!-- Sub Navigation (충돌 방지를 위해 불필요한 색상 클래스 제거 및 px-6 적용) -->
+            <!-- Sub Navigation -->
             <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                 <button data-tab="form-view" class="pc-btn pc-btn-primary text-sm flex-shrink-0 px-6"><i data-lucide="edit-3" class="w-4 h-4 mr-1"></i> 일지 작성</button>
                 <button data-tab="list-view" class="pc-btn pc-btn-secondary text-sm flex-shrink-0 px-6"><i data-lucide="book" class="w-4 h-4 mr-1"></i> 내 일지</button>
@@ -367,16 +272,13 @@
                 <!-- 1. Journal Form -->
                 <div id="form-view">
                     <form id="journal-form" class="pc-card space-y-8 relative overflow-visible">
-                         <!-- Decorative Blob -->
                         <div class="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-pancake-cyan rounded-full opacity-10 blur-3xl pointer-events-none"></div>
-
                         <input type="hidden" id="journal-id">
                         
                         <div class="space-y-6">
                             <h2 class="text-xl font-bold mb-4 border-b-2 border-pancake-border dark:border-pancake-borderDark pb-3 flex items-center text-pancake-text dark:text-white">
                                 <span class="bg-pancake-input dark:bg-pancake-inputDark p-1.5 rounded-lg mr-2">📝</span> 기본 정보
                             </h2>
-                            
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
                                 <div class="sm:col-span-2 space-y-2">
                                     <span class="block text-sm font-bold text-pancake-purple dark:text-pancake-textSubDark mb-1 pl-1">💎 자산 유형</span>
@@ -385,19 +287,16 @@
                                         <button type="button" data-value="futures" class="pc-toggle-btn">선물 (Futures)</button>
                                     </div>
                                 </div>
-
                                 <div class="sm:col-span-2 space-y-2">
                                     <label for="ticker" class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">🏷️ 종목 이름</label>
                                     <input type="text" id="ticker" placeholder="예: BTC, ETH" required class="pc-input text-base font-bold uppercase tracking-wider">
                                 </div>
                             </div>
-
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div class="space-y-2">
                                     <label for="date" class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">📅 날짜</label>
                                     <input type="date" id="date" required class="pc-input cursor-pointer">
                                 </div>
-                                
                                 <div class="space-y-2">
                                     <span class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">🚩 포지션</span>
                                     <div class="pc-toggle-group" data-group="position">
@@ -405,7 +304,6 @@
                                         <button type="button" data-value="short" class="pc-toggle-btn text-pancake-failure">🔴 숏 (Short)</button>
                                     </div>
                                 </div>
-                                
                                 <div class="space-y-2">
                                     <span class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">⚔️ 매매 전략</span>
                                     <div class="pc-toggle-group" data-group="strategy">
@@ -415,18 +313,15 @@
                                     </div>
                                 </div>
                             </div>
-                            
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 bg-pancake-input/50 dark:bg-pancake-inputDark/30 p-4 rounded-2xl">
                                 <div id="spot-fields" class="space-y-2">
                                     <label for="quantity" class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">📦 수량</label>
                                     <input type="text" inputmode="numeric" id="quantity" placeholder="예: 100" class="number-input pc-input bg-white dark:bg-pancake-cardDark">
                                 </div>
-
                                 <div id="futures-contracts-field" class="hidden space-y-2">
                                     <label for="contracts" class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">📜 계약 수</label>
                                     <input type="text" inputmode="numeric" id="contracts" placeholder="예: 1" class="number-input pc-input bg-white dark:bg-pancake-cardDark">
                                 </div>
-                                
                                 <div class="space-y-2">
                                     <span class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">💱 입력 통화</span>
                                     <div class="pc-toggle-group bg-white dark:bg-pancake-cardDark" data-group="form-currency">
@@ -434,12 +329,10 @@
                                         <button type="button" id="form-currency-usd-btn" class="pc-toggle-btn selected">달러 ($)</button>
                                     </div>
                                 </div>
-
                                 <div class="space-y-2"><label for="entry-price" class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">🔵 진입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="0" required class="number-input pc-input bg-white dark:bg-pancake-cardDark"></div>
                                 <div class="space-y-2"><label for="target-price" class="block text-sm font-bold text-pancake-success mb-1 pl-1">🟢 목표가 (TP)</label><input type="text" inputmode="decimal" id="target-price" placeholder="0" required class="number-input pc-input border-pancake-success/50 focus:border-pancake-success bg-white dark:bg-pancake-cardDark"></div>
                                 <div class="sm:col-span-2 space-y-2"><label for="stop-loss" class="block text-sm font-bold text-pancake-failure mb-1 pl-1">🔴 손절가 (SL)</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="0" required class="number-input pc-input border-pancake-failure/50 focus:border-pancake-failure bg-white dark:bg-pancake-cardDark"></div>
                             </div>
-                            
                             <div id="futures-fields" class="hidden sm:col-span-2 space-y-4">
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                     <div class="sm:col-span-3 bg-pancake-warning/10 dark:bg-pancake-warning/5 p-4 rounded-2xl border border-pancake-warning/20">
@@ -450,7 +343,6 @@
                                                 <button type="button" id="delete-futures-info-btn" class="text-xs text-pancake-failure font-bold hover:underline bg-white dark:bg-pancake-cardDark px-2 py-1 rounded shadow-sm" disabled>🗑️ 삭제</button>
                                             </div>
                                         </h3>
-                                        <!-- ... existing futures inputs ... -->
                                         <div class="flex flex-col sm:flex-row gap-2 mb-4">
                                             <select id="futures-info-select" class="pc-input flex-grow p-3 text-base bg-white dark:bg-pancake-cardDark"></select>
                                         </div>
@@ -462,26 +354,21 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Tag Sections (이모티콘 제거) -->
                         <div class="space-y-4 pt-4 border-t border-pancake-border dark:border-pancake-borderDark">
                             <h2 class="text-xl font-bold pb-2 flex items-center text-pancake-warning"><i data-lucide="cloud-sun" class="mr-2"></i> 환경 태그</h2>
                             <div id="environment-tags-container" class="flex flex-wrap gap-2 mb-2 environment-tags-container"></div>
                             <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-environment-tag" placeholder="직접 입력" class="flex-grow pc-input"><button type="button" class="add-environment-tag-btn pc-btn bg-pancake-warning text-white font-bold px-6 hover:opacity-80 transition shadow-[0px_2px_0px_0px_#b3740e]">추가</button></div>
                         </div>
-                        
                         <div class="space-y-4 pt-4 border-t border-pancake-border dark:border-pancake-borderDark">
                             <h2 class="text-xl font-bold pb-2 flex items-center text-pancake-success"><i data-lucide="zap" class="mr-2"></i> 진입 근거</h2>
                             <div id="entry-tags-container" class="flex flex-wrap gap-2 mb-2 entry-tags-container"></div>
                             <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-entry-tag" placeholder="직접 입력" class="flex-grow pc-input"><button type="button" class="add-entry-tag-btn pc-btn bg-pancake-success text-white font-bold px-6 hover:opacity-80 transition shadow-[0px_2px_0px_0px_#1e7a63]">추가</button></div>
                         </div>
-                        
                         <div class="space-y-4 pt-4 border-t border-pancake-border dark:border-pancake-borderDark">
                             <h2 class="text-xl font-bold pb-2 flex items-center text-pancake-purple"><i data-lucide="brain-circuit" class="mr-2"></i> 심리 상태</h2>
                             <div id="psychology-tags-container" class="flex flex-wrap gap-2 mb-2 psychology-tags-container"></div>
                             <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-psychology-tag" placeholder="직접 입력" class="flex-grow pc-input"><button type="button" class="add-psychology-tag-btn pc-btn bg-pancake-purple text-white font-bold px-6 hover:opacity-80 transition shadow-[0px_2px_0px_0px_#4c2c8c]">추가</button></div>
                         </div>
-                        
                         <div class="flex justify-end space-x-4 pt-6 border-t border-pancake-border dark:border-pancake-borderDark">
                             <button type="button" id="clear-form-btn" class="pc-btn bg-pancake-input dark:bg-pancake-inputDark text-pancake-textSub dark:text-pancake-textSubDark px-6 hover:opacity-80 transition">🔄 초기화</button>
                             <button type="submit" class="pc-btn pc-btn-primary px-8 flex items-center text-lg transform hover:-translate-y-1 transition-all"><span class="mr-2">💾</span> 일지 저장</button>
@@ -489,7 +376,7 @@
                     </form>
                 </div>
 
-                <!-- 2. List View -->
+                <!-- 2. List View (Clean Cards) -->
                 <div id="list-view" class="hidden">
                      <div class="flex items-center justify-end mb-4 bg-pancake-card dark:bg-pancake-cardDark p-3 rounded-2xl shadow-sm border border-pancake-border dark:border-pancake-borderDark">
                         <label class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark mr-2">🇺🇸 현재 환율 ($1)</label>
@@ -498,10 +385,9 @@
                     <div id="journal-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                 </div>
 
-                <!-- 3. Stats View (Enhanced) -->
+                <!-- 3. Stats View -->
                 <div id="stats-view" class="hidden space-y-8">
                      <div class="pc-card p-4 flex flex-col xl:flex-row justify-between items-center gap-4 sticky top-0 z-10 shadow-sm border border-pancake-border dark:border-pancake-borderDark">
-                         <!-- Stats Filter -->
                         <div class="flex items-center gap-2">
                              <span class="text-xl">🗓️</span>
                              <select id="stats-filter-type" class="pc-input w-auto font-bold cursor-pointer py-1.5 pl-3 pr-8 dark:bg-pancake-cardDark dark:text-white border-none shadow-sm ring-1 ring-pancake-border dark:ring-pancake-borderDark">
@@ -516,8 +402,6 @@
                                 <button id="stats-next-btn" class="p-1.5 hover:bg-white dark:hover:bg-pancake-cardDark rounded-lg transition-colors text-pancake-cyan"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
                             </div>
                         </div>
-
-                        <!-- Currency & Rate -->
                          <div class="flex items-center gap-4">
                             <div class="pc-toggle-group" data-group="stats-currency">
                                 <button id="stats-currency-krw-btn" class="pc-toggle-btn selected">원 (KRW)</button>
@@ -529,8 +413,6 @@
                              </div>
                         </div>
                     </div>
-
-                    <!-- Summary Cards (Colorful in Dark Mode) -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="pc-card text-center py-6 border-b-4 border-pancake-cyan dark:bg-[#1FC7D4]/10">
                             <h4 class="text-pancake-textSub dark:text-pancake-cyan font-bold text-sm mb-1">🏆 총 승률</h4>
@@ -545,7 +427,6 @@
                             <p id="total-realized-pnl" class="text-3xl font-brand font-bold text-pancake-warning">0</p>
                         </div>
                     </div>
-                    <!-- Middle: Charts -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="pc-card lg:col-span-1 min-h-[300px]">
                             <h3 class="font-bold mb-4 flex items-center"><span class="mr-2">🍰</span> 손익 구성</h3>
@@ -557,8 +438,6 @@
                             <div id="monthly-pnl-summary" class="mt-4 text-xs font-mono text-center opacity-70"></div>
                         </div>
                     </div>
-
-                    <!-- Bottom: Tag Analysis -->
                     <div class="pc-card border-l-4 border-pancake-purple">
                         <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
                             <h3 class="text-lg font-bold text-pancake-text dark:text-white flex items-center"><i data-lucide="tags" class="w-5 h-5 mr-2 text-pancake-purple"></i>태그별 승률 분석</h3>
@@ -568,9 +447,7 @@
                                 <button class="pc-toggle-btn" data-value="psychology">🧠 심리</button>
                             </div>
                         </div>
-                        <div class="h-80 relative w-full">
-                            <canvas id="tag-win-rate-chart"></canvas>
-                        </div>
+                        <div class="h-80 relative w-full"><canvas id="tag-win-rate-chart"></canvas></div>
                     </div>
                 </div>
             </main>
@@ -579,18 +456,15 @@
         <!-- ================= LEDGER SECTION ================= -->
         <div id="ledger-container" class="hidden space-y-6">
             <div class="flex justify-center gap-2 mb-6">
-                <!-- 버튼 너비 제한(w-32) 제거 및 px-6 적용으로 한줄 표시 보장 -->
                 <button data-ledger-tab="ledger-form-view" class="pc-btn pc-btn-primary text-sm px-6"><i data-lucide="pen-tool" class="w-4 h-4 mr-1"></i> 내역 입력</button>
                 <button data-ledger-tab="ledger-analysis-view" class="pc-btn pc-btn-secondary text-sm px-6"><i data-lucide="bar-chart" class="w-4 h-4 mr-1"></i> 통계 및 분석</button>
             </div>
-
             <main id="ledger-main-content">
                 <!-- Ledger Form -->
                 <div id="ledger-form-view" class="max-w-2xl mx-auto">
                     <form id="ledger-form" class="pc-card space-y-6 relative">
                         <div class="absolute top-0 left-0 -ml-10 -mt-10 w-40 h-40 bg-pancake-purple rounded-full opacity-10 blur-3xl pointer-events-none"></div>
                         <input type="hidden" id="ledger-id">
-                        
                         <div class="flex items-center justify-between">
                             <h2 class="text-xl font-bold flex items-center"><span class="bg-pancake-input dark:bg-pancake-inputDark p-1.5 rounded-lg mr-2">💳</span> 새로운 거래</h2>
                             <div class="pc-toggle-group w-40" data-group="ledger-type">
@@ -598,7 +472,6 @@
                                 <button type="button" data-value="income" class="pc-toggle-btn text-pancake-success">💰 수입</button>
                             </div>
                         </div>
-
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark ml-1 mb-1 block">📅 날짜</label>
@@ -609,8 +482,6 @@
                                 <input type="text" id="ledger-amount" placeholder="0" class="pc-input number-input font-bold text-right" required>
                             </div>
                         </div>
-
-                        <!-- Categories -->
                         <div class="bg-pancake-input dark:bg-pancake-inputDark rounded-xl p-4">
                             <div class="flex justify-between items-center mb-2">
                                 <span class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark">📂 카테고리 (대분류)</span>
@@ -620,7 +491,6 @@
                                 </div>
                             </div>
                             <div id="ledger-major-category-container" class="flex flex-wrap gap-2 mb-4"></div>
-
                             <div id="ledger-minor-category-wrapper" class="hidden border-t border-dashed border-gray-300 dark:border-gray-600 pt-3">
                                 <div class="flex justify-between items-center mb-2">
                                     <span class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark flex items-center"><i data-lucide="corner-down-right" class="w-3 h-3 mr-1"></i> <span id="selected-major-name"></span> > 소분류</span>
@@ -632,22 +502,18 @@
                                 <div id="ledger-minor-category-container" class="flex flex-wrap gap-2"></div>
                             </div>
                         </div>
-
                         <div>
                             <label class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark ml-1 mb-1 block">📝 메모</label>
                             <input type="text" id="ledger-memo" class="pc-input" placeholder="내용 입력...">
                         </div>
-
                         <div class="pt-2 flex gap-3">
                             <button type="button" id="clear-ledger-form-btn" class="pc-btn pc-btn-secondary flex-1">🔄 초기화</button>
                             <button type="submit" class="pc-btn pc-btn-primary flex-[2]"><span class="mr-2">💾</span> 저장하기</button>
                         </div>
                     </form>
                 </div>
-
                 <!-- Ledger Analysis -->
                 <div id="ledger-analysis-view" class="hidden space-y-6">
-                    <!-- ... existing filter bar ... -->
                     <div class="pc-card p-4 flex flex-wrap justify-between items-center gap-4 border border-pancake-border dark:border-pancake-borderDark">
                          <div class="flex items-center gap-2">
                             <button id="ledger-analysis-prev-btn" class="p-1.5 hover:bg-pancake-input dark:hover:bg-pancake-inputDark rounded-full text-pancake-cyan"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
@@ -660,7 +526,6 @@
                             <option value="year">연도별 보기</option>
                         </select>
                     </div>
-
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="pc-card p-4 text-center border-l-4 border-pancake-success dark:bg-[#31D0AA]/5">
                             <span class="text-xs font-bold text-pancake-success">💰 수입</span>
@@ -675,7 +540,6 @@
                             <p id="ledger-balance" class="text-xl font-bold text-pancake-text dark:text-white">0</p>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div class="pc-card p-4 lg:col-span-1 space-y-4">
                             <h3 class="font-bold">지출 구성 상세</h3>
@@ -693,7 +557,6 @@
                             <div class="relative h-72 w-full"><canvas id="ledger-expense-chart"></canvas></div>
                         </div>
                     </div>
-
                     <div class="pc-card p-4">
                          <div class="flex justify-between items-center mb-4">
                             <h3 id="ledger-detail-title" class="font-bold">전체 내역</h3>
@@ -706,65 +569,54 @@
     </div>
 
     <!-- Modals -->
-    <!-- Backdrop for all modals -->
     <div id="modal-backdrop" class="fixed inset-0 bg-pancake-dark bg-opacity-80 backdrop-blur-sm z-40 hidden transition-opacity opacity-0"></div>
 
-    <!-- 1. Exit Modal -->
+    <!-- 1. Detail Modal (New) -->
+    <div id="detail-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden pointer-events-none">
+        <div class="pc-card w-full max-w-lg m-4 pointer-events-auto shadow-2xl transform scale-95 transition-all opacity-0 relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <button onclick="closeModal('detail-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><i data-lucide="x" class="w-6 h-6"></i></button>
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><span class="text-2xl">🗒️</span> 매매 상세 정보</h2>
+            <div id="detail-content" class="space-y-6"></div>
+        </div>
+    </div>
+
+    <!-- 2. Exit Modal -->
     <div id="exit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden pointer-events-none">
         <div class="pc-card w-full max-w-sm m-4 pointer-events-auto shadow-2xl transform scale-95 transition-all opacity-0">
             <h2 class="text-xl font-bold mb-4">포지션 종료 (청산)</h2>
             <form id="exit-form" class="space-y-4">
                 <input type="hidden" id="exit-journal-id">
-                <div>
-                    <label class="text-xs font-bold ml-1">날짜</label>
-                    <input type="date" id="exit-date" class="pc-input" required>
-                </div>
-                <div>
-                    <label class="text-xs font-bold ml-1">청산가</label>
-                    <input type="text" id="exit-price" class="pc-input number-input" required>
-                </div>
-                <div>
-                    <label class="text-xs font-bold ml-1" id="exit-quantity-label">수량</label>
-                    <input type="text" id="exit-quantity" class="pc-input number-input" required>
-                    <p class="text-xs text-right mt-1 opacity-70">남은 수량: <span id="remaining-quantity" class="font-bold"></span></p>
-                </div>
-                <div class="flex justify-end gap-2 mt-6">
-                    <button type="button" onclick="closeModal('exit-modal')" class="pc-btn pc-btn-secondary">취소</button>
-                    <button type="submit" class="pc-btn pc-btn-primary">저장</button>
-                </div>
+                <div><label class="text-xs font-bold ml-1">날짜</label><input type="date" id="exit-date" class="pc-input" required></div>
+                <div><label class="text-xs font-bold ml-1">청산가</label><input type="text" id="exit-price" class="pc-input number-input" required></div>
+                <div><label class="text-xs font-bold ml-1" id="exit-quantity-label">수량</label><input type="text" id="exit-quantity" class="pc-input number-input" required><p class="text-xs text-right mt-1 opacity-70">남은 수량: <span id="remaining-quantity" class="font-bold"></span></p></div>
+                <div class="flex justify-end gap-2 mt-6"><button type="button" onclick="closeModal('exit-modal')" class="pc-btn pc-btn-secondary">취소</button><button type="submit" class="pc-btn pc-btn-primary">저장</button></div>
             </form>
         </div>
     </div>
 
-    <!-- 2. Memo Modal -->
+    <!-- 3. Memo Modal -->
     <div id="memo-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden pointer-events-none">
         <div class="pc-card w-full max-w-md m-4 pointer-events-auto shadow-2xl transform scale-95 transition-all opacity-0">
             <h2 class="text-xl font-bold mb-4">매매 복기 메모</h2>
             <form id="memo-form">
                 <input type="hidden" id="memo-journal-id">
                 <textarea id="memo-content" rows="6" class="pc-input resize-none" placeholder="내용을 입력하세요..."></textarea>
-                <div class="flex justify-end gap-2 mt-4">
-                    <button type="button" onclick="closeModal('memo-modal')" class="pc-btn pc-btn-secondary">닫기</button>
-                    <button type="submit" class="pc-btn pc-btn-primary">저장</button>
-                </div>
+                <div class="flex justify-end gap-2 mt-4"><button type="button" onclick="closeModal('memo-modal')" class="pc-btn pc-btn-secondary">닫기</button><button type="submit" class="pc-btn pc-btn-primary">저장</button></div>
             </form>
         </div>
     </div>
 
-    <!-- 3. Confirm Modal -->
+    <!-- 4. Confirm Modal -->
     <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden pointer-events-none">
         <div class="pc-card w-full max-w-xs m-4 text-center pointer-events-auto shadow-2xl transform scale-95 transition-all opacity-0">
             <div class="text-4xl mb-3">🤔</div>
             <h2 class="text-lg font-bold mb-2">확인해주세요</h2>
             <p id="confirm-message" class="text-sm opacity-80 mb-6"></p>
-            <div class="flex justify-center gap-2">
-                <button type="button" onclick="closeModal('confirm-modal')" class="pc-btn pc-btn-secondary">취소</button>
-                <button type="button" id="confirm-ok-btn" class="pc-btn pc-btn-danger">확인</button>
-            </div>
+            <div class="flex justify-center gap-2"><button type="button" onclick="closeModal('confirm-modal')" class="pc-btn pc-btn-secondary">취소</button><button type="button" id="confirm-ok-btn" class="pc-btn pc-btn-danger">확인</button></div>
         </div>
     </div>
     
-    <!-- 4. Tag Edit Modal -->
+    <!-- 5. Tag Edit Modal -->
     <div id="tag-edit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden pointer-events-none">
         <div class="pc-card w-full max-w-md m-4 pointer-events-auto shadow-2xl transform scale-95 transition-all opacity-0">
              <h2 class="text-xl font-bold mb-4">태그 수정</h2>
@@ -775,10 +627,7 @@
                      <div><h3 class="text-xs font-bold text-pancake-success mb-2">진입 근거</h3><div id="tag-edit-entry-tags" class="flex flex-wrap gap-2"></div></div>
                      <div><h3 class="text-xs font-bold text-pancake-purple mb-2">심리 상태</h3><div id="tag-edit-psychology-tags" class="flex flex-wrap gap-2"></div></div>
                  </div>
-                 <div class="flex justify-end gap-2 mt-6">
-                    <button type="button" onclick="closeModal('tag-edit-modal')" class="pc-btn pc-btn-secondary">취소</button>
-                    <button type="submit" class="pc-btn pc-btn-primary">저장</button>
-                </div>
+                 <div class="flex justify-end gap-2 mt-6"><button type="button" onclick="closeModal('tag-edit-modal')" class="pc-btn pc-btn-secondary">취소</button><button type="submit" class="pc-btn pc-btn-primary">저장</button></div>
              </form>
         </div>
     </div>
@@ -790,7 +639,6 @@
 
     <!-- Scripts -->
     <script>
-        // --- Firebase Config (Existing) ---
         const firebaseConfig = {
           apiKey: "AIzaSyDZm5AazCafB0Sb2gd0llv9e3GAhE-nKBw",
           authDomain: "sakurazima-mai-0u0.firebaseapp.com",
@@ -806,7 +654,6 @@
         const provider = new firebase.auth.GoogleAuthProvider();
         const Timestamp = firebase.firestore.Timestamp;
 
-        // --- App State ---
         let currentUser = null;
         let charts = {};
         let confirmCallback = null;
@@ -824,7 +671,6 @@
         let selectedMajorCategory = null; 
         let ledgerAnalysisDate = new Date();
 
-        // --- UI Logic ---
         const loginView = document.getElementById('login-view');
         const appContainer = document.getElementById('app-container');
         const loginBtn = document.getElementById('login-btn');
@@ -855,7 +701,6 @@
             lucide.createIcons();
         });
         
-        // --- Initialization ---
         async function initializeAppFunctionality() {
             if (!currentUser) return;
             const userId = currentUser.uid;
@@ -924,7 +769,6 @@
                 });
         }
 
-        // --- View Switching ---
         document.querySelectorAll('[data-main-tab]').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.pc-tab').forEach(b => b.classList.remove('active'));
@@ -942,7 +786,6 @@
                 const t = btn.dataset.tab;
                 document.querySelectorAll('#journal-container [data-tab]').forEach(b => {
                      b.classList.remove('pc-btn-primary'); b.classList.add('pc-btn-secondary');
-                     // CSS 클래스 충돌 방지를 위해 인라인 스타일 제거
                      b.style.backgroundColor = ''; b.style.color = '';
                 });
                 btn.classList.remove('pc-btn-secondary'); btn.classList.add('pc-btn-primary');
@@ -965,7 +808,6 @@
             });
         });
 
-        // --- Journal Logic ---
         document.querySelectorAll('[data-group="asset-type"] button').forEach(btn => {
             btn.addEventListener('click', () => {
                 const isSpot = btn.dataset.value === 'spot';
@@ -1005,7 +847,6 @@
             showToast("정보 저장됨");
         });
 
-        // Rendering Journals
         function calculatePnl(j, exit) {
             const diff = j.position === 'long' ? (exit.price - j.entryPrice) : (j.entryPrice - exit.price);
             if(j.assetType === 'futures') return (diff / j.tickSize) * j.tickValue * exit.quantity;
@@ -1025,31 +866,39 @@
                 let pnl = 0; (j.exits||[]).forEach(e => pnl += calculatePnl(j, e));
                 const pnlKrw = j.currency === 'USD' ? pnl * exchangeRate : pnl;
                 
+                // Calculate holding period
+                const entryDate = j.date;
+                const lastExitDate = (j.exits && j.exits.length > 0) 
+                    ? new Date(Math.max(...j.exits.map(e => e.date.toDate().getTime()))) 
+                    : new Date();
+                const diffTime = Math.abs(lastExitDate - entryDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                const periodStr = diffDays <= 1 ? "당일" : `${diffDays}일`;
+
                 const card = document.createElement('div');
                 card.className = `pc-card p-4 relative overflow-hidden border-l-4 ${isClosed ? (pnlKrw >= 0 ? 'border-l-pancake-success' : 'border-l-pancake-failure') : 'border-l-pancake-warning'}`;
                 
                 const tags = [...(j.environmentTags||[]), ...(j.entryTags||[]), ...(j.psychologyTags||[])].slice(0,5);
                 
                 card.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
+                    <div class="flex justify-between items-start mb-3">
                         <div>
-                            <span class="text-xs font-bold text-gray-400">${j.date.toLocaleDateString()}</span>
-                            <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-gray-400">${j.date.toLocaleDateString()} (${periodStr})</span>
+                            <div class="flex items-center gap-2 mt-1">
                                 <h3 class="text-lg font-bold">${j.ticker}</h3>
                                 <span class="text-xs font-bold px-2 py-0.5 rounded-full ${j.position==='long'?'bg-green-100 text-green-700':'bg-pink-100 text-pink-700'}">${j.position.toUpperCase()}</span>
                             </div>
                         </div>
                         <div class="flex gap-1">
+                            <button class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400 detail-btn" data-id="${j.id}" title="상세보기"><i data-lucide="eye" class="w-4 h-4"></i></button>
                             ${!isClosed ? `<button class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-pancake-cyan exit-btn" data-id="${j.id}" title="청산"><i data-lucide="log-out" class="w-4 h-4"></i></button>`:''}
                             <button class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400 edit-btn" data-id="${j.id}" title="수정"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
                             <button class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-pancake-failure delete-btn" data-id="${j.id}" title="삭제"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-2 text-sm gap-y-1 mb-3">
-                        <div class="text-gray-500 dark:text-gray-400">진입: <span class="font-bold text-pancake-text dark:text-white">${formatPrice(j.entryPrice, j.currency)}</span></div>
-                        <div class="text-gray-500 dark:text-gray-400">수량: <span class="font-bold text-pancake-text dark:text-white">${formatNumber(totalQ)}</span></div>
-                        ${(j.exits||[]).length ? `<div class="col-span-2 mt-1 font-bold ${pnlKrw>=0?'text-pancake-success':'text-pancake-failure'}">손익: ${formatDualCurrency(pnlKrw, j.currency)}</div>` : ''}
+                    <div class="mb-3">
+                        ${(j.exits||[]).length ? `<div class="text-lg font-bold ${pnlKrw>=0?'text-pancake-success':'text-pancake-failure'}">손익: ${formatDualCurrency(pnlKrw, j.currency)}</div>` : '<div class="text-sm text-gray-400">진행중...</div>'}
                     </div>
 
                     <div class="flex flex-wrap gap-1 mb-3">
@@ -1074,9 +923,62 @@
             document.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', e => confirmDelete(e.currentTarget.dataset.id, 'journal')));
             document.querySelectorAll('.memo-btn').forEach(b => b.addEventListener('click', e => openMemoModal(e.currentTarget.dataset.id)));
             document.querySelectorAll('.tag-btn').forEach(b => b.addEventListener('click', e => openTagModal(e.currentTarget.dataset.id)));
+            document.querySelectorAll('.detail-btn').forEach(b => b.addEventListener('click', e => openDetailModal(e.currentTarget.dataset.id)));
         }
 
-        // --- Ledger Logic ---
+        // Detail Modal Logic
+        function openDetailModal(id) {
+            const j = localJournals.find(x => x.id === id); if(!j) return;
+            const isSpot = j.assetType === 'spot';
+            const container = document.getElementById('detail-content');
+            
+            let pnl = 0; (j.exits||[]).forEach(e => pnl += calculatePnl(j, e));
+            const pnlKrw = j.currency === 'USD' ? pnl * exchangeRate : pnl;
+            const pnlClass = pnlKrw >= 0 ? 'text-pancake-success' : 'text-pancake-failure';
+
+            container.innerHTML = `
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="col-span-2 p-3 bg-pancake-input dark:bg-pancake-inputDark rounded-xl">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-bold text-lg">${j.ticker}</span>
+                            <span class="font-bold ${j.position==='long'?'text-pancake-success':'text-pancake-failure'}">${j.position.toUpperCase()}</span>
+                        </div>
+                        <div class="text-xs text-gray-500">${j.date.toLocaleDateString()} · ${j.strategy}</div>
+                    </div>
+                    
+                    <div><span class="block text-gray-400 text-xs">진입가</span><span class="font-bold">${formatPrice(j.entryPrice, j.currency)}</span></div>
+                    <div><span class="block text-gray-400 text-xs">${isSpot?'수량':'계약수'}</span><span class="font-bold">${formatNumber(isSpot?j.quantity:j.contracts)}</span></div>
+                    <div><span class="block text-gray-400 text-xs">목표가</span><span class="font-bold text-pancake-success">${formatPrice(j.targetPrice, j.currency)}</span></div>
+                    <div><span class="block text-gray-400 text-xs">손절가</span><span class="font-bold text-pancake-failure">${formatPrice(j.stopLoss, j.currency)}</span></div>
+                    
+                    ${!isSpot ? `<div class="col-span-2 text-xs text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded">틱가치: ${j.tickValue}, 틱단위: ${j.tickSize}</div>` : ''}
+                    
+                    <div class="col-span-2 border-t border-dashed border-gray-300 dark:border-gray-600 my-2"></div>
+                    
+                    <div class="col-span-2">
+                        <h4 class="font-bold mb-2">청산 내역</h4>
+                        ${(j.exits||[]).length === 0 ? '<p class="text-xs text-gray-400">내역 없음</p>' : 
+                          `<div class="space-y-1">
+                             ${j.exits.map(e => `
+                                <div class="flex justify-between text-xs bg-white dark:bg-pancake-cardDark p-2 rounded border border-pancake-border dark:border-pancake-borderDark">
+                                    <span>${e.date.toDate().toLocaleDateString()}</span>
+                                    <span>${formatPrice(e.price, j.currency)} x ${formatNumber(e.quantity)}</span>
+                                </div>`).join('')}
+                           </div>`
+                        }
+                    </div>
+                    
+                    <div class="col-span-2 text-right pt-2 border-t border-pancake-border dark:border-pancake-borderDark">
+                        <span class="text-gray-400 text-xs mr-2">총 실현 손익</span>
+                        <span class="text-xl font-bold ${pnlClass}">${formatDualCurrency(pnlKrw, j.currency)}</span>
+                    </div>
+
+                    ${j.memo ? `<div class="col-span-2 mt-2"><h4 class="font-bold mb-1 text-xs text-gray-400">메모</h4><p class="text-sm bg-pancake-input dark:bg-pancake-inputDark p-3 rounded-lg">${j.memo}</p></div>` : ''}
+                </div>
+            `;
+            openModal('detail-modal');
+        }
+
         function renderLedgerMajorCategories(type) {
             const container = document.getElementById('ledger-major-category-container'); container.innerHTML = '';
             const cats = Object.keys(localLedgerCategories[type]||{}).sort();
