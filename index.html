@@ -27,12 +27,12 @@
                         pancake: {
                             cyan: '#1FC7D4',
                             purple: '#7645D9',
-                            // V6 Background Colors
+                            // V6 Final Background Colors (Darker by 3%)
                             bgLight: '#F0FDFA', // Soft Mint
-                            bgDark: '#232136',  // Deep Lavender Grey
+                            bgDark: '#1D1B26',  // 3% Darker Deep Lavender (#232136 -> #1D1B26)
                             
                             card: '#FFFFFF',
-                            cardDark: '#2D2B3B', // Slightly lighter than bg
+                            cardDark: '#2D2B3B', 
                             
                             text: '#280D5F',
                             textSub: '#7A6EAA',
@@ -40,7 +40,7 @@
                             textSubDark: '#B8ADD2',
                             
                             input: '#EEEAF4',
-                            inputDark: '#373546',
+                            inputDark: '#373546', // Button Bg in Dark Mode
                             
                             border: '#E7E3EB',
                             borderDark: '#454252',
@@ -80,7 +80,7 @@
         }
 
         .dark body {
-            background-color: #232136; /* Deep Lavender Base */
+            background-color: #1D1B26; /* 3% Darker Base */
             color: #EAE9F0;
         }
 
@@ -205,8 +205,8 @@
 
     <!-- Background Blobs (Soft Pastel Tone) -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        <div class="absolute top-[-10%] left-[-10%] w-[30%] h-[30%] bg-pancake-cyan rounded-full mix-blend-multiply filter blur-[128px] opacity-10 dark:opacity-10 animate-blob"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-pancake-purple rounded-full mix-blend-multiply filter blur-[128px] opacity-10 dark:opacity-15 animate-blob animation-delay-2000"></div>
+        <div class="absolute top-[-10%] left-[-10%] w-[30%] h-[30%] bg-pancake-cyan rounded-full mix-blend-multiply filter blur-[128px] opacity-5 dark:opacity-5 animate-blob"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-pancake-purple rounded-full mix-blend-multiply filter blur-[128px] opacity-5 dark:opacity-7 animate-blob animation-delay-2000"></div>
     </div>
 
     <!-- 1. Login View -->
@@ -985,7 +985,8 @@
             cats.forEach(c => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
-                btn.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition border border-transparent ${selectedMajorCategory===c ? 'bg-pancake-purple text-white shadow-md' : 'bg-white dark:bg-pancake-dark text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`;
+                // Fixed: Added dark:bg-pancake-inputDark and adjusted text colors for dark mode visibility
+                btn.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition border border-transparent ${selectedMajorCategory===c ? 'bg-pancake-purple text-white shadow-md' : 'bg-white dark:bg-pancake-inputDark text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`;
                 btn.innerHTML = c;
                 btn.onclick = () => {
                     selectedMajorCategory = (selectedMajorCategory===c) ? null : c;
@@ -1005,15 +1006,16 @@
              (localLedgerCategories[type][major]||[]).forEach(sub => {
                  const btn = document.createElement('button');
                  btn.type = 'button';
-                 btn.className = `px-3 py-1 rounded-lg text-xs font-medium border transition bg-white dark:bg-pancake-dark text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-pancake-cyan`;
+                 // Fixed: Added dark:bg-pancake-inputDark and adjusted text/border colors
+                 btn.className = `px-3 py-1 rounded-lg text-xs font-medium border transition bg-white dark:bg-pancake-inputDark text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-pancake-cyan`;
                  btn.textContent = sub;
                  btn.onclick = () => {
                      document.querySelectorAll('#ledger-minor-category-container button').forEach(b=> {
                          b.classList.remove('bg-pancake-cyan', 'text-white', 'border-transparent', 'selected-minor');
-                         b.classList.add('bg-white', 'dark:bg-pancake-dark', 'text-gray-600', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-700');
+                         b.classList.add('bg-white', 'dark:bg-pancake-inputDark', 'text-gray-600', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-700');
                      });
                      // Visual Select Fix
-                     btn.classList.remove('bg-white', 'dark:bg-pancake-dark', 'text-gray-600', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-700');
+                     btn.classList.remove('bg-white', 'dark:bg-pancake-inputDark', 'text-gray-600', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-700');
                      btn.classList.add('bg-pancake-cyan', 'text-white', 'border-transparent', 'selected-minor');
                  };
                  container.appendChild(btn);
