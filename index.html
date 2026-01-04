@@ -267,7 +267,8 @@
     <!-- Background Blobs (Global) -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-pancake-cyan rounded-full mix-blend-multiply filter blur-[128px] opacity-10 dark:opacity-10 animate-blob"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-pancake-purple rounded-full mix-blend-multiply filter blur-[128px] opacity-10 dark:opacity-10 animate-blob animation-delay-2000"></div>
+        <!-- 연보라색 Blob 투명도 증가: dark:opacity-15 -->
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-pancake-purple rounded-full mix-blend-multiply filter blur-[128px] opacity-10 dark:opacity-15 animate-blob animation-delay-2000"></div>
     </div>
 
     <!-- 1. Login View -->
@@ -327,11 +328,11 @@
 
         <!-- ================= JOURNAL SECTION ================= -->
         <div id="journal-container" class="space-y-6">
-            <!-- Sub Navigation -->
+            <!-- Sub Navigation (이모티콘 제거) -->
             <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                <button data-tab="form-view" class="pc-btn pc-btn-primary text-sm flex-shrink-0"><i data-lucide="edit-3" class="w-4 h-4 mr-1"></i> ✏️ 일지 작성</button>
-                <button data-tab="list-view" class="pc-btn pc-btn-secondary text-sm flex-shrink-0 bg-white dark:bg-transparent dark:text-white dark:border-pancake-textSubDark hover:dark:border-pancake-cyan hover:dark:text-pancake-cyan"><i data-lucide="book" class="w-4 h-4 mr-1"></i> 📒 내 일지</button>
-                <button data-tab="stats-view" class="pc-btn pc-btn-secondary text-sm flex-shrink-0 bg-white dark:bg-transparent dark:text-white dark:border-pancake-textSubDark hover:dark:border-pancake-cyan hover:dark:text-pancake-cyan"><i data-lucide="pie-chart" class="w-4 h-4 mr-1"></i> 📊 성과 분석</button>
+                <button data-tab="form-view" class="pc-btn pc-btn-primary text-sm flex-shrink-0"><i data-lucide="edit-3" class="w-4 h-4 mr-1"></i> 일지 작성</button>
+                <button data-tab="list-view" class="pc-btn pc-btn-secondary text-sm flex-shrink-0 bg-white dark:bg-transparent dark:text-white dark:border-pancake-textSubDark hover:dark:border-pancake-cyan hover:dark:text-pancake-cyan"><i data-lucide="book" class="w-4 h-4 mr-1"></i> 내 일지</button>
+                <button data-tab="stats-view" class="pc-btn pc-btn-secondary text-sm flex-shrink-0 bg-white dark:bg-transparent dark:text-white dark:border-pancake-textSubDark hover:dark:border-pancake-cyan hover:dark:text-pancake-cyan"><i data-lucide="pie-chart" class="w-4 h-4 mr-1"></i> 성과 분석</button>
             </div>
 
             <!-- Content Area -->
@@ -436,21 +437,21 @@
                             </div>
                         </div>
 
-                        <!-- Tag Sections with Colored Headers -->
+                        <!-- Tag Sections (이모티콘 제거) -->
                         <div class="space-y-4 pt-4 border-t border-pancake-border dark:border-pancake-borderDark">
-                            <h2 class="text-xl font-bold pb-2 flex items-center text-pancake-warning"><i data-lucide="cloud-sun" class="mr-2"></i> 🌤️ 환경 태그</h2>
+                            <h2 class="text-xl font-bold pb-2 flex items-center text-pancake-warning"><i data-lucide="cloud-sun" class="mr-2"></i> 환경 태그</h2>
                             <div id="environment-tags-container" class="flex flex-wrap gap-2 mb-2 environment-tags-container"></div>
                             <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-environment-tag" placeholder="직접 입력" class="flex-grow pc-input"><button type="button" class="add-environment-tag-btn pc-btn bg-pancake-warning text-white font-bold px-6 hover:opacity-80 transition shadow-[0px_2px_0px_0px_#b3740e]">추가</button></div>
                         </div>
                         
                         <div class="space-y-4 pt-4 border-t border-pancake-border dark:border-pancake-borderDark">
-                            <h2 class="text-xl font-bold pb-2 flex items-center text-pancake-success"><i data-lucide="zap" class="mr-2"></i> 🚀 진입 근거</h2>
+                            <h2 class="text-xl font-bold pb-2 flex items-center text-pancake-success"><i data-lucide="zap" class="mr-2"></i> 진입 근거</h2>
                             <div id="entry-tags-container" class="flex flex-wrap gap-2 mb-2 entry-tags-container"></div>
                             <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-entry-tag" placeholder="직접 입력" class="flex-grow pc-input"><button type="button" class="add-entry-tag-btn pc-btn bg-pancake-success text-white font-bold px-6 hover:opacity-80 transition shadow-[0px_2px_0px_0px_#1e7a63]">추가</button></div>
                         </div>
                         
                         <div class="space-y-4 pt-4 border-t border-pancake-border dark:border-pancake-borderDark">
-                            <h2 class="text-xl font-bold pb-2 flex items-center text-pancake-purple"><i data-lucide="brain-circuit" class="mr-2"></i> 🧠 심리 상태</h2>
+                            <h2 class="text-xl font-bold pb-2 flex items-center text-pancake-purple"><i data-lucide="brain-circuit" class="mr-2"></i> 심리 상태</h2>
                             <div id="psychology-tags-container" class="flex flex-wrap gap-2 mb-2 psychology-tags-container"></div>
                             <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-psychology-tag" placeholder="직접 입력" class="flex-grow pc-input"><button type="button" class="add-psychology-tag-btn pc-btn bg-pancake-purple text-white font-bold px-6 hover:opacity-80 transition shadow-[0px_2px_0px_0px_#4c2c8c]">추가</button></div>
                         </div>
@@ -1481,6 +1482,27 @@
         // --- Init Listeners ---
         document.querySelectorAll('.number-input').forEach(i => i.addEventListener('input', e => e.target.value = formatNumber(e.target.value)));
         
+        // Real-time Exchange Rate Update Listener
+        document.querySelectorAll('.exchange-rate-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const val = parseFloat(unformatNumber(e.target.value));
+                if (!isNaN(val) && val > 0) {
+                    exchangeRate = val;
+                    // Sync other exchange rate inputs
+                    document.querySelectorAll('.exchange-rate-input').forEach(i => {
+                        if (i !== e.target) i.value = formatNumber(val);
+                    });
+                    // Re-render views if user is logged in
+                    if (currentUser) {
+                        // Re-render Journal Stats
+                        renderJournalStats(localJournals);
+                        // Re-render Journal List (to update currency display if needed)
+                        renderJournals(localJournals);
+                    }
+                }
+            });
+        });
+
         // Toggle Logic
         document.addEventListener('click', e => {
             const btn = e.target.closest('.pc-toggle-btn');
