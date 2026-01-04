@@ -27,7 +27,8 @@
                         pancake: {
                             cyan: '#1FC7D4',
                             purple: '#7645D9',
-                            dark: '#08060B',
+                            // 다크모드 배경색 변경: 회색빛이 도는 부드러운 다크 (#18171C)
+                            dark: '#18171C', 
                             card: '#FFFFFF',
                             cardDark: '#27262C',
                             text: '#280D5F',
@@ -46,7 +47,18 @@
                     fontFamily: {
                         sans: ['Noto Sans KR', 'sans-serif'],
                         brand: ['Kanit', 'sans-serif'],
-                    }
+                    },
+                    animation: {
+                        blob: "blob 10s infinite",
+                    },
+                    keyframes: {
+                        blob: {
+                            "0%": { transform: "translate(0px, 0px) scale(1)" },
+                            "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+                            "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+                            "100%": { transform: "translate(0px, 0px) scale(1)" },
+                        },
+                    },
                 }
             }
         }
@@ -62,7 +74,7 @@
         }
 
         .dark body {
-            background-color: #08060B; /* Dark Theme Bg */
+            background-color: #18171C; /* New Softer Dark Bg */
             color: #F4EEFF;
         }
 
@@ -111,13 +123,27 @@
         }
         .pc-btn-primary:active { box-shadow: 0px 0px 0px #139ea8; }
         
+        /* Secondary Button (비활성 탭) - CSS로 스타일 통합하여 충돌 방지 */
         .pc-btn-secondary {
-            background-color: transparent;
-            color: #1FC7D4;
-            border: 2px solid #1FC7D4;
+            background-color: #FFFFFF;
+            color: #7A6EAA; /* Pancake Text Sub */
+            border: 1px solid transparent; /* 공간 확보용 */
             box-shadow: none;
         }
-        .pc-btn-secondary:hover { opacity: 0.7; }
+        .pc-btn-secondary:hover { 
+            opacity: 0.8; 
+            border-color: #1FC7D4;
+            color: #1FC7D4;
+        }
+        .dark .pc-btn-secondary {
+            background-color: transparent;
+            color: #B8ADD2;
+            border: 1px solid #383241;
+        }
+        .dark .pc-btn-secondary:hover {
+            border-color: #1FC7D4;
+            color: #1FC7D4;
+        }
         
         .pc-btn-purple {
             background-color: #7645D9;
@@ -264,11 +290,11 @@
 </head>
 <body class="min-h-screen pb-20 selection:bg-pancake-cyan selection:text-white transition-colors duration-300">
 
-    <!-- Background Blobs (Global) -->
+    <!-- Background Blobs (은은하게 조정됨) -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-pancake-cyan rounded-full mix-blend-multiply filter blur-[128px] opacity-10 dark:opacity-10 animate-blob"></div>
-        <!-- 연보라색 Blob 투명도 증가: dark:opacity-15 -->
-        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-pancake-purple rounded-full mix-blend-multiply filter blur-[128px] opacity-10 dark:opacity-15 animate-blob animation-delay-2000"></div>
+        <!-- 사이즈 30%로 축소, 투명도 5%로 낮춤 -->
+        <div class="absolute top-[-10%] left-[-10%] w-[30%] h-[30%] bg-pancake-cyan rounded-full mix-blend-multiply filter blur-[128px] opacity-5 dark:opacity-5 animate-blob"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-pancake-purple rounded-full mix-blend-multiply filter blur-[128px] opacity-5 dark:opacity-7 animate-blob animation-delay-2000"></div>
     </div>
 
     <!-- 1. Login View -->
@@ -328,11 +354,11 @@
 
         <!-- ================= JOURNAL SECTION ================= -->
         <div id="journal-container" class="space-y-6">
-            <!-- Sub Navigation (이모티콘 제거) -->
+            <!-- Sub Navigation (충돌 방지를 위해 불필요한 색상 클래스 제거 및 px-6 적용) -->
             <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                <button data-tab="form-view" class="pc-btn pc-btn-primary text-sm flex-shrink-0"><i data-lucide="edit-3" class="w-4 h-4 mr-1"></i> 일지 작성</button>
-                <button data-tab="list-view" class="pc-btn pc-btn-secondary text-sm flex-shrink-0 bg-white dark:bg-transparent dark:text-white dark:border-pancake-textSubDark hover:dark:border-pancake-cyan hover:dark:text-pancake-cyan"><i data-lucide="book" class="w-4 h-4 mr-1"></i> 내 일지</button>
-                <button data-tab="stats-view" class="pc-btn pc-btn-secondary text-sm flex-shrink-0 bg-white dark:bg-transparent dark:text-white dark:border-pancake-textSubDark hover:dark:border-pancake-cyan hover:dark:text-pancake-cyan"><i data-lucide="pie-chart" class="w-4 h-4 mr-1"></i> 성과 분석</button>
+                <button data-tab="form-view" class="pc-btn pc-btn-primary text-sm flex-shrink-0 px-6"><i data-lucide="edit-3" class="w-4 h-4 mr-1"></i> 일지 작성</button>
+                <button data-tab="list-view" class="pc-btn pc-btn-secondary text-sm flex-shrink-0 px-6"><i data-lucide="book" class="w-4 h-4 mr-1"></i> 내 일지</button>
+                <button data-tab="stats-view" class="pc-btn pc-btn-secondary text-sm flex-shrink-0 px-6"><i data-lucide="pie-chart" class="w-4 h-4 mr-1"></i> 성과 분석</button>
             </div>
 
             <!-- Content Area -->
@@ -553,8 +579,9 @@
         <!-- ================= LEDGER SECTION ================= -->
         <div id="ledger-container" class="hidden space-y-6">
             <div class="flex justify-center gap-2 mb-6">
-                <button data-ledger-tab="ledger-form-view" class="pc-btn pc-btn-primary text-sm w-32"><i data-lucide="pen-tool" class="w-4 h-4 mr-1"></i> 내역 입력</button>
-                <button data-ledger-tab="ledger-analysis-view" class="pc-btn pc-btn-secondary text-sm w-32 bg-white dark:bg-transparent dark:text-white dark:border-pancake-textSubDark hover:dark:border-pancake-cyan hover:dark:text-pancake-cyan"><i data-lucide="bar-chart" class="w-4 h-4 mr-1"></i> 통계 및 분석</button>
+                <!-- 버튼 너비 제한(w-32) 제거 및 px-6 적용으로 한줄 표시 보장 -->
+                <button data-ledger-tab="ledger-form-view" class="pc-btn pc-btn-primary text-sm px-6"><i data-lucide="pen-tool" class="w-4 h-4 mr-1"></i> 내역 입력</button>
+                <button data-ledger-tab="ledger-analysis-view" class="pc-btn pc-btn-secondary text-sm px-6"><i data-lucide="bar-chart" class="w-4 h-4 mr-1"></i> 통계 및 분석</button>
             </div>
 
             <main id="ledger-main-content">
@@ -915,6 +942,7 @@
                 const t = btn.dataset.tab;
                 document.querySelectorAll('#journal-container [data-tab]').forEach(b => {
                      b.classList.remove('pc-btn-primary'); b.classList.add('pc-btn-secondary');
+                     // CSS 클래스 충돌 방지를 위해 인라인 스타일 제거
                      b.style.backgroundColor = ''; b.style.color = '';
                 });
                 btn.classList.remove('pc-btn-secondary'); btn.classList.add('pc-btn-primary');
@@ -929,6 +957,7 @@
                 const t = btn.dataset.ledgerTab;
                  document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(b => {
                      b.classList.remove('pc-btn-primary'); b.classList.add('pc-btn-secondary');
+                     b.style.backgroundColor = ''; b.style.color = '';
                 });
                 btn.classList.remove('pc-btn-secondary'); btn.classList.add('pc-btn-primary');
                 ['ledger-form-view', 'ledger-analysis-view'].forEach(id => document.getElementById(id).classList.toggle('hidden', id !== t));
