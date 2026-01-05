@@ -27,24 +27,18 @@
                         pancake: {
                             cyan: '#1FC7D4',
                             purple: '#7645D9',
-                            // V6 Final Background Colors (Darker by 3%)
                             bgLight: '#F0FDFA', // Soft Mint
-                            bgDark: '#1D1B26',  // 3% Darker Deep Lavender (#232136 -> #1D1B26)
-                            
+                            bgDark: '#1D1B26',  // 3% Darker Deep Lavender
                             card: '#FFFFFF',
                             cardDark: '#2D2B3B', 
-                            
                             text: '#280D5F',
                             textSub: '#7A6EAA',
                             textDark: '#EAE9F0',
                             textSubDark: '#B8ADD2',
-                            
                             input: '#EEEAF4',
                             inputDark: '#373546', // Button Bg in Dark Mode
-                            
                             border: '#E7E3EB',
                             borderDark: '#454252',
-                            
                             success: '#31D0AA',
                             failure: '#ED4B9E',
                             warning: '#FFB237'
@@ -177,6 +171,8 @@
         .tag.selected-environment { background-color: #FFB237 !important; color: #280D5F !important; }
         .tag.selected-entry { background-color: #31D0AA !important; color: white !important; }
         .tag.selected-psychology { background-color: #7645D9 !important; color: white !important; }
+        
+        /* Tag Delete Button */
         .tag-delete-btn { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background-color: rgba(0,0,0,0.1); transition: background-color 0.2s; }
         .tag-delete-btn:hover { background-color: #ED4B9E; color: white; }
 
@@ -203,7 +199,7 @@
 </head>
 <body class="min-h-screen pb-20 selection:bg-pancake-cyan selection:text-white transition-colors duration-300">
 
-    <!-- Background Blobs (Soft Pastel Tone) -->
+    <!-- Background Blobs -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div class="absolute top-[-10%] left-[-10%] w-[30%] h-[30%] bg-pancake-cyan rounded-full mix-blend-multiply filter blur-[128px] opacity-5 dark:opacity-5 animate-blob"></div>
         <div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-pancake-purple rounded-full mix-blend-multiply filter blur-[128px] opacity-5 dark:opacity-7 animate-blob animation-delay-2000"></div>
@@ -259,16 +255,13 @@
 
         <!-- ================= JOURNAL SECTION ================= -->
         <div id="journal-container" class="space-y-6">
-            <!-- Sub Navigation -->
             <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                 <button data-tab="form-view" class="pc-btn pc-btn-primary text-sm flex-shrink-0 px-6"><i data-lucide="edit-3" class="w-4 h-4 mr-1"></i> 일지 작성</button>
                 <button data-tab="list-view" class="pc-btn pc-btn-secondary text-sm flex-shrink-0 px-6"><i data-lucide="book" class="w-4 h-4 mr-1"></i> 내 일지</button>
                 <button data-tab="stats-view" class="pc-btn pc-btn-secondary text-sm flex-shrink-0 px-6"><i data-lucide="pie-chart" class="w-4 h-4 mr-1"></i> 성과 분석</button>
             </div>
 
-            <!-- Content Area -->
             <main id="journal-main-content">
-                
                 <!-- 1. Journal Form -->
                 <div id="form-view">
                     <form id="journal-form" class="pc-card space-y-8 relative overflow-visible">
@@ -376,7 +369,7 @@
                     </form>
                 </div>
 
-                <!-- 2. List View (Clean Cards) -->
+                <!-- 2. List View -->
                 <div id="list-view" class="hidden">
                      <div class="flex items-center justify-end mb-4 bg-pancake-card dark:bg-pancake-cardDark p-3 rounded-2xl shadow-sm border border-pancake-border dark:border-pancake-borderDark">
                         <label class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark mr-2">🇺🇸 현재 환율 ($1)</label>
@@ -979,15 +972,28 @@
             openModal('detail-modal');
         }
 
+        // --- Ledger Category Logic (Modified) ---
         function renderLedgerMajorCategories(type) {
             const container = document.getElementById('ledger-major-category-container'); container.innerHTML = '';
             const cats = Object.keys(localLedgerCategories[type]||{}).sort();
             cats.forEach(c => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
-                // Fixed: Added dark:bg-pancake-inputDark and adjusted text colors for dark mode visibility
-                btn.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition border border-transparent ${selectedMajorCategory===c ? 'bg-pancake-purple text-white shadow-md' : 'bg-white dark:bg-pancake-inputDark text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`;
-                btn.innerHTML = c;
+                btn.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition border border-transparent flex items-center gap-2 ${selectedMajorCategory===c ? 'bg-pancake-purple text-white shadow-md' : 'bg-white dark:bg-pancake-inputDark text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`;
+                
+                const spanText = document.createElement('span');
+                spanText.textContent = c;
+                btn.appendChild(spanText);
+
+                const delSpan = document.createElement('span');
+                delSpan.className = "hover:text-pancake-failure hover:bg-white/20 rounded-full p-0.5 transition";
+                delSpan.innerHTML = `<i data-lucide="x" class="w-3 h-3"></i>`;
+                delSpan.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteLedgerCategory(type, c);
+                });
+                btn.appendChild(delSpan);
+
                 btn.onclick = () => {
                     selectedMajorCategory = (selectedMajorCategory===c) ? null : c;
                     renderLedgerMajorCategories(type);
@@ -996,6 +1002,7 @@
                 };
                 container.appendChild(btn);
             });
+            lucide.createIcons();
         }
         
         function renderLedgerMinorCategories(type, major) {
@@ -1006,9 +1013,21 @@
              (localLedgerCategories[type][major]||[]).forEach(sub => {
                  const btn = document.createElement('button');
                  btn.type = 'button';
-                 // Fixed: Added dark:bg-pancake-inputDark and adjusted text/border colors
-                 btn.className = `px-3 py-1 rounded-lg text-xs font-medium border transition bg-white dark:bg-pancake-inputDark text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-pancake-cyan`;
-                 btn.textContent = sub;
+                 btn.className = `px-3 py-1 rounded-lg text-xs font-medium border transition flex items-center gap-2 bg-white dark:bg-pancake-inputDark text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-pancake-cyan`;
+                 
+                 const spanText = document.createElement('span');
+                 spanText.textContent = sub;
+                 btn.appendChild(spanText);
+
+                 const delSpan = document.createElement('span');
+                 delSpan.className = "hover:text-pancake-failure hover:bg-white/20 rounded-full p-0.5 transition";
+                 delSpan.innerHTML = `<i data-lucide="x" class="w-3 h-3"></i>`;
+                 delSpan.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteLedgerCategory(type, major, sub);
+                 });
+                 btn.appendChild(delSpan);
+
                  btn.onclick = () => {
                      document.querySelectorAll('#ledger-minor-category-container button').forEach(b=> {
                          b.classList.remove('bg-pancake-cyan', 'text-white', 'border-transparent', 'selected-minor');
@@ -1020,6 +1039,25 @@
                  };
                  container.appendChild(btn);
              });
+             lucide.createIcons();
+        }
+
+        async function deleteLedgerCategory(type, major, minor) {
+            const msg = minor ? `'${minor}' 소분류를 삭제하시겠습니까?` : `'${major}' 대분류(및 하위항목)를 삭제하시겠습니까?`;
+            showConfirmModal(msg, async () => {
+                const data = { ...localLedgerCategories };
+                if (minor) {
+                    data[type][major] = data[type][major].filter(s => s !== minor);
+                } else {
+                    delete data[type][major];
+                    if(selectedMajorCategory === major) {
+                        selectedMajorCategory = null;
+                        document.getElementById('ledger-minor-category-wrapper').classList.add('hidden');
+                    }
+                }
+                await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(data);
+                showToast("삭제되었습니다");
+            });
         }
         
         document.getElementById('add-ledger-major-category-btn').addEventListener('click', async () => {
