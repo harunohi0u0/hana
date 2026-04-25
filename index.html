@@ -19,7 +19,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // 1. 파이어베이스 연결 (원본 데이터 복구)
+        // 1. 파이어베이스 연결 설정
         const firebaseConfig = {
           apiKey: "AIzaSyDZm5AazCafB0Sb2gd0llv9e3GAhE-nKBw",
           authDomain: "sakurazima-mai-0u0.firebaseapp.com",
@@ -30,28 +30,17 @@
           measurementId: "G-TZQ9GVFWV5"
         };
         
-        let db, auth, currentUser;
+        let db, auth, currentUser, provider;
         let globalExchangeRate = 1380; // 글로벌 환율 변수
-        let displayCurrency = 'KRW'; // 추가됨: 현재 표시 통화 (대시보드 뷰 모드)
+        let displayCurrency = 'KRW'; // 현재 표시 통화 (대시보드 뷰 모드)
 
         try {
             if (!firebase.apps.length && firebaseConfig.projectId) {
                 firebase.initializeApp(firebaseConfig);
-                db = firebase.firestore();
-                auth = firebase.auth();
-                auth.signInAnonymously().then(() => {
-                    currentUser = auth.currentUser;
-                    initializeData();
-                });
-            } else {
-                window.onload = () => {
-                    setDefaultDates();
-                    renderLedgerMajorCategories('expense');
-                    initSystemWallet(); 
-                    initTab1Charts();
-                    renderTimeline();
-                };
             }
+            db = firebase.firestore();
+            auth = firebase.auth();
+            provider = new firebase.auth.GoogleAuthProvider();
         } catch(e) { console.error("Firebase init error:", e); }
 
         tailwind.config = {
@@ -77,7 +66,6 @@
         }
     </script>
     <style>
-        /* 2 & 3. 가독성 및 버튼 사라짐 완벽 해결 (CSS 문법 오류 수정) */
         body { background-color: #F0FDFA; color: #280D5F; }
         
         .pc-card { background-color: #FFFFFF; border-radius: 24px; box-shadow: 0px 2px 12px -8px rgba(25, 19, 38, 0.1), 0px 1px 1px rgba(25, 19, 38, 0.05); padding: 24px; border: 1px solid #E7E3EB; transition: all 0.2s ease; }
@@ -85,11 +73,9 @@
         .pc-input { width: 100%; background-color: #EEEAF4; color: #280D5F; border: 2px solid transparent; border-radius: 12px; padding: 10px 16px; font-size: 0.875rem; font-weight: 600; transition: all 0.2s ease; outline: none; }
         .pc-input:focus { border-color: #1FC7D4; background-color: #FFFFFF; }
         
-        /* 버튼 공통 속성 (투명해지는 버그 수정) */
         .pc-btn { display: inline-flex; align-items: center; justify-content: center; font-family: '"Noto Sans KR"', sans-serif; font-weight: 700; border-radius: 16px; padding: 12px 24px; cursor: pointer; transition: transform 0.1s, opacity 0.2s; border: none; outline: none; position: relative; z-index: 10; }
         .pc-btn:active { transform: translateY(4px); box-shadow: none !important; }
         
-        /* 버튼 개별 색상 (절대값 부여로 안전성 확보) */
         .pc-btn-primary { background-color: #1FC7D4; color: white; box-shadow: 0px 4px 0px #139ea8; }
         .pc-btn-purple { background-color: #7645D9; color: white; box-shadow: 0px 4px 0px #522f99; }
         .pc-btn-success { background-color: #31D0AA; color: white; box-shadow: 0px 4px 0px #1e7a63; }
@@ -98,12 +84,10 @@
         .pc-btn-secondary { background-color: #FFFFFF; color: #7A6EAA; border: 2px solid #E7E3EB; box-shadow: 0px 3px 0px #D7CAEC; }
         .pc-btn-secondary:active { box-shadow: none !important; transform: translateY(3px); }
 
-        /* 토글 메뉴 */
         .pc-toggle-group { display: inline-flex; background-color: #EEEAF4; border-radius: 12px; padding: 4px; position: relative; z-index: 20; }
         .pc-toggle-btn { padding: 8px 20px; border-radius: 8px; font-weight: 700; font-size: 0.875rem; color: #7A6EAA; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; border: none; background: transparent; outline: none; }
         .pc-toggle-btn.selected { background-color: #FFFFFF; color: #280D5F; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-        /* 메인 네비게이션 탭 */
         .nav-tab { padding: 12px 24px; font-family: '"Kanit"', sans-serif; font-weight: 700; color: #7A6EAA; border-bottom: 4px solid transparent; cursor: pointer; transition: all 0.2s; }
         .nav-tab.active { color: #1FC7D4; border-bottom-color: #1FC7D4; }
 
@@ -114,47 +98,45 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #E7E3EB; border-radius: 3px; }
 
-        /* 카테고리 태그 확실하게 보이도록 개선 */
         .category-btn { background-color: #EEEAF4; color: #280D5F; border: 2px solid transparent; font-weight: 700; border-radius: 12px; padding: 6px 12px; }
         .category-btn.selected-cat { background-color: #7645D9 !important; color: white !important; box-shadow: 0 4px 6px -1px rgba(118, 69, 217, 0.3); }
         .minor-category-btn { background-color: white; color: #1FC7D4; border: 2px solid #1FC7D4; font-weight: 700; border-radius: 8px; padding: 4px 10px; }
         .minor-category-btn.selected-minor { background-color: #1FC7D4 !important; color: white !important; box-shadow: 0 4px 6px -1px rgba(31, 199, 212, 0.3); }
+
+        /* Login Animations */
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob { animation: blob 10s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        @keyframes bounce-slow { 0%, 100% { transform: translateY(-5%); } 50% { transform: translateY(5%); } }
+        .mascot-bounce { animation: bounce-slow 3s infinite ease-in-out; }
     </style>
 </head>
 <body class="pb-20 selection:bg-pancake-cyan selection:text-white relative">
 
-    <nav class="bg-white border-b border-pancake-border sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
-            <div class="flex items-center gap-2">
-                <span class="text-2xl">🥞</span>
-                <span class="font-brand font-bold text-xl text-pancake-text hidden sm:block">My Dashboard</span>
-            </div>
-            <div class="flex">
-                <button class="nav-tab active" onclick="switchMainTab('tab1')">Asset & Ledger</button>
-                <button class="nav-tab" onclick="switchMainTab('tab2')">Trading Desk</button>
-            </div>
-            
-            <!-- 환율 설정란 및 통화 토글 (추가됨) -->
-            <div class="flex items-center gap-2">
-                <!-- 원화/달러 토글 -->
-                <div class="pc-toggle-group shadow-sm p-1">
-                    <button type="button" id="btn-curr-krw" class="pc-toggle-btn selected !px-2 !py-0.5 text-[10px] sm:text-xs" onclick="setDisplayCurrency('KRW')">KRW</button>
-                    <button type="button" id="btn-curr-usd" class="pc-toggle-btn !px-2 !py-0.5 text-[10px] sm:text-xs" onclick="setDisplayCurrency('USD')">USD</button>
-                </div>
+    <!-- Background Blobs (Login Screen) -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-[-1]">
+        <div class="absolute top-[-10%] left-[-10%] w-[30%] h-[30%] bg-pancake-cyan rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-pancake-purple rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob animation-delay-2000"></div>
+    </div>
 
-                <div class="flex items-center gap-2 bg-pancake-input px-3 py-1 rounded-xl border border-pancake-border hidden sm:flex">
-                    <span class="text-[10px] font-bold text-gray-500">환율($1)</span>
-                    <input type="text" id="global-exchange-rate" value="1,380" class="number-input bg-transparent border-none text-sm font-bold text-pancake-text w-16 text-right outline-none">
-                </div>
+    <!-- 1. Login View -->
+    <div id="login-view" class="flex flex-col items-center justify-center min-h-screen px-4 relative overflow-hidden">
+        <div class="z-10 text-center w-full max-w-sm">
+            <div class="mb-8 mascot-bounce relative inline-block">
+                <span class="text-8xl">🍰</span>
             </div>
-        </div>
-    </nav>
-
-    <!-- 모바일 전용 환율 인풋 (공간 확보용) -->
-    <div class="sm:hidden bg-white border-b border-gray-100 px-4 py-2 flex justify-end">
-        <div class="flex items-center gap-2 bg-pancake-input px-3 py-1 rounded-xl border border-pancake-border w-full justify-between">
-            <span class="text-xs font-bold text-gray-500">글로벌 환율 ($1 기준)</span>
-            <input type="text" id="global-exchange-rate-mobile" value="1,380" class="number-input bg-transparent border-none text-sm font-bold text-pancake-text w-20 text-right outline-none">
+            <h1 class="text-3xl font-bold mb-2 text-pancake-text font-brand">My Dashboard</h1>
+            <p class="text-pancake-textSub mb-10 font-medium">언제 어디서나 내 자산 관리</p>
+            <div class="pc-card">
+                <button id="login-btn" class="w-full pc-btn pc-btn-primary text-lg py-4 shadow-lg hover:shadow-xl transition-shadow">
+                    <span class="mr-2 text-xl">🥞</span> 구글 계정으로 시작
+                </button>
+            </div>
         </div>
     </div>
 
@@ -163,241 +145,290 @@
         <i data-lucide="check-circle" class="w-6 h-6 mr-3"></i><p id="toast-message" class="text-base"></p>
     </div>
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        
-        <!-- ================= [TAB 1] 종합 자산 & 가계부 ================= -->
-        <div id="tab1" class="tab-content active space-y-6">
+    <!-- 2. Main App Container -->
+    <div id="app-container" class="hidden">
+        <nav class="bg-white border-b border-pancake-border sticky top-0 z-40 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">🥞</span>
+                    <div class="hidden sm:block">
+                        <span class="font-brand font-bold text-xl text-pancake-text block leading-tight">My Dashboard</span>
+                        <span id="auth-info" class="text-[10px] font-bold text-pancake-textSub"></span>
+                    </div>
+                </div>
+                <div class="flex">
+                    <button class="nav-tab active" onclick="switchMainTab('tab1')">Asset & Ledger</button>
+                    <button class="nav-tab" onclick="switchMainTab('tab2')">Trading Desk</button>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <!-- 원화/달러 토글 -->
+                    <div class="pc-toggle-group shadow-sm p-1 hidden sm:inline-flex">
+                        <button type="button" id="btn-curr-krw" class="pc-toggle-btn selected !px-2 !py-0.5 text-[10px] sm:text-xs" onclick="setDisplayCurrency('KRW')">KRW</button>
+                        <button type="button" id="btn-curr-usd" class="pc-toggle-btn !px-2 !py-0.5 text-[10px] sm:text-xs" onclick="setDisplayCurrency('USD')">USD</button>
+                    </div>
+
+                    <div class="flex items-center gap-2 bg-pancake-input px-3 py-1 rounded-xl border border-pancake-border hidden md:flex">
+                        <span class="text-[10px] font-bold text-gray-500">환율($1)</span>
+                        <input type="text" id="global-exchange-rate" value="1,380" class="number-input bg-transparent border-none text-sm font-bold text-pancake-text w-16 text-right outline-none">
+                    </div>
+
+                    <!-- 로그아웃 버튼 -->
+                    <button id="logout-btn" class="p-2 ml-1 rounded-full hover:bg-gray-100 transition text-pancake-failure" title="로그아웃">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 모바일 전용 상단 컨트롤바 (공간 확보용) -->
+        <div class="sm:hidden bg-white border-b border-gray-100 px-4 py-2 flex justify-between items-center gap-2">
+            <div class="pc-toggle-group shadow-sm p-1">
+                <button type="button" id="btn-curr-krw-mobile" class="pc-toggle-btn selected !px-3 !py-1 text-xs" onclick="setDisplayCurrency('KRW')">KRW</button>
+                <button type="button" id="btn-curr-usd-mobile" class="pc-toggle-btn !px-3 !py-1 text-xs" onclick="setDisplayCurrency('USD')">USD</button>
+            </div>
+            <div class="flex items-center gap-2 bg-pancake-input px-3 py-1 rounded-xl border border-pancake-border flex-1 justify-between">
+                <span class="text-xs font-bold text-gray-500">환율($)</span>
+                <input type="text" id="global-exchange-rate-mobile" value="1,380" class="number-input bg-transparent border-none text-sm font-bold text-pancake-text w-16 text-right outline-none">
+            </div>
+        </div>
+
+        <main class="max-w-7xl mx-auto px-4 py-8">
             
-            <div class="flex justify-center mb-6">
-                <div class="pc-toggle-group shadow-sm p-1.5 border border-gray-100">
-                    <button class="pc-toggle-btn selected flex items-center gap-2" onclick="switchSubTab('sub-dashboard', this)"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> 대시보드</button>
-                    <button class="pc-toggle-btn flex items-center gap-2" onclick="switchSubTab('sub-portfolio', this)"><i data-lucide="briefcase" class="w-4 h-4"></i> 자산 포트폴리오</button>
-                    <button class="pc-toggle-btn flex items-center gap-2" onclick="switchSubTab('sub-timeline', this)"><i data-lucide="history" class="w-4 h-4"></i> 거래 타임라인</button>
-                </div>
-            </div>
-
-            <!-- 🟢 Sub-tab 1: Dashboard -->
-            <div id="sub-dashboard" class="sub-tab-content active space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="pc-card text-center py-8 md:col-span-2 flex flex-col justify-center border-b-4 border-pancake-cyan">
-                        <h2 class="text-pancake-textSub font-bold text-sm mb-1">💰 총 자산 (Net Worth)</h2>
-                        <p id="total-net-worth" class="text-4xl lg:text-5xl font-brand font-bold text-pancake-text">₩ 0</p>
-                        <p class="text-xs font-bold mt-2 text-gray-400">포트폴리오 합계 + 기본 예금</p>
+            <!-- ================= [TAB 1] 종합 자산 & 가계부 ================= -->
+            <div id="tab1" class="tab-content active space-y-6">
+                
+                <div class="flex justify-center mb-6">
+                    <div class="pc-toggle-group shadow-sm p-1.5 border border-gray-100">
+                        <button class="pc-toggle-btn selected flex items-center gap-2" onclick="switchSubTab('sub-dashboard', this)"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> 대시보드</button>
+                        <button class="pc-toggle-btn flex items-center gap-2" onclick="switchSubTab('sub-portfolio', this)"><i data-lucide="briefcase" class="w-4 h-4"></i> 자산 포트폴리오</button>
+                        <button class="pc-toggle-btn flex items-center gap-2" onclick="switchSubTab('sub-timeline', this)"><i data-lucide="history" class="w-4 h-4"></i> 거래 타임라인</button>
                     </div>
-                    <div class="pc-card text-center py-6 flex flex-col justify-center bg-[#F0FDFA] border-b-4 border-pancake-primary">
-                        <h2 class="text-pancake-primary font-bold text-sm mb-2 flex justify-center items-center">💵 보유 현금 (Cash)</h2>
-                        <div class="flex flex-col items-center gap-1">
-                            <p id="system-wallet-balance" class="text-2xl font-brand font-bold text-pancake-text">₩ 0</p>
-                            <p id="usd-wallet-balance" class="text-lg font-brand font-bold text-blue-500">$ 0</p>
+                </div>
+
+                <!-- 🟢 Sub-tab 1: Dashboard -->
+                <div id="sub-dashboard" class="sub-tab-content active space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="pc-card text-center py-8 md:col-span-2 flex flex-col justify-center border-b-4 border-pancake-cyan">
+                            <h2 class="text-pancake-textSub font-bold text-sm mb-1">💰 총 자산 (Net Worth)</h2>
+                            <p id="total-net-worth" class="text-4xl lg:text-5xl font-brand font-bold text-pancake-text">₩ 0</p>
+                            <p class="text-xs font-bold mt-2 text-gray-400">포트폴리오 합계 + 기본 예금</p>
                         </div>
-                        <p class="text-[10px] font-bold mt-3 text-pancake-textSub">모든 가계부/매매 자동 연동</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="pc-card">
-                        <h3 class="font-bold flex items-center mb-4 text-pancake-text"><i data-lucide="pie-chart" class="w-5 h-5 mr-2 text-pancake-warning"></i> 자산 점유율 <span class="text-[10px] font-normal text-gray-400 ml-2">(마우스 오버 시 %)</span></h3>
-                        <div class="h-48 relative w-full flex justify-center"><canvas id="chart-asset-allocation"></canvas></div>
-                    </div>
-                    <div class="pc-card flex flex-col">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <h3 class="font-bold flex items-center text-pancake-text"><i data-lucide="trending-up" class="w-5 h-5 mr-2 text-pancake-success"></i> 재산 성장 추이</h3>
-                                <p id="growth-summary-text" class="text-[10px] font-bold text-gray-400 mt-1 ml-7">데이터 누적 중</p>
+                        <div class="pc-card text-center py-6 flex flex-col justify-center bg-[#F0FDFA] border-b-4 border-pancake-primary">
+                            <h2 class="text-pancake-primary font-bold text-sm mb-2 flex justify-center items-center">💵 보유 현금 (Cash)</h2>
+                            <div class="flex flex-col items-center gap-1">
+                                <p id="system-wallet-balance" class="text-2xl font-brand font-bold text-pancake-text">₩ 0</p>
+                                <p id="usd-wallet-balance" class="text-lg font-brand font-bold text-blue-500">$ 0</p>
                             </div>
-                            <select id="growth-timeframe" class="pc-input text-xs py-1 px-2 w-auto h-auto bg-white border border-gray-200 cursor-pointer" onchange="initTab1Charts()">
-                                <option value="month">월별 (최근 6개월)</option>
-                                <option value="quarter">분기별 (최근 4분기)</option>
-                            </select>
-                        </div>
-                        <div class="h-44 relative w-full flex items-center justify-center mt-auto">
-                            <canvas id="chart-asset-growth"></canvas>
+                            <p class="text-[10px] font-bold mt-3 text-pancake-textSub">모든 가계부/매매 자동 연동</p>
                         </div>
                     </div>
-                </div>
 
-                <div class="pc-card">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-gray-100 pb-4 gap-4">
-                        <h3 class="font-bold text-base text-pancake-text flex items-center"><i data-lucide="bar-chart-2" class="w-5 h-5 mr-2 text-pancake-purple"></i> 가계부 수입/지출 분포</h3>
-                        <div class="flex items-center gap-2 bg-pancake-input p-1.5 rounded-xl">
-                            <input type="date" id="ledger-filter-start" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold">
-                            <span class="text-xs text-gray-500">~</span>
-                            <input type="date" id="ledger-filter-end" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold">
-                            <button onclick="renderLedgerCharts()" class="pc-btn pc-btn-primary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#139ea8]">조회</button>
-                            <button onclick="setAllTime('ledger')" class="pc-btn pc-btn-secondary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#D7CAEC]">전체</button>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="pc-card">
+                            <h3 class="font-bold flex items-center mb-4 text-pancake-text"><i data-lucide="pie-chart" class="w-5 h-5 mr-2 text-pancake-warning"></i> 자산 점유율 <span class="text-[10px] font-normal text-gray-400 ml-2">(마우스 오버 시 %)</span></h3>
+                            <div class="h-48 relative w-full flex justify-center"><canvas id="chart-asset-allocation"></canvas></div>
                         </div>
-                    </div>
-                    <div class="flex flex-col md:flex-row gap-6 pt-2">
-                        <div class="flex-1 flex flex-col items-center">
-                            <h4 class="font-bold text-xs mb-2 text-pancake-success bg-green-50 px-3 py-1 rounded-full">수입</h4>
-                            <div class="h-36 w-full"><canvas id="chart-income-pie"></canvas></div>
-                            <div id="chart-income-total" class="mt-4 font-brand font-bold text-lg text-pancake-success">₩ 0</div>
-                        </div>
-                        <div class="w-px bg-gray-100 hidden md:block"></div>
-                        <div class="flex-1 flex flex-col items-center">
-                            <h4 class="font-bold text-xs mb-2 text-pancake-failure bg-pink-50 px-3 py-1 rounded-full">지출</h4>
-                            <div class="h-36 w-full"><canvas id="chart-expense-pie"></canvas></div>
-                            <div id="chart-expense-total" class="mt-4 font-brand font-bold text-lg text-pancake-failure">₩ 0</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- 가계부 작성 폼 (저장/초기화 버튼 부활 및 가독성 개선) -->
-                    <div class="pc-card relative z-10 overflow-hidden" id="ledger-write-section">
-                        <div class="flex justify-between items-center mb-6 relative z-20">
-                            <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="edit-3" class="w-5 h-5 mr-2 text-pancake-purple"></i> 가계부 작성</h2>
-                            <div class="pc-toggle-group shadow-sm" data-group="ledger-type">
-                                <button type="button" data-value="expense" class="pc-toggle-btn selected text-pancake-failure px-5">💸 지출</button>
-                                <button type="button" data-value="income" class="pc-toggle-btn text-pancake-success px-5">💰 수입</button>
-                            </div>
-                        </div>
-
-                        <form id="ledger-form" class="space-y-5 relative z-20" onsubmit="event.preventDefault(); addLedger();">
-                            <input type="hidden" id="ledger-id">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div><label class="text-xs font-bold text-gray-500 block mb-1">날짜</label><input type="date" id="ledger-date" class="pc-input bg-white border-gray-200" required></div>
-                                <div><label class="text-xs font-bold text-gray-500 block mb-1">금액 (기본 예금 연동)</label><input type="text" id="ledger-amount" placeholder="0" class="pc-input bg-white number-input font-bold text-right text-lg border-gray-200" required></div>
-                            </div>
-                            
-                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                                <div class="flex justify-between items-center mb-3">
-                                    <span class="text-xs font-bold text-pancake-text flex items-center"><i data-lucide="folder" class="w-3 h-3 mr-1 text-pancake-warning"></i> 대분류</span>
-                                    <div class="flex gap-1"><input type="text" id="new-ledger-major" class="pc-input py-1 px-2 text-xs w-24 bg-white border border-gray-200" placeholder="카테고리명"><button type="button" id="add-ledger-major-btn" class="bg-white border border-gray-300 text-pancake-text rounded px-2 font-bold hover:bg-gray-100 transition">+</button></div>
+                        <div class="pc-card flex flex-col">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="font-bold flex items-center text-pancake-text"><i data-lucide="trending-up" class="w-5 h-5 mr-2 text-pancake-success"></i> 재산 성장 추이</h3>
+                                    <p id="growth-summary-text" class="text-[10px] font-bold text-gray-400 mt-1 ml-7">데이터 누적 중</p>
                                 </div>
-                                <div id="ledger-major-container" class="flex flex-wrap gap-2 mb-2"></div>
-                                
-                                <div id="ledger-minor-wrapper" class="hidden border-t border-dashed border-gray-300 pt-3 mt-2">
-                                    <div class="flex justify-between items-center mb-3">
-                                        <span class="text-xs font-bold text-pancake-primary flex items-center"><i data-lucide="corner-down-right" class="w-3 h-3 mr-1"></i> <span id="selected-major-name"></span> > 소분류</span>
-                                        <div class="flex gap-1"><input type="text" id="new-ledger-minor" class="pc-input py-1 px-2 text-xs w-24 bg-white border border-gray-200" placeholder="추가..."><button type="button" id="add-ledger-minor-btn" class="bg-white border border-gray-300 text-pancake-text rounded px-2 font-bold hover:bg-gray-100 transition">+</button></div>
-                                    </div>
-                                    <div id="ledger-minor-container" class="flex flex-wrap gap-2"></div>
-                                </div>
-                            </div>
-
-                            <div><label class="text-xs font-bold text-gray-500 block mb-1">메모</label><input type="text" id="ledger-memo" class="pc-input bg-white border-gray-200" placeholder="내용 입력..."></div>
-                            
-                            <div class="flex justify-end gap-3 pt-4">
-                                <button type="button" onclick="resetLedgerForm()" class="pc-btn pc-btn-secondary text-sm px-6">초기화</button>
-                                <button type="submit" class="pc-btn pc-btn-purple text-base w-full sm:w-auto"><i data-lucide="save" class="w-5 h-5 mr-2"></i> 가계부 저장</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- 고정비 관리 -->
-                    <div class="pc-card flex flex-col h-full bg-gray-50/50">
-                        <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
-                            <div>
-                                <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="repeat" class="w-5 h-5 mr-2 text-pancake-primary"></i> 매월 고정비 (구독)</h2>
-                                <p class="text-[10px] text-gray-500 mt-1">월 시작 시 '기본 예금'에서 자동 차감</p>
-                            </div>
-                            <button onclick="openModal('fixed-modal')" class="pc-btn pc-btn-primary py-2 px-4 text-xs"><span class="text-lg mr-1">+</span> 추가</button>
-                        </div>
-                        <div id="fixed-expense-list" class="space-y-3 flex-grow overflow-y-auto custom-scrollbar pr-2 min-h-[200px]"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 🟢 Sub-tab 2: Portfolio -->
-            <div id="sub-portfolio" class="sub-tab-content hidden space-y-6">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="pc-card lg:col-span-1 h-fit sticky top-24">
-                        <h3 class="font-bold text-pancake-text mb-6 border-b border-pancake-border pb-3 flex items-center"><i data-lucide="shopping-cart" class="w-5 h-5 mr-2 text-pancake-primary"></i> 자산 등록 / 매수</h3>
-                        <form id="holding-form" class="space-y-5" onsubmit="event.preventDefault(); addHolding();">
-                            <input type="hidden" id="holding-id">
-                            <div>
-                                <label class="text-xs font-bold text-gray-500 block mb-1">자산 분류</label>
-                                <select id="holding-type" class="pc-input bg-white cursor-pointer border-gray-200" onchange="toggleHoldingInputs()">
-                                    <option value="stock">📈 주식</option>
-                                    <option value="bond">🏛️ 채권 (ETF)</option>
-                                    <option value="commodity">🥇 원자재 (ETF)</option>
-                                    <option value="cash">💵 기본 예금 입출금 (수동)</option>
-                                    <option value="usd_cash">💵 외화 예금 입출금 (수동)</option>
+                                <select id="growth-timeframe" class="pc-input text-xs py-1 px-2 w-auto h-auto bg-white border border-gray-200 cursor-pointer" onchange="initTab1Charts()">
+                                    <option value="month">월별 (최근 6개월)</option>
+                                    <option value="quarter">분기별 (최근 4분기)</option>
                                 </select>
                             </div>
-                            <div id="holding-name-container">
-                                <label class="text-xs font-bold text-gray-500 block mb-1">종목명 / 자산명</label>
-                                <input type="text" id="holding-name" class="pc-input bg-white border-gray-200" placeholder="예: AAPL">
+                            <div class="h-44 relative w-full flex items-center justify-center mt-auto">
+                                <canvas id="chart-asset-growth"></canvas>
                             </div>
+                        </div>
+                    </div>
 
-                            <div id="holding-currency-container" class="space-y-1">
-                                <label class="text-xs font-bold text-gray-500 block">결제 통화</label>
-                                <div class="pc-toggle-group w-full" data-group="holding-currency">
-                                    <button type="button" data-value="krw" class="pc-toggle-btn selected w-1/2" onclick="updateHoldingPreview()">원화 (KRW)</button>
-                                    <button type="button" data-value="usd" class="pc-toggle-btn w-1/2" onclick="updateHoldingPreview()">달러 (USD)</button>
+                    <div class="pc-card">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-gray-100 pb-4 gap-4">
+                            <h3 class="font-bold text-base text-pancake-text flex items-center"><i data-lucide="bar-chart-2" class="w-5 h-5 mr-2 text-pancake-purple"></i> 가계부 수입/지출 분포</h3>
+                            <div class="flex items-center gap-2 bg-pancake-input p-1.5 rounded-xl">
+                                <input type="date" id="ledger-filter-start" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold">
+                                <span class="text-xs text-gray-500">~</span>
+                                <input type="date" id="ledger-filter-end" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold">
+                                <button onclick="renderLedgerCharts()" class="pc-btn pc-btn-primary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#139ea8]">조회</button>
+                                <button onclick="setAllTime('ledger')" class="pc-btn pc-btn-secondary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#D7CAEC]">전체</button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col md:flex-row gap-6 pt-2">
+                            <div class="flex-1 flex flex-col items-center">
+                                <h4 class="font-bold text-xs mb-2 text-pancake-success bg-green-50 px-3 py-1 rounded-full">수입</h4>
+                                <div class="h-36 w-full"><canvas id="chart-income-pie"></canvas></div>
+                                <div id="chart-income-total" class="mt-4 font-brand font-bold text-lg text-pancake-success">₩ 0</div>
+                            </div>
+                            <div class="w-px bg-gray-100 hidden md:block"></div>
+                            <div class="flex-1 flex flex-col items-center">
+                                <h4 class="font-bold text-xs mb-2 text-pancake-failure bg-pink-50 px-3 py-1 rounded-full">지출</h4>
+                                <div class="h-36 w-full"><canvas id="chart-expense-pie"></canvas></div>
+                                <div id="chart-expense-total" class="mt-4 font-brand font-bold text-lg text-pancake-failure">₩ 0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- 가계부 작성 폼 -->
+                        <div class="pc-card relative z-10 overflow-hidden" id="ledger-write-section">
+                            <div class="flex justify-between items-center mb-6 relative z-20">
+                                <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="edit-3" class="w-5 h-5 mr-2 text-pancake-purple"></i> 가계부 작성</h2>
+                                <div class="pc-toggle-group shadow-sm" data-group="ledger-type">
+                                    <button type="button" data-value="expense" class="pc-toggle-btn selected text-pancake-failure px-5">💸 지출</button>
+                                    <button type="button" data-value="income" class="pc-toggle-btn text-pancake-success px-5">💰 수입</button>
                                 </div>
                             </div>
-                            
-                            <div class="grid grid-cols-2 gap-3" id="holding-qty-price-container">
-                                <div><label class="text-xs font-bold text-gray-500 block mb-1">매수 수량</label><input type="text" id="holding-qty" class="pc-input bg-white number-input text-right border-gray-200" placeholder="0"></div>
-                                <div><label class="text-xs font-bold text-gray-500 block mb-1">매수 단가</label><input type="text" id="holding-price" class="pc-input bg-white number-input text-right border-gray-200" placeholder="0"></div>
-                            </div>
 
-                            <div id="holding-cash-container" class="hidden">
-                                <label id="holding-cash-label" class="text-xs font-bold text-gray-500 block mb-1">입출금 금액(₩)</label>
-                                <input type="text" id="holding-cash-amount" class="pc-input bg-white number-input font-bold text-right text-lg text-pancake-success border-gray-200" placeholder="예: 100,000">
-                                <p class="text-[10px] text-gray-400 mt-1">양수(+)는 예금 추가, 음수(-)는 차감.</p>
-                            </div>
-                            
-                            <div id="holding-preview-container" class="bg-[#F0FDFA] p-4 rounded-xl border border-pancake-primary/30 flex justify-between items-center">
-                                <span class="text-xs font-bold text-pancake-text">총 원화 결제액<br><span class="text-[10px] text-gray-500 font-normal">(기본 예금에서 차감)</span></span>
-                                <span id="holding-preview-total" class="text-lg font-bold text-pancake-failure">₩ 0</span>
-                            </div>
+                            <form id="ledger-form" class="space-y-5 relative z-20" onsubmit="event.preventDefault(); addLedger();">
+                                <input type="hidden" id="ledger-id">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label class="text-xs font-bold text-gray-500 block mb-1">날짜</label><input type="date" id="ledger-date" class="pc-input bg-white border-gray-200" required></div>
+                                    <div><label class="text-xs font-bold text-gray-500 block mb-1">금액 (기본 예금 연동)</label><input type="text" id="ledger-amount" placeholder="0" class="pc-input bg-white number-input font-bold text-right text-lg border-gray-200" required></div>
+                                </div>
+                                
+                                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <span class="text-xs font-bold text-pancake-text flex items-center"><i data-lucide="folder" class="w-3 h-3 mr-1 text-pancake-warning"></i> 대분류</span>
+                                        <div class="flex gap-1"><input type="text" id="new-ledger-major" class="pc-input py-1 px-2 text-xs w-24 bg-white border border-gray-200" placeholder="카테고리명"><button type="button" id="add-ledger-major-btn" class="bg-white border border-gray-300 text-pancake-text rounded px-2 font-bold hover:bg-gray-100 transition">+</button></div>
+                                    </div>
+                                    <div id="ledger-major-container" class="flex flex-wrap gap-2 mb-2"></div>
+                                    
+                                    <div id="ledger-minor-wrapper" class="hidden border-t border-dashed border-gray-300 pt-3 mt-2">
+                                        <div class="flex justify-between items-center mb-3">
+                                            <span class="text-xs font-bold text-pancake-primary flex items-center"><i data-lucide="corner-down-right" class="w-3 h-3 mr-1"></i> <span id="selected-major-name"></span> > 소분류</span>
+                                            <div class="flex gap-1"><input type="text" id="new-ledger-minor" class="pc-input py-1 px-2 text-xs w-24 bg-white border border-gray-200" placeholder="추가..."><button type="button" id="add-ledger-minor-btn" class="bg-white border border-gray-300 text-pancake-text rounded px-2 font-bold hover:bg-gray-100 transition">+</button></div>
+                                        </div>
+                                        <div id="ledger-minor-container" class="flex flex-wrap gap-2"></div>
+                                    </div>
+                                </div>
 
-                            <div class="flex gap-3 pt-4 border-t border-gray-100">
-                                <button type="button" onclick="resetHoldingForm()" class="pc-btn pc-btn-secondary text-sm px-6">초기화</button>
-                                <button type="submit" class="pc-btn pc-btn-primary flex-1 text-base"><i data-lucide="check" class="w-5 h-5 mr-1"></i> 포트폴리오 등록</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="pc-card lg:col-span-2">
-                        <div class="flex justify-between items-center mb-6 pb-3 border-b border-pancake-border">
-                            <h3 class="font-bold text-pancake-text flex items-center text-lg"><i data-lucide="layers" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 포트폴리오 현황</h3>
-                            <span class="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">실시간 환율 적용</span>
+                                <div><label class="text-xs font-bold text-gray-500 block mb-1">메모</label><input type="text" id="ledger-memo" class="pc-input bg-white border-gray-200" placeholder="내용 입력..."></div>
+                                
+                                <div class="flex justify-end gap-3 pt-4">
+                                    <button type="button" onclick="resetLedgerForm()" class="pc-btn pc-btn-secondary text-sm px-6">초기화</button>
+                                    <button type="submit" class="pc-btn pc-btn-purple text-base w-full sm:w-auto"><i data-lucide="save" class="w-5 h-5 mr-2"></i> 가계부 저장</button>
+                                </div>
+                            </form>
                         </div>
-                        <div id="holdings-list-container" class="space-y-4"></div>
+
+                        <!-- 고정비 관리 -->
+                        <div class="pc-card flex flex-col h-full bg-gray-50/50">
+                            <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
+                                <div>
+                                    <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="repeat" class="w-5 h-5 mr-2 text-pancake-primary"></i> 매월 고정비 (구독)</h2>
+                                    <p class="text-[10px] text-gray-500 mt-1">월 시작 시 '기본 예금'에서 자동 차감</p>
+                                </div>
+                                <button onclick="openModal('fixed-modal')" class="pc-btn pc-btn-primary py-2 px-4 text-xs"><span class="text-lg mr-1">+</span> 추가</button>
+                            </div>
+                            <div id="fixed-expense-list" class="space-y-3 flex-grow overflow-y-auto custom-scrollbar pr-2 min-h-[200px]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🟢 Sub-tab 2: Portfolio -->
+                <div id="sub-portfolio" class="sub-tab-content hidden space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="pc-card lg:col-span-1 h-fit sticky top-24">
+                            <h3 class="font-bold text-pancake-text mb-6 border-b border-pancake-border pb-3 flex items-center"><i data-lucide="shopping-cart" class="w-5 h-5 mr-2 text-pancake-primary"></i> 자산 등록 / 매수</h3>
+                            <form id="holding-form" class="space-y-5" onsubmit="event.preventDefault(); addHolding();">
+                                <input type="hidden" id="holding-id">
+                                <div>
+                                    <label class="text-xs font-bold text-gray-500 block mb-1">자산 분류</label>
+                                    <select id="holding-type" class="pc-input bg-white cursor-pointer border-gray-200" onchange="toggleHoldingInputs()">
+                                        <option value="stock">📈 주식</option>
+                                        <option value="bond">🏛️ 채권 (ETF)</option>
+                                        <option value="commodity">🥇 원자재 (ETF)</option>
+                                        <option value="cash">💵 기본 예금 입출금 (수동)</option>
+                                        <option value="usd_cash">💵 외화 예금 입출금 (수동)</option>
+                                    </select>
+                                </div>
+                                <div id="holding-name-container">
+                                    <label class="text-xs font-bold text-gray-500 block mb-1">종목명 / 자산명</label>
+                                    <input type="text" id="holding-name" class="pc-input bg-white border-gray-200" placeholder="예: AAPL">
+                                </div>
+
+                                <div id="holding-currency-container" class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-500 block">결제 통화</label>
+                                    <div class="pc-toggle-group w-full" data-group="holding-currency">
+                                        <button type="button" data-value="krw" class="pc-toggle-btn selected w-1/2" onclick="updateHoldingPreview()">원화 (KRW)</button>
+                                        <button type="button" data-value="usd" class="pc-toggle-btn w-1/2" onclick="updateHoldingPreview()">달러 (USD)</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-3" id="holding-qty-price-container">
+                                    <div><label class="text-xs font-bold text-gray-500 block mb-1">매수 수량</label><input type="text" id="holding-qty" class="pc-input bg-white number-input text-right border-gray-200" placeholder="0"></div>
+                                    <div><label class="text-xs font-bold text-gray-500 block mb-1">매수 단가</label><input type="text" id="holding-price" class="pc-input bg-white number-input text-right border-gray-200" placeholder="0"></div>
+                                </div>
+
+                                <div id="holding-cash-container" class="hidden">
+                                    <label id="holding-cash-label" class="text-xs font-bold text-gray-500 block mb-1">입출금 금액(₩)</label>
+                                    <input type="text" id="holding-cash-amount" class="pc-input bg-white number-input font-bold text-right text-lg text-pancake-success border-gray-200" placeholder="예: 100,000">
+                                    <p class="text-[10px] text-gray-400 mt-1">양수(+)는 예금 추가, 음수(-)는 차감.</p>
+                                </div>
+                                
+                                <div id="holding-preview-container" class="bg-[#F0FDFA] p-4 rounded-xl border border-pancake-primary/30 flex justify-between items-center">
+                                    <span class="text-xs font-bold text-pancake-text">총 원화 결제액<br><span class="text-[10px] text-gray-500 font-normal">(기본 예금에서 차감)</span></span>
+                                    <span id="holding-preview-total" class="text-lg font-bold text-pancake-failure">₩ 0</span>
+                                </div>
+
+                                <div class="flex gap-3 pt-4 border-t border-gray-100">
+                                    <button type="button" onclick="resetHoldingForm()" class="pc-btn pc-btn-secondary text-sm px-6">초기화</button>
+                                    <button type="submit" class="pc-btn pc-btn-primary flex-1 text-base"><i data-lucide="check" class="w-5 h-5 mr-1"></i> 포트폴리오 등록</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="pc-card lg:col-span-2">
+                            <div class="flex justify-between items-center mb-6 pb-3 border-b border-pancake-border">
+                                <h3 class="font-bold text-pancake-text flex items-center text-lg"><i data-lucide="layers" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 포트폴리오 현황</h3>
+                                <span class="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">실시간 환율 적용</span>
+                            </div>
+                            <div id="holdings-list-container" class="space-y-4"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🟢 Sub-tab 3: Transaction Timeline -->
+                <div id="sub-timeline" class="sub-tab-content hidden space-y-6">
+                    <div class="pc-card min-h-[500px]">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-gray-100 pb-4">
+                            <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="activity" class="w-5 h-5 mr-2 text-pancake-primary"></i> 거래 타임라인</h2>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <div class="pc-toggle-group shadow-sm" data-group="timeline-filter">
+                                    <button type="button" data-value="all" class="pc-toggle-btn selected px-4">전체보기</button>
+                                    <button type="button" data-value="ledger" class="pc-toggle-btn px-4">가계부만</button>
+                                    <button type="button" data-value="trade" class="pc-toggle-btn px-4">매매만</button>
+                                </div>
+                                <div class="flex items-center gap-2 bg-pancake-input p-1.5 rounded-xl">
+                                    <input type="date" id="timeline-filter-start" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold outline-none">
+                                    <span class="text-xs text-gray-500 font-bold">~</span>
+                                    <input type="date" id="timeline-filter-end" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold outline-none">
+                                    <button onclick="renderTimeline()" class="pc-btn pc-btn-primary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#139ea8]">조회</button>
+                                    <button onclick="setAllTime('timeline')" class="pc-btn pc-btn-secondary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#D7CAEC]">전체</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border-l-2 border-pancake-border ml-4 pl-6 space-y-6 relative" id="timeline-container">
+                            <!-- JS 렌더링 -->
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 🟢 Sub-tab 3: Transaction Timeline -->
-            <div id="sub-timeline" class="sub-tab-content hidden space-y-6">
-                <div class="pc-card min-h-[500px]">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-gray-100 pb-4">
-                        <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="activity" class="w-5 h-5 mr-2 text-pancake-primary"></i> 거래 타임라인</h2>
-                        <div class="flex flex-wrap items-center gap-3">
-                            <div class="pc-toggle-group shadow-sm" data-group="timeline-filter">
-                                <button type="button" data-value="all" class="pc-toggle-btn selected px-4">전체보기</button>
-                                <button type="button" data-value="ledger" class="pc-toggle-btn px-4">가계부만</button>
-                                <button type="button" data-value="trade" class="pc-toggle-btn px-4">매매만</button>
-                            </div>
-                            <div class="flex items-center gap-2 bg-pancake-input p-1.5 rounded-xl">
-                                <input type="date" id="timeline-filter-start" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold outline-none">
-                                <span class="text-xs text-gray-500 font-bold">~</span>
-                                <input type="date" id="timeline-filter-end" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold outline-none">
-                                <button onclick="renderTimeline()" class="pc-btn pc-btn-primary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#139ea8]">조회</button>
-                                <button onclick="setAllTime('timeline')" class="pc-btn pc-btn-secondary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#D7CAEC]">전체</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="border-l-2 border-pancake-border ml-4 pl-6 space-y-6 relative" id="timeline-container">
-                        <!-- JS 렌더링 -->
-                    </div>
+            <!-- ================= [TAB 2] 트레이딩 데스크 ================= -->
+            <div id="tab2" class="tab-content space-y-6">
+                <div class="pc-card text-center py-20 bg-[#F9F8FA]">
+                    <span class="text-6xl mb-4 block">🚧</span>
+                    <h2 class="text-2xl font-bold text-pancake-text mb-2">트레이딩 데스크 세팅중</h2>
+                    <p class="text-gray-500 font-bold">1번 탭의 모든 구조와 버튼 렌더링 문제가 지시하신 원본대로 복원되었습니다.</p>
                 </div>
             </div>
-        </div>
-
-        <!-- ================= [TAB 2] 트레이딩 데스크 ================= -->
-        <div id="tab2" class="tab-content space-y-6">
-            <div class="pc-card text-center py-20 bg-[#F9F8FA]">
-                <span class="text-6xl mb-4 block">🚧</span>
-                <h2 class="text-2xl font-bold text-pancake-text mb-2">트레이딩 데스크 세팅중</h2>
-                <p class="text-gray-500 font-bold">1번 탭의 모든 구조와 버튼 렌더링 문제가 지시하신 원본대로 복원되었습니다.</p>
-            </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <!-- Modals -->
     <div id="fixed-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
@@ -444,6 +475,46 @@
         Chart.defaults.color = '#7A6EAA'; 
         let chartInstances = {};
 
+        // ================= AUTH (Google Login) =================
+        window.onload = () => {
+            const loginView = document.getElementById('login-view');
+            const appContainer = document.getElementById('app-container');
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            if (loginBtn) {
+                loginBtn.addEventListener('click', () => {
+                    auth.signInWithPopup(provider).catch(e => showToast("로그인 실패: " + e.message));
+                });
+            }
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => auth.signOut());
+            }
+
+            // 로그인 상태 감지
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = user;
+                    loginView.classList.add('hidden');
+                    appContainer.classList.remove('hidden');
+                    document.getElementById('auth-info').textContent = user.email; // 상단 이메일 표시
+                    
+                    // 데이터 초기화 및 로드 시작
+                    initializeData();
+                } else {
+                    currentUser = null;
+                    loginView.classList.remove('hidden');
+                    appContainer.classList.add('hidden');
+                    
+                    // 로그아웃 시 로컬 데이터 비우기
+                    localHoldings = [];
+                    localLedgerEntries = [];
+                    localFixedExpenses = [];
+                }
+            });
+            lucide.createIcons();
+        };
+
         // 탭 전환
         function switchMainTab(id) { document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); event.target.classList.add('active'); document.getElementById(id).classList.add('active'); if(id==='tab1') initTab1Charts(); }
         function switchSubTab(id, btn) { 
@@ -460,7 +531,7 @@
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
 
-        // ================= NUMBER FORMATTING (버그 완벽 수정) =================
+        // ================= NUMBER FORMATTING =================
         const unformatNumber = v => v ? v.toString().replace(/,/g, '') : '0';
         const formatNumber = v => {
             if (v === null || v === undefined || v === '') return '';
@@ -495,11 +566,13 @@
             window.toastTimeout = setTimeout(() => t.classList.add('-translate-y-32', 'opacity-0'), 3000); 
         }
 
-        // ================= 통화 토글 (추가됨) =================
+        // ================= 통화 토글 =================
         function setDisplayCurrency(curr) {
             displayCurrency = curr;
             document.getElementById('btn-curr-krw').classList.toggle('selected', curr === 'KRW');
             document.getElementById('btn-curr-usd').classList.toggle('selected', curr === 'USD');
+            document.getElementById('btn-curr-krw-mobile').classList.toggle('selected', curr === 'KRW');
+            document.getElementById('btn-curr-usd-mobile').classList.toggle('selected', curr === 'USD');
             updateWalletDisplay();
             initTab1Charts();
         }
@@ -516,7 +589,7 @@
 
                 updateHoldingPreview();
                 renderHoldings();
-                updateWalletDisplay(); // 대시보드 통화 변경 시 즉시 반영
+                updateWalletDisplay();
                 initTab1Charts();
             }
         };
@@ -559,7 +632,6 @@
             return wallet;
         }
         
-        // 추가됨: 통화 설정에 따른 예금 표시 업데이트 (원화와 달러 분리 표기)
         function updateWalletDisplay() {
             const w = getSystemWallet();
             const usd = getUsdWallet();
@@ -577,23 +649,39 @@
         function initSystemWallet() { getSystemWallet(); getUsdWallet(); updateWalletDisplay(); checkAutoFixedExpenses(); }
 
         async function initializeData() {
-            setDefaultDates(); await loadLedgerCategories(); await loadAllData();
+            setDefaultDates(); 
+            await loadLedgerCategories(); 
+            await loadAllData();
         }
+
         async function loadAllData() {
             if(!db || !currentUser) return;
-            const uid = currentUser.uid;
-            const hSnap = await db.collection("users").doc(uid).collection("holdings").get();
-            localHoldings = hSnap.docs.map(d=>({id:d.id, ...d.data()}));
-            const lSnap = await db.collection("users").doc(uid).collection("ledgerEntries").orderBy("date", "desc").get();
-            localLedgerEntries = lSnap.docs.map(d=>({id:d.id, ...d.data()}));
-            const fSnap = await db.collection("users").doc(uid).collection("fixedExpenses").get();
-            localFixedExpenses = fSnap.docs.map(d=>({id:d.id, ...d.data()}));
-            initSystemWallet(); renderHoldings(); renderFixedExpenses(); initTab1Charts(); renderTimeline();
+            try {
+                const uid = currentUser.uid;
+                const hSnap = await db.collection("users").doc(uid).collection("holdings").get();
+                localHoldings = hSnap.docs.map(d=>({id:d.id, ...d.data()}));
+                const lSnap = await db.collection("users").doc(uid).collection("ledgerEntries").orderBy("date", "desc").get();
+                localLedgerEntries = lSnap.docs.map(d=>({id:d.id, ...d.data()}));
+                const fSnap = await db.collection("users").doc(uid).collection("fixedExpenses").get();
+                localFixedExpenses = fSnap.docs.map(d=>({id:d.id, ...d.data()}));
+                
+                initSystemWallet(); renderHoldings(); renderFixedExpenses(); initTab1Charts(); renderTimeline();
+            } catch(error) {
+                console.error("데이터 로드 중 에러:", error);
+                showToast("데이터를 불러오지 못했습니다.");
+            }
         }
 
         // ================= LEDGER (가계부) LOGIC =================
         let localLedgerCategories = { expense: {'식비':['외식'], '교통비':['택시']}, income: {'월급':[]} }; 
         let selectedMajorCategory = null;
+
+        async function loadLedgerCategories() {
+             if(!db || !currentUser) { renderLedgerMajorCategories('expense'); return; }
+             const doc = await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").get();
+             if(doc.exists) localLedgerCategories = doc.data();
+             renderLedgerMajorCategories('expense');
+        }
 
         document.querySelectorAll('[data-group="ledger-type"] button').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -605,7 +693,6 @@
             });
         });
 
-        // 🔥 가독성 개선된 카테고리
         function renderLedgerMajorCategories(type) {
             const container = document.getElementById('ledger-major-container'); container.innerHTML = '';
             const cats = Object.keys(localLedgerCategories[type]||{}).sort();
@@ -1178,7 +1265,6 @@
             return change;
         }
 
-        // 추가됨: 통화 설정에 따른 차트 데이터 및 텍스트 업데이트
         function initTab1Charts() {
             let sums = { stock: 0, bond: 0, commodity: 0, usd_cash: 0 };
             localHoldings.forEach(h => { if(h.type !== 'cash') sums[h.type] = (sums[h.type] || 0) + (h.totalKRW || h.total); });
@@ -1300,10 +1386,9 @@
             }
 
             let incSum = {}, expSum = {};
-            let totalInc = 0, totalExp = 0; // 추가됨: 총액 변수
+            let totalInc = 0, totalExp = 0; 
 
             filteredData.forEach(e => {
-                // 과거에 입력된 수동조절 데이터가 차트에 들어가지 않도록 필터링 처리
                 if(e.category === '기본예금 수동조절' || e.category === '외화예금 수동조절') return;
 
                 if(e.type === 'income') {
@@ -1316,7 +1401,6 @@
                 }
             });
 
-            // 차트 하단 총액 텍스트 업데이트
             const prefix = displayCurrency === 'USD' ? '$' : '₩';
             const displayInc = displayCurrency === 'USD' ? (totalInc / globalExchangeRate).toFixed(2) : totalInc;
             const displayExp = displayCurrency === 'USD' ? (totalExp / globalExchangeRate).toFixed(2) : totalExp;
