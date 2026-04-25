@@ -225,9 +225,17 @@
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row gap-6 pt-2">
-                        <div class="flex-1 flex flex-col items-center"><h4 class="font-bold text-xs mb-2 text-pancake-success bg-green-50 px-3 py-1 rounded-full">수입</h4><div class="h-36 w-full"><canvas id="chart-income-pie"></canvas></div></div>
+                        <div class="flex-1 flex flex-col items-center">
+                            <h4 class="font-bold text-xs mb-2 text-pancake-success bg-green-50 px-3 py-1 rounded-full">수입</h4>
+                            <div class="h-36 w-full"><canvas id="chart-income-pie"></canvas></div>
+                            <div id="chart-income-total" class="mt-4 font-brand font-bold text-lg text-pancake-success">₩ 0</div>
+                        </div>
                         <div class="w-px bg-gray-100 hidden md:block"></div>
-                        <div class="flex-1 flex flex-col items-center"><h4 class="font-bold text-xs mb-2 text-pancake-failure bg-pink-50 px-3 py-1 rounded-full">지출</h4><div class="h-36 w-full"><canvas id="chart-expense-pie"></canvas></div></div>
+                        <div class="flex-1 flex flex-col items-center">
+                            <h4 class="font-bold text-xs mb-2 text-pancake-failure bg-pink-50 px-3 py-1 rounded-full">지출</h4>
+                            <div class="h-36 w-full"><canvas id="chart-expense-pie"></canvas></div>
+                            <div id="chart-expense-total" class="mt-4 font-brand font-bold text-lg text-pancake-failure">₩ 0</div>
+                        </div>
                     </div>
                 </div>
 
@@ -699,6 +707,16 @@
             
             if(entry.type === 'expense') wallet.total += entry.amount;
             else if(entry.type === 'income') wallet.total -= entry.amount;
+            else if(entry.type === 'deposit') {
+                if (entry.assetId === 'wallet_usd') {
+                    let usd = getUsdWallet(); usd.qty -= (entry.assetQty || 0); usd.totalKRW = usd.qty * globalExchangeRate;
+                } else wallet.total -= entry.amount;
+            }
+            else if(entry.type === 'withdrawal') {
+                if (entry.assetId === 'wallet_usd') {
+                    let usd = getUsdWallet(); usd.qty += (entry.assetQty || 0); usd.totalKRW = usd.qty * globalExchangeRate;
+                } else wallet.total += entry.amount;
+            }
             else if(entry.type === 'buy') {
                 wallet.total += entry.amount; 
                 if(entry.assetId) {
@@ -721,6 +739,7 @@
             if(db && currentUser) {
                 await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").doc(id).delete();
                 await db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
+                await db.collection("users").doc(currentUser.uid).collection("holdings").doc(getUsdWallet().id).set(getUsdWallet());
                 await loadAllData();
             } else {
                 localLedgerEntries = localLedgerEntries.filter(e => e.id !== id);
@@ -882,12 +901,12 @@
                 if (type === 'cash') {
                     wallet.total += amt;
                     targetWallet = wallet;
-                    entry = { type: amt > 0 ? 'income' : 'expense', category: '기본예금 수동조절', subCategory: '입출금', amount: Math.abs(amt), memo: '수동 잔액 변경', date: new Date().toISOString() };
+                    entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: wallet.id, assetQty: Math.abs(amt), category: '기본예금 수동조절', subCategory: '입출금', amount: Math.abs(amt), memo: '수동 잔액 변경', date: new Date().toISOString() };
                 } else {
                     usdWallet.qty += amt; // 외화 예금은 qty에 달러 잔고를 저장합니다.
                     usdWallet.totalKRW = usdWallet.qty * globalExchangeRate;
                     targetWallet = usdWallet;
-                    entry = { type: amt > 0 ? 'income' : 'expense', category: '외화예금 수동조절', subCategory: '입출금(USD)', amount: Math.abs(amt * globalExchangeRate), memo: `수동 잔액 변경 (${amt>0?'+':''}$${formatNumber(Math.abs(amt))})`, date: new Date().toISOString() };
+                    entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: usdWallet.id, assetQty: Math.abs(amt), category: '외화예금 수동조절', subCategory: '입출금(USD)', amount: Math.abs(amt * globalExchangeRate), memo: `수동 잔액 변경 (${amt>0?'+':''}$${formatNumber(Math.abs(amt))})`, date: new Date().toISOString() };
                 }
                 
                 if(db && currentUser) {
@@ -1073,7 +1092,7 @@
             const typeFilter = document.querySelector('[data-group="timeline-filter"] .selected').dataset.value;
             let filtered = localLedgerEntries.filter(e => {
                 if(typeFilter === 'ledger') return e.type === 'income' || e.type === 'expense';
-                if(typeFilter === 'trade') return e.type === 'buy' || e.type === 'sell';
+                if(typeFilter === 'trade') return e.type === 'buy' || e.type === 'sell' || e.type === 'deposit' || e.type === 'withdrawal';
                 return true;
             });
 
@@ -1099,6 +1118,8 @@
                 let icon='', color='', sign='';
                 if(e.type==='income') { icon='💰'; color='bg-white border-pancake-success text-pancake-success'; sign='+'; }
                 else if(e.type==='expense') { icon='💸'; color='bg-white border-pancake-failure text-pancake-failure'; sign='-'; }
+                else if(e.type==='deposit') { icon='📥'; color='bg-blue-50 border-blue-200 text-blue-600'; sign='+'; }
+                else if(e.type==='withdrawal') { icon='📤'; color='bg-red-50 border-red-200 text-red-600'; sign='-'; }
                 else if(e.type==='buy') { icon='🛒'; color='bg-gray-50 border-gray-300 text-gray-700'; sign='-'; } 
                 else if(e.type==='sell') { icon='📈'; color='bg-[#F0FDFA] border-pancake-primary text-pancake-primary'; sign='+'; }
 
@@ -1139,8 +1160,8 @@
             const entries = localLedgerEntries.filter(e => { let d = new Date(e.date); return d >= start && d < end; });
             let change = 0;
             entries.forEach(e => {
-                if (e.type === 'income') change += e.amount;
-                if (e.type === 'expense') change -= e.amount;
+                if (e.type === 'income' || e.type === 'deposit') change += e.amount;
+                if (e.type === 'expense' || e.type === 'withdrawal') change -= e.amount;
                 if (e.type === 'sell' && e.pnl) change += e.pnl; 
             });
             return change;
@@ -1268,10 +1289,29 @@
             }
 
             let incSum = {}, expSum = {};
+            let totalInc = 0, totalExp = 0; // 추가됨: 총액 변수
+
             filteredData.forEach(e => {
-                if(e.type === 'income') incSum[e.category] = (incSum[e.category] || 0) + e.amount;
-                else if(e.type === 'expense') expSum[e.category] = (expSum[e.category] || 0) + e.amount;
+                // 과거에 입력된 수동조절 데이터가 차트에 들어가지 않도록 필터링 처리
+                if(e.category === '기본예금 수동조절' || e.category === '외화예금 수동조절') return;
+
+                if(e.type === 'income') {
+                    incSum[e.category] = (incSum[e.category] || 0) + e.amount;
+                    totalInc += e.amount;
+                }
+                else if(e.type === 'expense') {
+                    expSum[e.category] = (expSum[e.category] || 0) + e.amount;
+                    totalExp += e.amount;
+                }
             });
+
+            // 차트 하단 총액 텍스트 업데이트
+            const prefix = displayCurrency === 'USD' ? '$' : '₩';
+            const displayInc = displayCurrency === 'USD' ? (totalInc / globalExchangeRate).toFixed(2) : totalInc;
+            const displayExp = displayCurrency === 'USD' ? (totalExp / globalExchangeRate).toFixed(2) : totalExp;
+            
+            document.getElementById('chart-income-total').textContent = `${prefix} ${formatNumber(displayInc)}`;
+            document.getElementById('chart-expense-total').textContent = `${prefix} ${formatNumber(displayExp)}`;
 
             const renderPie = (id, dataObj, colors) => {
                 const keys = Object.keys(dataObj), vals = Object.values(dataObj);
