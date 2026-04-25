@@ -26,6 +26,8 @@
         };
         
         let db, auth, currentUser;
+        let globalExchangeRate = 1380; // 글로벌 환율 변수
+
         try {
             if (!firebase.apps.length && firebaseConfig.projectId) {
                 firebase.initializeApp(firebaseConfig);
@@ -36,9 +38,8 @@
                     initializeData();
                 });
             } else {
-                console.warn("Firebase config is empty. Running in Local Mode.");
                 window.onload = () => {
-                    populateCalendarDropdowns();
+                    setDefaultDates();
                     renderLedgerMajorCategories('expense');
                     initSystemWallet(); 
                     initTab1Charts();
@@ -60,7 +61,10 @@
                     },
                     boxShadow: {
                         'pc-card': '0px 2px 12px -8px rgba(25, 19, 38, 0.1), 0px 1px 1px rgba(25, 19, 38, 0.05)',
-                        'pc-card-bottom': '0px 4px 0px 0px #E7E3EB'
+                        'pc-btn-primary': '0px 4px 0px #139ea8',
+                        'pc-btn-purple': '0px 4px 0px #522f99',
+                        'pc-btn-success': '0px 4px 0px #1e7a63',
+                        'pc-btn-failure': '0px 4px 0px #c03d80'
                     }
                 }
             }
@@ -69,25 +73,26 @@
     <style>
         body { background-color: theme('colors.pancake.bgLight'); color: theme('colors.pancake.text'); }
         
-        /* Card Style - 찌꺼기 선 제거 */
-        .pc-card { background-color: theme('colors.pancake.card'); border-radius: 24px; box-shadow: theme('boxShadow.pc-card'), theme('boxShadow.pc-card-bottom'); padding: 24px; border: 1px solid theme('colors.pancake.border'); transition: all 0.2s ease; }
+        .pc-card { background-color: theme('colors.pancake.card'); border-radius: 24px; box-shadow: theme('boxShadow.pc-card'); padding: 24px; border: 1px solid theme('colors.pancake.border'); transition: all 0.2s ease; }
         
-        /* Input Style */
-        .pc-input { width: 100%; background-color: theme('colors.pancake.input'); color: theme('colors.pancake.text'); border: 2px solid transparent; border-radius: 16px; padding: 12px 16px; font-size: 0.875rem; font-weight: 600; transition: all 0.2s ease; outline: none; }
+        .pc-input { width: 100%; background-color: theme('colors.pancake.input'); color: theme('colors.pancake.text'); border: 2px solid transparent; border-radius: 12px; padding: 10px 16px; font-size: 0.875rem; font-weight: 600; transition: all 0.2s ease; outline: none; }
         .pc-input:focus { border-color: theme('colors.pancake.primary'); background-color: #FFFFFF; }
         
-        /* Buttons - 마감 및 클릭 이슈 완벽 해결 */
-        .pc-btn { display: inline-flex; align-items: center; justify-content: center; font-family: '"Noto Sans KR"', sans-serif; font-weight: 700; border-radius: 16px; padding: 12px 20px; cursor: pointer; transition: transform 0.1s, opacity 0.2s; border: none; outline: none; position: relative; z-index: 10; }
-        .pc-btn:active { transform: translateY(2px); box-shadow: none !important; }
-        .pc-btn-primary { background-color: theme('colors.pancake.primary'); color: white; box-shadow: 0px 4px 0px #139ea8; }
-        .pc-btn-secondary { background-color: #FFFFFF; color: theme('colors.pancake.textSub'); border: 2px solid theme('colors.pancake.border'); box-shadow: none; }
-        .pc-btn-secondary:hover { border-color: theme('colors.pancake.primary'); color: theme('colors.pancake.primary'); }
-        .pc-btn-purple { background-color: theme('colors.pancake.secondary'); color: white; box-shadow: 0px 4px 0px #522f99; }
-        .pc-btn-success { background-color: theme('colors.pancake.success'); color: white; box-shadow: 0px 4px 0px #1e7a63; }
+        /* 🔥 저장 버튼 완벽 개선: 색 꽉차고 그림자 있는 팬케이크 오리지널 스타일 */
+        .pc-btn { display: inline-flex; align-items: center; justify-content: center; font-family: '"Noto Sans KR"', sans-serif; font-weight: 700; border-radius: 16px; padding: 12px 24px; cursor: pointer; transition: transform 0.1s, opacity 0.2s; border: none; outline: none; position: relative; z-index: 10; }
+        .pc-btn:active { transform: translateY(4px); box-shadow: none !important; }
+        
+        .pc-btn-primary { background-color: theme('colors.pancake.primary'); color: white; box-shadow: theme('boxShadow.pc-btn-primary'); }
+        .pc-btn-purple { background-color: theme('colors.pancake.secondary'); color: white; box-shadow: theme('boxShadow.pc-btn-purple'); }
+        .pc-btn-success { background-color: theme('colors.pancake.success'); color: white; box-shadow: theme('boxShadow.pc-btn-success'); }
+        .pc-btn-failure { background-color: theme('colors.pancake.failure'); color: white; box-shadow: theme('boxShadow.pc-btn-failure'); }
+        
+        .pc-btn-secondary { background-color: theme('colors.pancake.input'); color: theme('colors.pancake.textSub'); box-shadow: 0px 3px 0px #D7CAEC; }
+        .pc-btn-secondary:active { box-shadow: none !important; transform: translateY(3px); }
 
         /* Toggle Group */
-        .pc-toggle-group { display: inline-flex; background-color: theme('colors.pancake.input'); border-radius: 16px; padding: 4px; position: relative; z-index: 20; }
-        .pc-toggle-btn { padding: 10px 24px; border-radius: 12px; font-weight: 700; font-size: 0.875rem; color: theme('colors.pancake.textSub'); cursor: pointer; transition: all 0.2s ease; white-space: nowrap; border: none; background: transparent; outline: none; }
+        .pc-toggle-group { display: inline-flex; background-color: theme('colors.pancake.input'); border-radius: 12px; padding: 4px; position: relative; z-index: 20; }
+        .pc-toggle-btn { padding: 8px 20px; border-radius: 8px; font-weight: 700; font-size: 0.875rem; color: theme('colors.pancake.textSub'); cursor: pointer; transition: all 0.2s ease; white-space: nowrap; border: none; background: transparent; outline: none; }
         .pc-toggle-btn.selected { background-color: theme('colors.pancake.card'); color: theme('colors.pancake.text'); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
         /* Navigation */
@@ -102,10 +107,10 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #E7E3EB; border-radius: 3px; }
 
         /* Category Tags */
-        .category-btn { background-color: #EEEAF4; color: #280D5F; border: 2px solid transparent; font-weight: 700; }
-        .category-btn.selected-cat { background-color: #7645D9 !important; color: white !important; box-shadow: 0 4px 6px -1px rgba(118, 69, 217, 0.3); }
-        .minor-category-btn { background-color: white; color: #1FC7D4; border: 2px solid #1FC7D4; font-weight: 700; }
-        .minor-category-btn.selected-minor { background-color: #1FC7D4 !important; color: white !important; box-shadow: 0 4px 6px -1px rgba(31, 199, 212, 0.3); }
+        .category-btn { background-color: theme('colors.pancake.input'); color: theme('colors.pancake.text'); border: 2px solid transparent; font-weight: 700; border-radius: 12px; padding: 6px 12px; }
+        .category-btn.selected-cat { background-color: theme('colors.pancake.secondary') !important; color: white !important; box-shadow: 0 4px 6px -1px rgba(118, 69, 217, 0.3); }
+        .minor-category-btn { background-color: white; color: theme('colors.pancake.primary'); border: 2px solid theme('colors.pancake.primary'); font-weight: 700; border-radius: 8px; padding: 4px 10px; }
+        .minor-category-btn.selected-minor { background-color: theme('colors.pancake.primary') !important; color: white !important; box-shadow: 0 4px 6px -1px rgba(31, 199, 212, 0.3); }
     </style>
 </head>
 <body class="pb-20 selection:bg-pancake-cyan selection:text-white relative">
@@ -120,12 +125,16 @@
                 <button class="nav-tab active" onclick="switchMainTab('tab1')">Asset & Ledger</button>
                 <button class="nav-tab" onclick="switchMainTab('tab2')">Trading Desk</button>
             </div>
-            <div class="w-9 h-9"></div> 
+            <!-- 환율 설정란 -->
+            <div class="flex items-center gap-2 bg-pancake-input px-3 py-1 rounded-xl border border-pancake-border">
+                <span class="text-[10px] font-bold text-gray-500">환율($1)</span>
+                <input type="text" id="global-exchange-rate" value="1,380" class="number-input bg-transparent border-none text-sm font-bold text-pancake-text w-16 text-right outline-none">
+            </div>
         </div>
     </nav>
 
-    <!-- Toast Notification (문제점 1 해결: 여러번 클릭해도 잘 뜸) -->
-    <div id="toast" class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-pancake-success text-white px-8 py-4 rounded-2xl shadow-[0_10px_25px_-5px_rgba(49,208,170,0.5)] -translate-y-32 opacity-0 transition-all duration-300 font-bold z-[100] flex items-center pointer-events-none">
+    <!-- Toast Notification (알람 버그 완벽 수정) -->
+    <div id="toast" class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-pancake-success text-white px-8 py-4 rounded-2xl shadow-xl -translate-y-32 opacity-0 transition-all duration-300 font-bold z-[100] flex items-center pointer-events-none">
         <i data-lucide="check-circle" class="w-6 h-6 mr-3"></i><p id="toast-message" class="text-base"></p>
     </div>
 
@@ -136,41 +145,39 @@
             
             <div class="flex justify-center mb-6">
                 <div class="pc-toggle-group shadow-sm p-1.5 border border-gray-100">
-                    <button class="pc-toggle-btn selected flex items-center justify-center gap-2" onclick="switchSubTab('sub-dashboard', this)"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> 대시보드</button>
-                    <button class="pc-toggle-btn flex items-center justify-center gap-2" onclick="switchSubTab('sub-portfolio', this)"><i data-lucide="briefcase" class="w-4 h-4"></i> 자산 포트폴리오</button>
-                    <button class="pc-toggle-btn flex items-center justify-center gap-2" onclick="switchSubTab('sub-timeline', this)"><i data-lucide="history" class="w-4 h-4"></i> 거래 타임라인</button>
+                    <button class="pc-toggle-btn selected flex items-center gap-2" onclick="switchSubTab('sub-dashboard', this)"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> 대시보드</button>
+                    <button class="pc-toggle-btn flex items-center gap-2" onclick="switchSubTab('sub-portfolio', this)"><i data-lucide="briefcase" class="w-4 h-4"></i> 자산 포트폴리오</button>
+                    <button class="pc-toggle-btn flex items-center gap-2" onclick="switchSubTab('sub-timeline', this)"><i data-lucide="history" class="w-4 h-4"></i> 거래 타임라인</button>
                 </div>
             </div>
 
             <!-- 🟢 Sub-tab 1: Dashboard -->
             <div id="sub-dashboard" class="sub-tab-content active space-y-6">
-                <!-- 총 자산 & 예금 현황 -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="pc-card text-center py-8 md:col-span-2 flex flex-col justify-center">
+                    <div class="pc-card text-center py-8 md:col-span-2 flex flex-col justify-center border-b-4 border-pancake-cyan">
                         <h2 class="text-pancake-textSub font-bold text-sm mb-1">💰 총 자산 (Net Worth)</h2>
                         <p id="total-net-worth" class="text-4xl lg:text-5xl font-brand font-bold text-pancake-text">₩ 0</p>
                         <p class="text-xs font-bold mt-2 text-gray-400">포트폴리오 합계 + 기본 예금</p>
                     </div>
-                    <div class="pc-card text-center py-8 flex flex-col justify-center bg-[#F0FDFA] border-pancake-primary">
+                    <div class="pc-card text-center py-8 flex flex-col justify-center bg-[#F0FDFA] border-b-4 border-pancake-primary">
                         <h2 class="text-pancake-primary font-bold text-sm mb-1 flex justify-center items-center">💵 기본 예금 (현금)</h2>
                         <p id="system-wallet-balance" class="text-2xl font-brand font-bold text-pancake-text">₩ 0</p>
-                        <p class="text-[10px] font-bold mt-2 text-pancake-textSub">가계부 및 자산매매 차감처</p>
+                        <p class="text-[10px] font-bold mt-2 text-pancake-textSub">모든 가계부/매매 자동 연동</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="pc-card">
-                        <h3 class="font-bold flex items-center mb-4 text-pancake-text"><i data-lucide="pie-chart" class="w-5 h-5 mr-2"></i> 자산 점유율 <span class="text-[10px] font-normal text-gray-400 ml-2">(마우스 오버 시 %)</span></h3>
+                        <h3 class="font-bold flex items-center mb-4 text-pancake-text"><i data-lucide="pie-chart" class="w-5 h-5 mr-2 text-pancake-warning"></i> 자산 점유율 <span class="text-[10px] font-normal text-gray-400 ml-2">(마우스 오버 시 %)</span></h3>
                         <div class="h-48 relative w-full flex justify-center"><canvas id="chart-asset-allocation"></canvas></div>
                     </div>
                     <div class="pc-card flex flex-col">
                         <div class="flex justify-between items-start mb-2">
                             <div>
-                                <h3 class="font-bold flex items-center text-pancake-text"><i data-lucide="trending-up" class="w-5 h-5 mr-2"></i> 재산 성장 추이</h3>
+                                <h3 class="font-bold flex items-center text-pancake-text"><i data-lucide="trending-up" class="w-5 h-5 mr-2 text-pancake-success"></i> 재산 성장 추이</h3>
                                 <p id="growth-summary-text" class="text-[10px] font-bold text-gray-400 mt-1 ml-7">데이터 누적 중</p>
                             </div>
-                            <!-- 문제점 3 해결: 월별/분기별 필터만 존재 -->
-                            <select id="growth-timeframe" class="pc-input text-xs py-1.5 px-3 w-auto h-auto bg-white border border-gray-200 cursor-pointer" onchange="initTab1Charts()">
+                            <select id="growth-timeframe" class="pc-input text-xs py-1 px-2 w-auto h-auto bg-white border border-gray-200 cursor-pointer" onchange="initTab1Charts()">
                                 <option value="month">월별 (최근 6개월)</option>
                                 <option value="quarter">분기별 (최근 4분기)</option>
                             </select>
@@ -182,11 +189,18 @@
                 </div>
 
                 <div class="pc-card">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-gray-100 pb-3 gap-2">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-gray-100 pb-4 gap-4">
                         <h3 class="font-bold text-base text-pancake-text flex items-center"><i data-lucide="bar-chart-2" class="w-5 h-5 mr-2 text-pancake-purple"></i> 가계부 수입/지출 분포</h3>
-                        <select id="ledger-timeframe" class="pc-input text-xs py-1.5 px-3 w-auto h-auto bg-white border border-gray-200 cursor-pointer" onchange="renderLedgerCharts()"></select>
+                        <!-- 🔥 문제점 4 & 5: 기간 직접 설정 필터 도입 -->
+                        <div class="flex items-center gap-2 bg-pancake-input p-1.5 rounded-xl">
+                            <input type="date" id="ledger-filter-start" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold">
+                            <span class="text-xs text-gray-500">~</span>
+                            <input type="date" id="ledger-filter-end" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold">
+                            <button onclick="renderLedgerCharts()" class="pc-btn pc-btn-primary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#139ea8]">조회</button>
+                            <button onclick="setAllTime('ledger')" class="pc-btn pc-btn-secondary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#D7CAEC]">전체</button>
+                        </div>
                     </div>
-                    <div class="flex flex-col md:flex-row gap-6">
+                    <div class="flex flex-col md:flex-row gap-6 pt-2">
                         <div class="flex-1 flex flex-col items-center"><h4 class="font-bold text-xs mb-2 text-pancake-success bg-green-50 px-3 py-1 rounded-full">수입</h4><div class="h-36 w-full"><canvas id="chart-income-pie"></canvas></div></div>
                         <div class="w-px bg-gray-100 hidden md:block"></div>
                         <div class="flex-1 flex flex-col items-center"><h4 class="font-bold text-xs mb-2 text-pancake-failure bg-pink-50 px-3 py-1 rounded-full">지출</h4><div class="h-36 w-full"><canvas id="chart-expense-pie"></canvas></div></div>
@@ -194,44 +208,45 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- 가계부 작성 폼 (버튼 클릭 버그 & 찌꺼기 UI 해결) -->
-                    <div class="pc-card relative z-10 border-pancake-purple/30 overflow-hidden" id="ledger-write-section">
+                    <!-- 가계부 작성 폼 -->
+                    <div class="pc-card relative z-10 overflow-hidden" id="ledger-write-section">
                         <div class="flex justify-between items-center mb-6 relative z-20">
                             <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="edit-3" class="w-5 h-5 mr-2 text-pancake-purple"></i> 가계부 작성</h2>
                             <div class="pc-toggle-group shadow-sm" data-group="ledger-type">
-                                <button type="button" data-value="expense" class="pc-toggle-btn selected text-pancake-failure">💸 지출</button>
-                                <button type="button" data-value="income" class="pc-toggle-btn text-pancake-success">💰 수입</button>
+                                <button type="button" data-value="expense" class="pc-toggle-btn selected text-pancake-failure px-5">💸 지출</button>
+                                <button type="button" data-value="income" class="pc-toggle-btn text-pancake-success px-5">💰 수입</button>
                             </div>
                         </div>
 
                         <form id="ledger-form" class="space-y-5 relative z-20" onsubmit="event.preventDefault(); addLedger();">
                             <input type="hidden" id="ledger-id">
                             <div class="grid grid-cols-2 gap-4">
-                                <div><label class="text-xs font-bold text-pancake-textSub block mb-1">날짜</label><input type="date" id="ledger-date" class="pc-input bg-white shadow-inner" required></div>
-                                <div><label class="text-xs font-bold text-pancake-textSub block mb-1">금액 (기본 예금 연동)</label><input type="text" id="ledger-amount" placeholder="0" class="pc-input bg-white number-input font-bold text-right text-lg shadow-inner" required></div>
+                                <div><label class="text-xs font-bold text-gray-500 block mb-1">날짜</label><input type="date" id="ledger-date" class="pc-input bg-white border-gray-200" required></div>
+                                <div><label class="text-xs font-bold text-gray-500 block mb-1">금액 (기본 예금 연동)</label><input type="text" id="ledger-amount" placeholder="0" class="pc-input bg-white number-input font-bold text-right text-lg border-gray-200" required></div>
                             </div>
                             
-                            <div class="bg-[#F9F8FA] border border-gray-200 rounded-xl p-4">
+                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
                                 <div class="flex justify-between items-center mb-3">
                                     <span class="text-xs font-bold text-pancake-text flex items-center"><i data-lucide="folder" class="w-3 h-3 mr-1 text-pancake-warning"></i> 대분류</span>
-                                    <div class="flex gap-1"><input type="text" id="new-ledger-major" class="pc-input py-1 px-2 text-xs w-24 bg-white" placeholder="추가..."><button type="button" id="add-ledger-major-btn" class="bg-white border border-gray-200 text-pancake-text rounded px-2 font-bold hover:bg-gray-50 transition">+</button></div>
+                                    <div class="flex gap-1"><input type="text" id="new-ledger-major" class="pc-input py-1 px-2 text-xs w-24 bg-white border border-gray-200" placeholder="카테고리명"><button type="button" id="add-ledger-major-btn" class="bg-white border border-gray-300 text-pancake-text rounded px-2 font-bold hover:bg-gray-100 transition">+</button></div>
                                 </div>
                                 <div id="ledger-major-container" class="flex flex-wrap gap-2 mb-2"></div>
                                 
                                 <div id="ledger-minor-wrapper" class="hidden border-t border-dashed border-gray-300 pt-3 mt-2">
                                     <div class="flex justify-between items-center mb-3">
                                         <span class="text-xs font-bold text-pancake-primary flex items-center"><i data-lucide="corner-down-right" class="w-3 h-3 mr-1"></i> <span id="selected-major-name"></span> > 소분류</span>
-                                        <div class="flex gap-1"><input type="text" id="new-ledger-minor" class="pc-input py-1 px-2 text-xs w-24 bg-white" placeholder="추가..."><button type="button" id="add-ledger-minor-btn" class="bg-white border border-gray-200 text-pancake-text rounded px-2 font-bold hover:bg-gray-50 transition">+</button></div>
+                                        <div class="flex gap-1"><input type="text" id="new-ledger-minor" class="pc-input py-1 px-2 text-xs w-24 bg-white border border-gray-200" placeholder="추가..."><button type="button" id="add-ledger-minor-btn" class="bg-white border border-gray-300 text-pancake-text rounded px-2 font-bold hover:bg-gray-100 transition">+</button></div>
                                     </div>
                                     <div id="ledger-minor-container" class="flex flex-wrap gap-2"></div>
                                 </div>
                             </div>
 
-                            <div><label class="text-xs font-bold text-pancake-textSub block mb-1">메모</label><input type="text" id="ledger-memo" class="pc-input bg-white shadow-inner" placeholder="내용 입력..."></div>
+                            <div><label class="text-xs font-bold text-gray-500 block mb-1">메모</label><input type="text" id="ledger-memo" class="pc-input bg-white border-gray-200" placeholder="내용 입력..."></div>
                             
-                            <div class="flex justify-end gap-2 pt-2">
+                            <div class="flex justify-end gap-3 pt-2">
                                 <button type="button" onclick="resetLedgerForm()" class="pc-btn pc-btn-secondary text-sm px-6">초기화</button>
-                                <button type="submit" class="pc-btn pc-btn-purple px-8 text-base shadow-[0px_4px_0px_0px_#522f99] hover:opacity-90"><i data-lucide="save" class="w-5 h-5 mr-2"></i> 내역 저장</button>
+                                <!-- 🔥 확실하고 큰 저장 버튼 -->
+                                <button type="submit" class="pc-btn pc-btn-purple text-base w-full sm:w-auto"><i data-lucide="save" class="w-5 h-5 mr-2"></i> 가계부 저장</button>
                             </div>
                         </form>
                     </div>
@@ -243,7 +258,7 @@
                                 <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="repeat" class="w-5 h-5 mr-2 text-pancake-primary"></i> 매월 고정비 (구독)</h2>
                                 <p class="text-[10px] text-gray-500 mt-1">월 시작 시 '기본 예금'에서 자동 차감</p>
                             </div>
-                            <button onclick="openModal('fixed-modal')" class="pc-btn pc-btn-secondary py-1.5 px-4 text-xs bg-white"><i data-lucide="plus" class="w-4 h-4 mr-1"></i> 추가</button>
+                            <button onclick="openModal('fixed-modal')" class="pc-btn pc-btn-primary py-2 px-4 text-xs !shadow-[0px_3px_0px_#139ea8] !rounded-xl"><i data-lucide="plus" class="w-3 h-3 mr-1"></i> 추가</button>
                         </div>
                         <div id="fixed-expense-list" class="space-y-3 flex-grow overflow-y-auto custom-scrollbar pr-2 min-h-[200px]"></div>
                     </div>
@@ -254,50 +269,60 @@
             <div id="sub-portfolio" class="sub-tab-content hidden space-y-6">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="pc-card lg:col-span-1 h-fit sticky top-24">
-                        <h3 class="font-bold text-pancake-text mb-4 border-b border-pancake-border pb-3 flex items-center"><i data-lucide="shopping-cart" class="w-5 h-5 mr-2 text-pancake-primary"></i> 자산 등록 및 매수</h3>
+                        <h3 class="font-bold text-pancake-text mb-6 border-b border-pancake-border pb-3 flex items-center"><i data-lucide="shopping-cart" class="w-5 h-5 mr-2 text-pancake-primary"></i> 자산 등록 / 매수</h3>
                         <form id="holding-form" class="space-y-5" onsubmit="event.preventDefault(); addHolding();">
                             <input type="hidden" id="holding-id">
                             <div>
-                                <label class="text-xs font-bold text-pancake-textSub block mb-1">자산 분류</label>
-                                <select id="holding-type" class="pc-input bg-white cursor-pointer" onchange="toggleHoldingInputs()">
+                                <label class="text-xs font-bold text-gray-500 block mb-1">자산 분류</label>
+                                <select id="holding-type" class="pc-input bg-white cursor-pointer border-gray-200" onchange="toggleHoldingInputs()">
                                     <option value="stock">📈 주식</option>
                                     <option value="bond">🏛️ 채권 (ETF)</option>
                                     <option value="commodity">🥇 원자재 (ETF)</option>
-                                    <!-- 의문점 1 해결: 기본 예금 수동 조작 기능 부활 -->
                                     <option value="cash">💵 기본 예금 입출금 (수동)</option>
                                 </select>
                             </div>
                             <div id="holding-name-container">
-                                <label class="text-xs font-bold text-pancake-textSub block mb-1">종목명 / 자산명</label>
-                                <input type="text" id="holding-name" class="pc-input bg-white" placeholder="예: AAPL">
+                                <label class="text-xs font-bold text-gray-500 block mb-1">종목명 / 자산명</label>
+                                <input type="text" id="holding-name" class="pc-input bg-white border-gray-200" placeholder="예: AAPL">
+                            </div>
+
+                            <!-- 🔥 개선점 1: 통화 선택 로직 (KRW / USD) -->
+                            <div id="holding-currency-container" class="space-y-1">
+                                <label class="text-xs font-bold text-gray-500 block">결제 통화 (매수 단가 기준)</label>
+                                <div class="pc-toggle-group w-full" data-group="holding-currency">
+                                    <button type="button" data-value="krw" class="pc-toggle-btn selected w-1/2" onclick="updateHoldingPreview()">원화 (KRW)</button>
+                                    <button type="button" data-value="usd" class="pc-toggle-btn w-1/2" onclick="updateHoldingPreview()">달러 (USD)</button>
+                                </div>
                             </div>
                             
                             <div class="grid grid-cols-2 gap-3" id="holding-qty-price-container">
-                                <div><label class="text-xs font-bold text-pancake-textSub block mb-1">매수 수량</label><input type="text" id="holding-qty" class="pc-input bg-white number-input text-right" placeholder="0"></div>
-                                <div><label class="text-xs font-bold text-pancake-textSub block mb-1">매수 단가(₩)</label><input type="text" id="holding-price" class="pc-input bg-white number-input text-right" placeholder="0"></div>
+                                <div><label class="text-xs font-bold text-gray-500 block mb-1">매수 수량</label><input type="text" id="holding-qty" class="pc-input bg-white number-input text-right border-gray-200" placeholder="0"></div>
+                                <div><label class="text-xs font-bold text-gray-500 block mb-1">매수 단가</label><input type="text" id="holding-price" class="pc-input bg-white number-input text-right border-gray-200" placeholder="0"></div>
                             </div>
 
                             <div id="holding-cash-container" class="hidden">
-                                <label class="text-xs font-bold text-pancake-textSub block mb-1">입출금 금액(₩)</label>
-                                <input type="text" id="holding-cash-amount" class="pc-input bg-white number-input font-bold text-right text-lg text-pancake-success" placeholder="예: 100,000">
-                                <p class="text-[10px] text-gray-500 mt-1">초기 자본금을 넣거나, 수동으로 예금을 더할/뺄 때 사용합니다. (- 기호 사용 가능)</p>
+                                <label class="text-xs font-bold text-gray-500 block mb-1">입출금 금액(₩)</label>
+                                <input type="text" id="holding-cash-amount" class="pc-input bg-white number-input font-bold text-right text-lg text-pancake-success border-gray-200" placeholder="예: 100,000">
+                                <p class="text-[10px] text-gray-400 mt-1">양수(+)는 예금 추가, 음수(-)는 차감.</p>
                             </div>
                             
                             <div id="holding-preview-container" class="bg-[#F0FDFA] p-4 rounded-xl border border-pancake-primary/30 flex justify-between items-center">
-                                <span class="text-xs font-bold text-pancake-text">총 매수/결제 금액<br><span class="text-[10px] text-gray-500 font-normal">(기본 예금에서 차감)</span></span>
+                                <span class="text-xs font-bold text-pancake-text">총 원화 결제액<br><span class="text-[10px] text-gray-500 font-normal">(기본 예금에서 차감)</span></span>
                                 <span id="holding-preview-total" class="text-lg font-bold text-pancake-failure">₩ 0</span>
                             </div>
 
-                            <div class="flex gap-2 pt-2">
-                                <button type="button" onclick="resetHoldingForm()" class="pc-btn pc-btn-secondary flex-1 py-3 text-sm">초기화</button>
-                                <button type="submit" class="pc-btn pc-btn-primary flex-[2] py-3 text-base"><i data-lucide="check" class="w-5 h-5 mr-1"></i> 등록 적용</button>
+                            <div class="flex gap-3 pt-4 border-t border-gray-100">
+                                <button type="button" onclick="resetHoldingForm()" class="pc-btn pc-btn-secondary text-sm">초기화</button>
+                                <!-- 🔥 확실하고 큰 등록 버튼 -->
+                                <button type="submit" class="pc-btn pc-btn-primary flex-1 text-base"><i data-lucide="check" class="w-5 h-5 mr-1"></i> 포트폴리오 추가</button>
                             </div>
                         </form>
                     </div>
 
                     <div class="pc-card lg:col-span-2">
-                        <div class="flex justify-between items-center mb-4 pb-3 border-b border-pancake-border">
+                        <div class="flex justify-between items-center mb-6 pb-3 border-b border-pancake-border">
                             <h3 class="font-bold text-pancake-text flex items-center text-lg"><i data-lucide="layers" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 포트폴리오 현황</h3>
+                            <span class="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">실시간 환율 적용</span>
                         </div>
                         <div id="holdings-list-container" class="space-y-4"></div>
                     </div>
@@ -308,14 +333,21 @@
             <div id="sub-timeline" class="sub-tab-content hidden space-y-6">
                 <div class="pc-card min-h-[500px]">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-gray-100 pb-4">
-                        <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="activity" class="w-5 h-5 mr-2 text-pancake-primary"></i> 통합 거래 타임라인</h2>
-                        <div class="flex flex-wrap items-center gap-2">
+                        <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="activity" class="w-5 h-5 mr-2 text-pancake-primary"></i> 거래 타임라인</h2>
+                        <div class="flex flex-wrap items-center gap-3">
                             <div class="pc-toggle-group shadow-sm" data-group="timeline-filter">
-                                <button type="button" data-value="all" class="pc-toggle-btn selected px-4">전체</button>
+                                <button type="button" data-value="all" class="pc-toggle-btn selected px-4">전체보기</button>
                                 <button type="button" data-value="ledger" class="pc-toggle-btn px-4">가계부만</button>
-                                <button type="button" data-value="trade" class="pc-toggle-btn px-4">자산매매만</button>
+                                <button type="button" data-value="trade" class="pc-toggle-btn px-4">매매만</button>
                             </div>
-                            <select id="timeline-timeframe" class="pc-input text-xs py-2 px-3 w-auto h-auto bg-white cursor-pointer" onchange="renderTimeline()"></select>
+                            <!-- 🔥 문제점 4 & 5: 기간 직접 설정 필터 도입 -->
+                            <div class="flex items-center gap-2 bg-pancake-input p-1.5 rounded-xl">
+                                <input type="date" id="timeline-filter-start" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold">
+                                <span class="text-xs text-gray-500">~</span>
+                                <input type="date" id="timeline-filter-end" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold">
+                                <button onclick="renderTimeline()" class="pc-btn pc-btn-primary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#139ea8]">조회</button>
+                                <button onclick="setAllTime('timeline')" class="pc-btn pc-btn-secondary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#D7CAEC]">전체</button>
+                            </div>
                         </div>
                     </div>
                     <div class="border-l-2 border-pancake-border ml-4 pl-6 space-y-6 relative" id="timeline-container">
@@ -330,7 +362,7 @@
             <div class="pc-card text-center py-20 bg-[#F9F8FA]">
                 <span class="text-6xl mb-4 block">🚧</span>
                 <h2 class="text-2xl font-bold text-pancake-text mb-2">트레이딩 데스크 세팅중</h2>
-                <p class="text-gray-500 font-bold">1번 탭의 치명적인 버그와 롤백 시스템, 과거 역산 그래프가 완벽히 수정되었습니다!</p>
+                <p class="text-gray-500 font-bold">1번 탭의 모든 구조/버튼 디자인이 팬케이크스왑 형태로 완벽 픽스되었습니다.</p>
             </div>
         </div>
     </main>
@@ -345,7 +377,7 @@
                 <div><label class="text-xs font-bold text-gray-500 mb-1 block">항목명</label><input type="text" id="fx-name" class="pc-input bg-white border border-gray-200" placeholder="예: 넷플릭스, 월세" required></div>
                 <div><label class="text-xs font-bold text-gray-500 mb-1 block">매월 결제일</label><select id="fx-day" class="pc-input bg-white cursor-pointer border border-gray-200" required></select></div>
                 <div><label class="text-xs font-bold text-gray-500 mb-1 block">금액</label><input type="text" id="fx-amount" class="pc-input bg-white number-input border border-gray-200" required></div>
-                <div class="pt-4"><button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">등록하기</button></div>
+                <div class="pt-4"><button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">구독료 등록</button></div>
             </form>
         </div>
     </div>
@@ -360,17 +392,18 @@
             <form id="sell-form" class="space-y-4" onsubmit="processSell(event)">
                 <input type="hidden" id="sell-asset-id">
                 <input type="hidden" id="sell-avg-price">
+                <input type="hidden" id="sell-currency">
                 <div class="grid grid-cols-2 gap-3">
-                    <div><label class="text-xs font-bold text-gray-500 mb-1 block">매도 수량</label><input type="text" id="sell-qty" class="pc-input bg-white number-input text-right" required></div>
-                    <div><label class="text-xs font-bold text-gray-500 mb-1 block">매도 단가(₩)</label><input type="text" id="sell-price" class="pc-input bg-white number-input text-right" required></div>
+                    <div><label class="text-xs font-bold text-gray-500 mb-1 block">매도 수량</label><input type="text" id="sell-qty" class="pc-input bg-white number-input text-right border-gray-200" required></div>
+                    <div><label id="sell-price-label" class="text-xs font-bold text-gray-500 mb-1 block">매도 단가</label><input type="text" id="sell-price" class="pc-input bg-white number-input text-right border-gray-200" required></div>
                 </div>
                 <div class="bg-[#F0FDFA] p-4 rounded-xl border border-pancake-primary/30 text-sm mt-2">
                     <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-200">
-                        <span class="font-bold text-gray-600">기본 예금 입금액</span><span id="sell-proceeds" class="font-bold text-pancake-text text-lg">₩ 0</span>
+                        <span class="font-bold text-gray-600">기본 예금 (원화) 입금액</span><span id="sell-proceeds" class="font-bold text-pancake-text text-lg">₩ 0</span>
                     </div>
-                    <div class="flex justify-between items-center"><span class="font-bold text-gray-600">실현 손익</span><span id="sell-pnl" class="font-bold text-base">₩ 0</span></div>
+                    <div class="flex justify-between items-center"><span class="font-bold text-gray-600">실현 손익 (원화 기준)</span><span id="sell-pnl" class="font-bold text-base">₩ 0</span></div>
                 </div>
-                <button type="submit" class="pc-btn pc-btn-success w-full py-3 mt-2 text-base hover:opacity-90">예금으로 현금화</button>
+                <button type="submit" class="pc-btn pc-btn-success w-full py-3 mt-2 text-base">원화(예금)로 현금화</button>
             </form>
         </div>
     </div>
@@ -388,20 +421,22 @@
             document.querySelectorAll('.sub-tab-content').forEach(c=>{c.classList.remove('active');c.classList.add('hidden');}); 
             const target=document.getElementById(id); target.classList.remove('hidden'); target.classList.add('active'); 
             if(id==='sub-dashboard') initTab1Charts(); 
-            if(id==='sub-timeline') renderTimeline(); 
+            // 문제점 6 해결: 타임라인 탭 열 때 '전체보기'를 무조건 세팅
+            if(id==='sub-timeline') {
+                document.querySelector('[data-group="timeline-filter"] button[data-value="all"]').click();
+            }
         }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
 
         // ================= NUMBER FORMATTING (치명적 버그 완벽 픽스) =================
-        // 천단위 이상 입력 시 버벅임 및 계산 불가 문제 해결을 위해 정규식 최적화
         const unformatNumber = v => v ? v.toString().replace(/[^\d.-]/g, '') : '';
         const formatNumber = v => {
             if (v === null || v === undefined || v === '') return '';
             const numStr = unformatNumber(v);
-            if(numStr === '-') return '-'; // 마이너스 부호 허용
+            if(numStr === '-') return '-'; 
             const parts = numStr.split('.');
-            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); // 정수부 콤마 처리
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); 
             return parts.join('.');
         };
         
@@ -412,14 +447,49 @@
             } 
         });
 
-        // Toast 알림 (연속 클릭 겹침 해결)
-        let toastTimeout;
+        // 환율 글로벌 연동
+        document.getElementById('global-exchange-rate').addEventListener('input', (e) => {
+            const val = parseFloat(unformatNumber(e.target.value));
+            if(!isNaN(val) && val > 0) {
+                globalExchangeRate = val;
+                updateHoldingPreview();
+                renderHoldings();
+                initTab1Charts();
+            }
+        });
+
+        // Toast 알림 (문제점 3 해결: 애니메이션 리셋 로직 보강)
         function showToast(msg) { 
-            const t=document.getElementById('toast'); 
-            document.getElementById('toast-message').textContent=msg; 
-            t.classList.remove('-translate-y-32','opacity-0'); 
-            if(toastTimeout) clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(()=>t.classList.add('-translate-y-32','opacity-0'), 3000); 
+            const t = document.getElementById('toast'); 
+            document.getElementById('toast-message').textContent = msg; 
+            
+            // 리플로우를 통한 애니메이션 강제 초기화
+            t.style.transition = 'none';
+            t.classList.remove('-translate-y-32', 'opacity-0');
+            void t.offsetWidth; // trigger reflow
+            t.style.transition = 'all 0.3s ease';
+
+            if(window.toastTimeout) clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => t.classList.add('-translate-y-32', 'opacity-0'), 3000); 
+        }
+
+        // 기간 필터 기본값 셋팅
+        function setDefaultDates() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+            
+            document.getElementById('ledger-filter-start').value = firstDay;
+            document.getElementById('ledger-filter-end').value = lastDay;
+            document.getElementById('timeline-filter-start').value = firstDay;
+            document.getElementById('timeline-filter-end').value = lastDay;
+        }
+
+        function setAllTime(type) {
+            document.getElementById(`${type}-filter-start`).value = '2000-01-01';
+            document.getElementById(`${type}-filter-end`).value = '2099-12-31';
+            if(type === 'ledger') renderLedgerCharts();
+            if(type === 'timeline') renderTimeline();
         }
 
         // ================= GLOBAL DATA & WALLET =================
@@ -439,7 +509,7 @@
         function initSystemWallet() { getSystemWallet(); updateWalletDisplay(); checkAutoFixedExpenses(); }
 
         async function initializeData() {
-            await loadLedgerCategories(); await loadAllData();
+            setDefaultDates(); await loadLedgerCategories(); await loadAllData();
         }
         async function loadAllData() {
             if(!db || !currentUser) return;
@@ -472,7 +542,7 @@
             const cats = Object.keys(localLedgerCategories[type]||{}).sort();
             cats.forEach(c => {
                 const btn = document.createElement('button'); btn.type = 'button';
-                btn.className = `px-4 py-2 rounded-xl text-sm transition flex items-center gap-1 category-btn ${selectedMajorCategory===c ? 'selected-cat' : ''}`;
+                btn.className = `px-4 py-2 text-sm transition flex items-center gap-1 category-btn ${selectedMajorCategory===c ? 'selected-cat' : ''}`;
                 btn.innerHTML = `<span>${c}</span> <i data-lucide="x" class="w-3 h-3 ml-2 opacity-50 hover:opacity-100 hover:text-red-500" onclick="event.stopPropagation(); deleteCat('${type}','${c}')"></i>`;
                 btn.onclick = () => { selectedMajorCategory = selectedMajorCategory===c ? null : c; renderLedgerMajorCategories(type); if(selectedMajorCategory) renderLedgerMinorCategories(type, c); else document.getElementById('ledger-minor-wrapper').classList.add('hidden'); };
                 container.appendChild(btn);
@@ -484,7 +554,7 @@
              const container = document.getElementById('ledger-minor-container'); container.innerHTML = '';
              (localLedgerCategories[type][major]||[]).forEach(sub => {
                  const btn = document.createElement('button'); btn.type = 'button';
-                 btn.className = `px-3 py-1.5 rounded-lg text-xs transition flex items-center gap-1 minor-category-btn`;
+                 btn.className = `px-3 py-1.5 text-xs transition flex items-center gap-1 minor-category-btn`;
                  btn.innerHTML = `<span>${sub}</span> <i data-lucide="x" class="w-3 h-3 ml-1 opacity-50 hover:opacity-100 hover:text-red-500" onclick="event.stopPropagation(); deleteCat('${type}','${major}','${sub}')"></i>`;
                  btn.onclick = () => { document.querySelectorAll('.minor-category-btn').forEach(b=>b.classList.remove('selected-minor')); btn.classList.add('selected-minor'); };
                  container.appendChild(btn);
@@ -543,14 +613,9 @@
             resetLedgerForm(); showToast("가계부가 저장되었습니다.");
         }
 
-        // 거래내역 수정 (문제점 7 수정)
         window.editLedgerEntry = function(id) {
             const entry = localLedgerEntries.find(e => e.id === id); if(!entry) return;
-            
-            // 폼이 있는 대시보드 탭으로 강제 이동
             document.querySelector('[onclick*="sub-dashboard"]').click(); 
-            
-            // 폼으로 부드럽게 스크롤
             document.getElementById('ledger-write-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
 
             document.getElementById('ledger-id').value = entry.id;
@@ -570,12 +635,11 @@
                     }
                 }, 50);
             }, 50);
-            showToast("수정 모드로 불러왔습니다.");
+            showToast("수정 모드로 폼을 불러왔습니다.");
         };
 
-        // 매매 롤백 및 삭제 기능 (치명적 버그 수정 완료)
         window.deleteLedgerEntry = async function(id) {
-            if(!confirm("정말 삭제하시겠습니까? (연결된 자산 수량 및 현금 잔액이 과거로 복구됩니다)")) return;
+            if(!confirm("정말 삭제하시겠습니까? (자산 수량 및 현금 잔액이 롤백됩니다)")) return;
             const entry = localLedgerEntries.find(e => e.id === id); if(!entry) return;
             
             const wallet = getSystemWallet();
@@ -583,7 +647,7 @@
             if(entry.type === 'expense') wallet.total += entry.amount;
             else if(entry.type === 'income') wallet.total -= entry.amount;
             else if(entry.type === 'buy') {
-                wallet.total += entry.amount; // 매수 삭제 -> 쓴 돈 돌려받음
+                wallet.total += entry.amount; 
                 if(entry.assetId) {
                     const asset = localHoldings.find(h => h.id === entry.assetId);
                     if(asset) {
@@ -592,14 +656,11 @@
                     }
                 }
             } else if(entry.type === 'sell') {
-                wallet.total -= entry.amount; // 매도 삭제 -> 벌었던 돈 토해냄
+                wallet.total -= entry.amount; 
                 if(entry.assetId) {
                     let asset = localHoldings.find(h => h.id === entry.assetId);
                     if(asset) { asset.qty += (entry.assetQty || 0); asset.total = asset.qty * asset.price; }
-                    else {
-                        // 자산이 완전히 지워졌었다면 재생성
-                        alert("포트폴리오에서 자산이 완전히 삭제되어 있었으므로 리스트를 확인하세요.");
-                    }
+                    else alert("자산이 완전히 삭제되어 수량을 복구할 수 없습니다.");
                 }
             }
 
@@ -611,7 +672,7 @@
                 localLedgerEntries = localLedgerEntries.filter(e => e.id !== id);
                 updateWalletDisplay(); renderTimeline(); initTab1Charts(); renderHoldings();
             }
-            showToast("기록 삭제 및 자산 롤백 완료");
+            showToast("기록 삭제 및 롤백 완료");
         };
 
         // ================= FIXED EXPENSES (고정비) =================
@@ -659,18 +720,19 @@
                 el.innerHTML = `
                     <div><div class="font-bold text-sm text-pancake-text flex items-center">${fx.name} ${isPaid?'<i data-lucide="check-circle" class="w-4 h-4 text-pancake-success ml-1"></i>':''}</div><div class="text-xs text-gray-500 font-bold mt-1">매월 ${fx.day}일 · ₩${formatNumber(fx.amount)}</div></div>
                     <div class="flex gap-2">
-                        ${!isPaid ? `<button onclick="payFixedExpense('${fx.id}')" class="bg-white border border-gray-200 text-pancake-text text-xs font-bold px-3 py-1.5 rounded-lg hover:border-pancake-primary shadow-sm transition">납부</button>` : `<span class="text-xs font-bold text-pancake-success px-2">완료</span>`}
+                        ${!isPaid ? `<button onclick="payFixedExpense('${fx.id}')" class="pc-btn pc-btn-primary px-3 py-1.5 text-xs !rounded-lg !shadow-[0px_2px_0px_#139ea8]">납부</button>` : `<span class="text-xs font-bold text-pancake-success px-2">완료</span>`}
                         <button onclick="deleteFixedExpense('${fx.id}')" class="text-gray-400 hover:text-pancake-failure p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>`;
                 container.appendChild(el);
             }); lucide.createIcons();
         }
 
-        // ================= ASSET PORTFOLIO =================
+        // ================= ASSET PORTFOLIO (달러 결제 완벽 지원) =================
         function toggleHoldingInputs() {
             const isCash = document.getElementById('holding-type').value === 'cash';
             document.getElementById('holding-name-container').classList.toggle('hidden', isCash);
             document.getElementById('holding-qty-price-container').classList.toggle('hidden', isCash);
+            document.getElementById('holding-currency-container').classList.toggle('hidden', isCash); // 통화 선택 숨김
             document.getElementById('holding-cash-container').classList.toggle('hidden', !isCash);
             document.getElementById('holding-preview-container').classList.toggle('hidden', isCash);
             
@@ -679,13 +741,26 @@
             document.getElementById('holding-cash-amount').required = isCash;
         }
 
-        ['holding-qty', 'holding-price'].forEach(id => {
-            document.getElementById(id).addEventListener('input', () => {
-                const q = parseFloat(unformatNumber(document.getElementById('holding-qty').value)) || 0;
-                const p = parseFloat(unformatNumber(document.getElementById('holding-price').value)) || 0;
-                document.getElementById('holding-preview-total').textContent = `₩ ${formatNumber(q*p)}`;
+        // 통화 라디오 버튼 토글
+        document.querySelectorAll('[data-group="holding-currency"] button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('[data-group="holding-currency"] button').forEach(b => b.classList.remove('selected'));
+                e.target.classList.add('selected');
+                updateHoldingPreview();
             });
         });
+
+        function updateHoldingPreview() {
+            const q = parseFloat(unformatNumber(document.getElementById('holding-qty').value)) || 0;
+            const p = parseFloat(unformatNumber(document.getElementById('holding-price').value)) || 0;
+            const isUsd = document.querySelector('[data-group="holding-currency"] .selected').dataset.value === 'usd';
+            
+            const rate = isUsd ? globalExchangeRate : 1;
+            const totalKRW = q * p * rate;
+            document.getElementById('holding-preview-total').textContent = `₩ ${formatNumber(totalKRW)}`;
+        }
+
+        ['holding-qty', 'holding-price'].forEach(id => document.getElementById(id).addEventListener('input', updateHoldingPreview));
 
         function resetHoldingForm() { document.getElementById('holding-form').reset(); document.getElementById('holding-id').value = ''; document.getElementById('holding-preview-total').textContent = `₩ 0`; toggleHoldingInputs(); }
 
@@ -708,24 +783,25 @@
             const name = document.getElementById('holding-name').value;
             const qty = parseFloat(unformatNumber(document.getElementById('holding-qty').value)) || 0;
             const price = parseFloat(unformatNumber(document.getElementById('holding-price').value)) || 0;
-            const total = qty * price;
+            const isUsd = document.querySelector('[data-group="holding-currency"] .selected').dataset.value === 'usd';
+            const rate = isUsd ? globalExchangeRate : 1;
+            const totalKRW = qty * price * rate;
             
-            if(total <= 0 || isNaN(total)) return alert("수량과 단가를 올바르게 입력하세요.");
+            if(totalKRW <= 0 || isNaN(totalKRW)) return alert("수량과 단가를 올바르게 입력하세요.");
             
             let holdingIdToUse = id || 'ast_'+Date.now().toString();
 
             if(id) {
                  const oldAsset = localHoldings.find(h => h.id === id);
-                 if(oldAsset) wallet.total -= (total - oldAsset.total);
+                 if(oldAsset) wallet.total -= (totalKRW - oldAsset.totalKRW); // 기존 원화가치 대비 차액
             } else {
-                 wallet.total -= total; // 신규 매수 시 지갑 차감
+                 wallet.total -= totalKRW; 
             }
 
-            const holdingData = { type, name, qty, price, total };
+            const holdingData = { type, name, qty, price, currency: isUsd?'USD':'KRW', exchangeRate: rate, totalKRW };
             
             if(!id) {
-                // 롤백을 위한 데이터
-                localLedgerEntries.push({ id: 'led_buy_'+Date.now(), type: 'buy', assetId: holdingIdToUse, assetQty: qty, category: '자산매수', subCategory: name, amount: total, memo: `${formatNumber(qty)}주 매수`, date: new Date().toISOString() }); 
+                localLedgerEntries.push({ id: 'led_buy_'+Date.now(), type: 'buy', assetId: holdingIdToUse, assetQty: qty, category: '자산매수', subCategory: name, amount: totalKRW, memo: `${formatNumber(qty)}주 매수${isUsd?'(USD)':''}`, date: new Date().toISOString() }); 
                 localHoldings.push({id: holdingIdToUse, ...holdingData});
             } else {
                 const idx = localHoldings.findIndex(h => h.id === id);
@@ -743,39 +819,61 @@
             document.getElementById('holding-name').value = h.name;
             document.getElementById('holding-qty').value = formatNumber(h.qty);
             document.getElementById('holding-price').value = formatNumber(h.price);
-            document.getElementById('holding-preview-total').textContent = `₩ ${formatNumber(h.total)}`;
+            
+            const btn = document.querySelector(`[data-group="holding-currency"] button[data-value="${h.currency==='USD'?'usd':'krw'}"]`);
+            if(btn) btn.click();
+            updateHoldingPreview();
         };
 
         function openSellModal(id) {
             const h = localHoldings.find(x => x.id === id); if(!h) return;
-            document.getElementById('sell-asset-id').value = h.id; document.getElementById('sell-avg-price').value = h.price;
+            document.getElementById('sell-asset-id').value = h.id; 
+            document.getElementById('sell-avg-price').value = h.price;
+            document.getElementById('sell-currency').value = h.currency || 'KRW';
+            
+            const curLabel = h.currency === 'USD' ? '달러($)' : '원화(₩)';
             document.getElementById('sell-asset-name').textContent = `${h.name} (보유: ${formatNumber(h.qty)}주)`;
-            document.getElementById('sell-qty').value = formatNumber(h.qty); document.getElementById('sell-price').value = formatNumber(h.price);
+            document.getElementById('sell-price-label').textContent = `매도 단가 (${curLabel})`;
+            document.getElementById('sell-qty').value = formatNumber(h.qty); 
+            document.getElementById('sell-price').value = formatNumber(h.price);
             calculateSell(); openModal('sell-modal');
         }
         ['sell-qty', 'sell-price'].forEach(id => document.getElementById(id).addEventListener('input', calculateSell));
         
         function calculateSell() {
-            const q = parseFloat(unformatNumber(document.getElementById('sell-qty').value)) || 0; const p = parseFloat(unformatNumber(document.getElementById('sell-price').value)) || 0; const avg = parseFloat(document.getElementById('sell-avg-price').value) || 0;
-            document.getElementById('sell-proceeds').textContent = `₩ ${formatNumber(q*p)}`;
-            const pnl = (p-avg)*q; const pel = document.getElementById('sell-pnl'); pel.textContent = `₩ ${formatNumber(pnl)}`; pel.className = pnl>0 ? 'font-bold text-pancake-success text-base' : (pnl<0 ? 'font-bold text-pancake-failure text-base' : 'font-bold text-gray-500 text-base');
+            const q = parseFloat(unformatNumber(document.getElementById('sell-qty').value)) || 0; 
+            const p = parseFloat(unformatNumber(document.getElementById('sell-price').value)) || 0; 
+            const avg = parseFloat(document.getElementById('sell-avg-price').value) || 0;
+            const currency = document.getElementById('sell-currency').value;
+            
+            const rate = currency === 'USD' ? globalExchangeRate : 1;
+            const proceedsKRW = q * p * rate;
+            const pnlKRW = ((p - avg) * q) * rate;
+
+            document.getElementById('sell-proceeds').textContent = `₩ ${formatNumber(proceedsKRW)}`;
+            const pel = document.getElementById('sell-pnl'); pel.textContent = `₩ ${formatNumber(pnlKRW)}`; pel.className = pnlKRW>0 ? 'font-bold text-pancake-success text-base' : (pnlKRW<0 ? 'font-bold text-pancake-failure text-base' : 'font-bold text-gray-500 text-base');
         }
 
         async function processSell(e) {
             e.preventDefault();
             const id = document.getElementById('sell-asset-id').value;
-            const q = parseFloat(unformatNumber(document.getElementById('sell-qty').value)); const p = parseFloat(unformatNumber(document.getElementById('sell-price').value));
+            const q = parseFloat(unformatNumber(document.getElementById('sell-qty').value)); 
+            const p = parseFloat(unformatNumber(document.getElementById('sell-price').value));
             if (isNaN(q) || isNaN(p) || q <= 0 || p <= 0) return alert("올바른 숫자를 입력하세요.");
             
-            const proceeds = q*p;
             const asset = localHoldings.find(h => h.id === id);
             if(q > asset.qty) return alert("보유 수량을 초과합니다.");
 
-            const wallet = getSystemWallet();
-            asset.qty -= q; asset.total = asset.qty * asset.price;
-            wallet.total += proceeds; 
+            const rate = asset.currency === 'USD' ? globalExchangeRate : 1;
+            const proceedsKRW = q * p * rate;
+            const pnlKRW = ((p - asset.price) * q) * rate;
 
-            localLedgerEntries.push({ id: 'led_sell_'+Date.now(), type: 'sell', assetId: asset.id, assetQty: q, category: '자산매도', subCategory: asset.name, amount: proceeds, memo: `${formatNumber(q)}주 매도`, pnl: (p-asset.price)*q, date: new Date().toISOString() });
+            const wallet = getSystemWallet();
+            asset.qty -= q; 
+            asset.totalKRW = asset.qty * asset.price * (asset.currency==='USD'?globalExchangeRate:1);
+            wallet.total += proceedsKRW; 
+
+            localLedgerEntries.push({ id: 'led_sell_'+Date.now(), type: 'sell', assetId: asset.id, assetQty: q, category: '자산매도', subCategory: asset.name, amount: proceedsKRW, memo: `${formatNumber(q)}주 매도`, pnl: pnlKRW, date: new Date().toISOString() });
 
             if(asset.qty <= 0.0001) localHoldings = localHoldings.filter(h=>h.id!==id); 
             
@@ -783,6 +881,15 @@
         }
 
         function renderHoldings() {
+            // 환율 변경에 따른 자산가치 실시간 재계산
+            localHoldings.forEach(h => {
+                if(h.type !== 'cash' && h.currency === 'USD') {
+                    h.totalKRW = h.qty * h.price * globalExchangeRate;
+                } else if(h.type !== 'cash') {
+                    h.totalKRW = h.qty * h.price; // KRW
+                }
+            });
+
             const container = document.getElementById('holdings-list-container'); container.innerHTML = '';
             const cats = [{ type: 'stock', title: '📈 주식'}, { type: 'bond', title: '🏛️ 채권'}, { type: 'commodity', title: '🥇 원자재'}];
             let hasItems = false;
@@ -793,16 +900,17 @@
                 const section = document.createElement('div'); section.className = 'bg-[#F9F8FA] rounded-xl p-4 border border-gray-200';
                 let html = `<h4 class="font-bold text-sm mb-3 text-pancake-textSub">${cat.title}</h4><div class="space-y-3">`;
                 items.forEach(item => {
+                    const priceStr = item.currency === 'USD' ? `$${formatNumber(item.price)}` : `₩${formatNumber(item.price)}`;
                     html += `
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 rounded-xl shadow-sm border border-gray-100 gap-2">
                         <div>
-                            <div class="font-bold text-base text-pancake-text">${item.name}</div>
-                            <div class="text-xs text-gray-500 font-bold mt-1">${formatNumber(item.qty)}주 × ₩${formatNumber(item.price)}</div>
+                            <div class="font-bold text-base text-pancake-text flex items-center">${item.name} ${item.currency==='USD'?'<span class="text-[10px] ml-2 bg-blue-100 text-blue-600 px-1.5 rounded">USD</span>':''}</div>
+                            <div class="text-xs text-gray-500 font-bold mt-1">${formatNumber(item.qty)}주 × ${priceStr}</div>
                         </div>
                         <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                            <div class="font-brand font-bold text-xl text-pancake-text">₩ ${formatNumber(item.total)}</div>
+                            <div class="font-brand font-bold text-xl text-pancake-text">₩ ${formatNumber(item.totalKRW)}</div>
                             <div class="flex gap-1">
-                                <button onclick="openSellModal('${item.id}')" class="bg-[#E7F9F5] text-[#1e7a63] font-bold px-3 py-1.5 rounded-lg hover:bg-pancake-success hover:text-white transition">매도</button>
+                                <button onclick="openSellModal('${item.id}')" class="pc-btn pc-btn-success px-3 py-1.5 text-xs !rounded-lg !shadow-[0px_2px_0px_#1e7a63]">매도</button>
                             </div>
                         </div>
                     </div>`;
@@ -831,10 +939,11 @@
                 return true;
             });
 
-            const tf = document.getElementById('timeline-timeframe').value;
-            if(tf !== 'all') {
-                const parts = tf.split('_'); const y = parseInt(parts[1]), m = parseInt(parts[2]);
-                const start = new Date(y, m, 1); const end = new Date(y, m+1, 0, 23,59,59);
+            const startVal = document.getElementById('timeline-filter-start').value;
+            const endVal = document.getElementById('timeline-filter-end').value;
+            if(startVal && endVal) {
+                const start = new Date(startVal); start.setHours(0,0,0,0);
+                const end = new Date(endVal); end.setHours(23,59,59,999);
                 filtered = filtered.filter(e => new Date(e.date) >= start && new Date(e.date) <= end);
             }
 
@@ -881,34 +990,7 @@
             lucide.createIcons();
         }
 
-        // ================= DASHBOARD CHARTS (계산 & 퍼센트 적용) =================
-        function populateCalendarDropdowns() {
-            const sels = ['ledger-timeframe', 'growth-timeframe', 'timeline-timeframe'];
-            const y = new Date().getFullYear(), m = new Date().getMonth(); 
-            
-            sels.forEach(selId => {
-                const select = document.getElementById(selId); if(!select) return;
-                select.innerHTML = '';
-                if(selId === 'timeline-timeframe') select.add(new Option('전체 기간', 'all'));
-                
-                if(selId === 'growth-timeframe') {
-                    select.add(new Option('월별 (최근 6개월)', 'month'));
-                    select.add(new Option('분기별 (최근 4분기)', 'quarter'));
-                    return;
-                }
-                
-                const optMonth = document.createElement('optgroup'); optMonth.label = "월별 보기";
-                for (let i = 0; i < 6; i++) {
-                    let d = new Date(y, m - i, 1); select.add(new Option(`${d.getFullYear()}년 ${d.getMonth() + 1}월`, `month_${d.getFullYear()}_${d.getMonth()}`));
-                }
-                const optQ = document.createElement('optgroup'); optQ.label = "분기별 보기";
-                let currQ = Math.floor(m / 3) + 1; let qYear = y;
-                for (let i = 0; i < 4; i++) { select.add(new Option(`${qYear}년 ${currQ}분기`, `quarter_${qYear}_${currQ}`)); currQ--; if(currQ === 0) { currQ = 4; qYear--; } }
-                const optY = document.createElement('optgroup'); optY.label = "연도별 보기";
-                for (let i = 0; i < 3; i++) select.add(new Option(`${y - i}년 전체`, `year_${y - i}`));
-            });
-        }
-
+        // ================= DASHBOARD CHARTS =================
         function createOrUpdateChart(id, config) {
             const ctx = document.getElementById(id).getContext('2d');
             if (chartInstances[id]) chartInstances[id].destroy();
@@ -927,11 +1009,9 @@
         }
 
         function initTab1Charts() {
-            if(document.getElementById('growth-timeframe').options.length === 0) populateCalendarDropdowns();
-
-            // 1. 자산 점유율 (퍼센트 추가)
+            // 1. 자산 점유율 (퍼센트 툴팁 추가)
             let sums = { stock: 0, bond: 0, commodity: 0 };
-            localHoldings.forEach(h => { if(h.type !== 'cash') sums[h.type] += h.total; });
+            localHoldings.forEach(h => { if(h.type !== 'cash') sums[h.type] += (h.totalKRW || h.total); });
             const wallet = getSystemWallet();
             const totalAsset = sums.stock + sums.bond + sums.commodity + wallet.total;
             document.getElementById('total-net-worth').textContent = `₩ ${formatNumber(totalAsset)}`;
@@ -956,7 +1036,7 @@
                 }
             });
 
-            // 2. 재산 성장 추이 역산 그래프 (문제점 3 해결)
+            // 2. 재산 성장 추이 역산 그래프
             const gTf = document.getElementById('growth-timeframe').value;
             let gLabels=[], gData=[];
             const now = new Date();
@@ -997,7 +1077,6 @@
                 prevAsset = gData[gData.length - 2] || totalAsset;
             }
 
-            // 요약 텍스트 업데이트
             const diff = totalAsset - prevAsset;
             const diffPct = prevAsset > 0 ? ((diff / prevAsset) * 100).toFixed(1) : 0;
             const sumEl = document.getElementById('growth-summary-text');
@@ -1014,16 +1093,16 @@
         }
 
         function renderLedgerCharts() {
-            if(document.getElementById('ledger-timeframe').options.length === 0) populateCalendarDropdowns();
-            const tfVal = document.getElementById('ledger-timeframe').value;
-            const parts = tfVal.split('_'); const type = parts[0]; const year = parseInt(parts[1]);
-            let start, end;
+            const startVal = document.getElementById('ledger-filter-start').value;
+            const endVal = document.getElementById('ledger-filter-end').value;
+            let filteredData = localLedgerEntries;
+            
+            if(startVal && endVal) {
+                const start = new Date(startVal); start.setHours(0,0,0,0);
+                const end = new Date(endVal); end.setHours(23,59,59,999);
+                filteredData = localLedgerEntries.filter(e => { const d = new Date(e.date); return d >= start && d <= end; });
+            }
 
-            if(type === 'month') { const m = parseInt(parts[2]); start = new Date(year, m, 1); end = new Date(year, m + 1, 0, 23,59,59); }
-            else if(type === 'quarter') { const q = parseInt(parts[2]); start = new Date(year, (q-1)*3, 1); end = new Date(year, q*3, 0, 23,59,59); }
-            else { start = new Date(year, 0, 1); end = new Date(year, 11, 31, 23,59,59); }
-
-            const filteredData = localLedgerEntries.filter(e => { const d = new Date(e.date); return d >= start && d <= end; });
             let incSum = {}, expSum = {};
             filteredData.forEach(e => {
                 if(e.type === 'income') incSum[e.category] = (incSum[e.category] || 0) + e.amount;
