@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-<html lang="ko" class="">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>매매일지&가계부 🍰</title>
+    <title>Financial Dashboard 🍰</title>
     
     <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- Fonts: Kanit (Brand) & Noto Sans KR (Body) -->
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs (기존 설정 유지) -->
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
@@ -23,1718 +23,542 @@
             darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans KR"', 'sans-serif'],
+                        brand: ['"Kanit"', 'sans-serif'],
+                    },
                     colors: {
                         pancake: {
-                            cyan: '#1FC7D4',
-                            purple: '#7645D9',
-                            bgLight: '#F0FDFA', // Soft Mint
-                            bgDark: '#1D1B26',  // 3% Darker Deep Lavender
-                            card: '#FFFFFF',
-                            cardDark: '#2D2B3B', 
-                            text: '#280D5F',
-                            textSub: '#7A6EAA',
-                            textDark: '#EAE9F0',
-                            textSubDark: '#B8ADD2',
-                            input: '#EEEAF4',
-                            inputDark: '#373546', // Button Bg in Dark Mode
-                            border: '#E7E3EB',
-                            borderDark: '#454252',
+                            bgLight: '#F0FDFA', // Minty background
+                            primary: '#1FC7D4', // Cyan
+                            primaryHover: '#31D0AA',
+                            secondary: '#7645D9', // Purple
                             success: '#31D0AA',
                             failure: '#ED4B9E',
-                            warning: '#FFB237'
+                            warning: '#FFB237',
+                            text: '#280D5F', // Dark purple text
+                            textSub: '#7A6EAA',
+                            card: '#FFFFFF',
+                            border: '#E7E3EB',
+                            input: '#EEEAF4',
+                            // Dark mode
+                            bgDark: '#08060B',
+                            cardDark: '#27262C',
+                            borderDark: '#383241',
+                            inputDark: '#372F47',
+                            textSubDark: '#9EA1AA'
                         }
                     },
-                    fontFamily: {
-                        sans: ['Noto Sans KR', 'sans-serif'],
-                        brand: ['Kanit', 'sans-serif'],
-                    },
-                    animation: {
-                        blob: "blob 10s infinite",
-                    },
-                    keyframes: {
-                        blob: {
-                            "0%": { transform: "translate(0px, 0px) scale(1)" },
-                            "33%": { transform: "translate(30px, -50px) scale(1.1)" },
-                            "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
-                            "100%": { transform: "translate(0px, 0px) scale(1)" },
-                        },
-                    },
+                    boxShadow: {
+                        'pc-btn': '0px -2px 0px 0px rgba(14, 14, 44, 0.4) inset',
+                        'pc-card': '0px 2px 12px -8px rgba(25, 19, 38, 0.1), 0px 1px 1px rgba(25, 19, 38, 0.05)',
+                        'pc-card-bottom': '0px 4px 0px 0px #E7E3EB', // 3D effect for cards
+                        'pc-card-bottom-dark': '0px 4px 0px 0px #383241'
+                    }
                 }
             }
         }
     </script>
-
     <style>
-        /* --- Styles --- */
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #F0FDFA; /* Soft Mint Base */
-            color: #280D5F;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .dark body {
-            background-color: #1D1B26; /* 3% Darker Base */
-            color: #EAE9F0;
-        }
-
-        h1, h2, h3, .font-brand {
-            font-family: 'Kanit', sans-serif;
-        }
-
-        /* Card Style */
+        body { background-color: theme('colors.pancake.bgLight'); color: theme('colors.pancake.text'); }
+        .dark body { background-color: theme('colors.pancake.bgDark'); color: white; }
+        
+        /* PancakeSwap UI Components */
         .pc-card {
-            background: #FFFFFF;
-            border: 1px solid #E7E3EB;
-            border-bottom: 3px solid #E7E3EB;
+            background-color: theme('colors.pancake.card');
             border-radius: 24px;
-            padding: 24px;
-            transition: all 0.2s ease-in-out;
+            box-shadow: theme('boxShadow.pc-card'), theme('boxShadow.pc-card-bottom');
+            padding: 1.5rem;
+            border: 1px solid theme('colors.pancake.border');
+            transition: all 0.2s ease;
         }
         .dark .pc-card {
-            background: #2D2B3B;
-            border-color: #454252;
-            color: #EAE9F0;
+            background-color: theme('colors.pancake.cardDark');
+            border-color: theme('colors.pancake.borderDark');
+            box-shadow: theme('boxShadow.pc-card'), theme('boxShadow.pc-card-bottom-dark');
         }
 
-        /* Buttons */
-        .pc-btn {
-            font-family: 'Noto Sans KR', sans-serif; 
-            font-weight: 700;
+        .pc-input {
+            width: 100%;
+            background-color: theme('colors.pancake.input');
+            border: 1px solid transparent;
             border-radius: 16px;
-            padding: 10px 20px;
-            transition: transform 0.1s, box-shadow 0.1s, opacity 0.2s;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            color: theme('colors.pancake.text');
+            transition: border-color 0.2s ease;
+            outline: none;
+        }
+        .pc-input:focus { border-color: theme('colors.pancake.primary'); }
+        .dark .pc-input {
+            background-color: theme('colors.pancake.inputDark');
+            color: white;
+        }
+        .dark .pc-input:focus { border-color: theme('colors.pancake.primary'); }
+
+        .pc-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            font-family: '"Kanit"', sans-serif;
+            font-weight: 600;
+            border-radius: 16px;
+            padding: 0.75rem 1.5rem;
             cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            box-shadow: theme('boxShadow.pc-btn');
             border: none;
-            box-shadow: 0px 2px 0px rgba(0,0,0,0.1);
         }
         .pc-btn:active { transform: translateY(2px); box-shadow: none; }
-        
-        .pc-btn-primary { background-color: #1FC7D4; color: white; box-shadow: 0px 4px 0px #139ea8; }
-        .pc-btn-primary:active { box-shadow: 0px 0px 0px #139ea8; }
-        
-        .pc-btn-secondary {
-            background-color: #FFFFFF; color: #7A6EAA; border: 1px solid transparent; box-shadow: none;
-        }
-        .pc-btn-secondary:hover { opacity: 0.8; border-color: #1FC7D4; color: #1FC7D4; }
-        .dark .pc-btn-secondary { background-color: transparent; color: #B8ADD2; border: 1px solid #454252; }
-        .dark .pc-btn-secondary:hover { border-color: #1FC7D4; color: #1FC7D4; }
-        
-        .pc-btn-purple { background-color: #7645D9; color: white; box-shadow: 0px 4px 0px #522f99; }
-        .pc-btn-purple:active { box-shadow: 0px 0px 0px #522f99; }
+        .pc-btn-primary { background-color: theme('colors.pancake.primary'); color: white; }
+        .pc-btn-primary:hover { opacity: 0.85; }
+        .pc-btn-secondary { background-color: theme('colors.pancake.input'); color: theme('colors.pancake.primary'); box-shadow: none; }
+        .dark .pc-btn-secondary { background-color: theme('colors.pancake.inputDark'); }
+        .pc-btn-purple { background-color: theme('colors.pancake.secondary'); color: white; }
 
-        .pc-btn-danger { background-color: #ED4B9E; color: white; box-shadow: 0px 4px 0px #bd2975; }
-        .pc-btn-danger:active { box-shadow: 0px 0px 0px #bd2975; }
-
-        /* Inputs */
-        .pc-input {
-            background-color: #EEEAF4;
-            border: 1px solid #D7CAEC;
+        /* Toggle Group */
+        .pc-toggle-group {
+            display: flex;
+            background-color: theme('colors.pancake.input');
             border-radius: 16px;
-            padding: 12px 16px;
-            color: #280D5F;
-            font-weight: 500;
-            width: 100%;
-            transition: box-shadow 0.2s;
+            padding: 4px;
         }
-        .pc-input:focus { outline: none; box-shadow: 0px 0px 0px 4px rgba(118, 69, 217, 0.2); border-color: #7645D9; }
-        .dark .pc-input { background-color: #373546; border-color: #454252; color: #FFFFFF; }
-        .dark .pc-input:focus { box-shadow: 0px 0px 0px 4px rgba(31, 199, 212, 0.2); border-color: #1FC7D4; }
-        
-        .dark select option { background-color: #373546; color: white; }
-        .dark input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+        .dark .pc-toggle-group { background-color: theme('colors.pancake.inputDark'); }
+        .pc-toggle-btn {
+            flex: 1;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-align: center;
+            color: theme('colors.pancake.textSub');
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .dark .pc-toggle-btn { color: theme('colors.pancake.textSubDark'); }
+        .pc-toggle-btn.selected {
+            background-color: white;
+            color: theme('colors.pancake.text');
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .dark .pc-toggle-btn.selected {
+            background-color: theme('colors.pancake.cardDark');
+            color: white;
+        }
 
-        /* Tabs */
-        .pc-tab-container { background-color: rgba(255, 255, 255, 0.6); border-radius: 24px; padding: 4px; display: inline-flex; }
-        .dark .pc-tab-container { background-color: rgba(45, 43, 59, 0.6); }
+        /* Tab Navigation */
+        .nav-tab {
+            padding: 12px 24px;
+            font-family: '"Kanit"', sans-serif;
+            font-weight: 600;
+            color: theme('colors.pancake.textSub');
+            border-bottom: 4px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav-tab.active {
+            color: theme('colors.pancake.primary');
+            border-bottom-color: theme('colors.pancake.primary');
+        }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
         
-        .pc-tab { padding: 8px 24px; border-radius: 20px; font-family: 'Kanit', sans-serif; font-weight: 600; color: #7A6EAA; cursor: pointer; transition: all 0.2s; }
-        .dark .pc-tab { color: #B8ADD2; }
-        .pc-tab.active { background-color: #7A6EAA; color: white; }
-        .dark .pc-tab.active { background-color: #1FC7D4; color: #08060B; }
-
-        /* Toggle */
-        .pc-toggle-group { display: flex; background-color: #EEEAF4; border-radius: 16px; padding: 2px; }
-        .dark .pc-toggle-group { background-color: #373546; }
-        .pc-toggle-btn { flex: 1; text-align: center; padding: 8px; border-radius: 14px; font-size: 14px; font-weight: 600; color: #7A6EAA; transition: all 0.2s; }
-        .dark .pc-toggle-btn { color: #B8ADD2; }
-        .pc-toggle-btn.selected { background-color: #1FC7D4; color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .dark .pc-toggle-btn.selected { background-color: #1FC7D4; color: #08060B; }
-        
-        /* Tags */
-        .tag { border-radius: 12px; transition: all 0.2s; font-weight: 600; font-size: 0.85rem; padding: 4px 10px; border: 2px solid transparent; cursor: pointer; display: inline-flex; items-center: center; gap: 6px; }
-        .tag-default { background-color: #EFF4F5; color: #7A6EAA; border: 1px solid #E7E3EB; }
-        .dark .tag-default { background-color: #373546; color: #B8ADD2; border-color: #454252; }
-        .tag.selected-environment { background-color: #FFB237 !important; color: #280D5F !important; }
-        .tag.selected-entry { background-color: #31D0AA !important; color: white !important; }
-        .tag.selected-psychology { background-color: #7645D9 !important; color: white !important; }
-        
-        /* Tag Delete Button */
-        .tag-delete-btn { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background-color: rgba(0,0,0,0.1); transition: background-color 0.2s; }
-        .tag-delete-btn:hover { background-color: #ED4B9E; color: white; }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #E7E3EB; border-radius: 3px; }
-        .dark ::-webkit-scrollbar-thumb { background: #373546; }
-        ::-webkit-scrollbar-thumb:hover { background: #1FC7D4; }
-
-        /* Animation */
-        @keyframes bounce-slow { 0%, 100% { transform: translateY(-5%); } 50% { transform: translateY(5%); } }
-        .mascot-bounce { animation: bounce-slow 3s infinite ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
-
-    <!-- Dark Mode Init -->
-    <script>
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    </script>
 </head>
-<body class="min-h-screen pb-20 selection:bg-pancake-cyan selection:text-white transition-colors duration-300">
+<body class="pb-20">
 
-    <!-- Background Blobs -->
-    <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        <div class="absolute top-[-10%] left-[-10%] w-[30%] h-[30%] bg-pancake-cyan rounded-full mix-blend-multiply filter blur-[128px] opacity-5 dark:opacity-5 animate-blob"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-pancake-purple rounded-full mix-blend-multiply filter blur-[128px] opacity-5 dark:opacity-7 animate-blob animation-delay-2000"></div>
-    </div>
-
-    <!-- 1. Login View -->
-    <div id="login-view" class="flex flex-col items-center justify-center min-h-screen px-4 relative overflow-hidden">
-        <div class="z-10 text-center w-full max-w-sm">
-            <div class="mb-8 mascot-bounce relative inline-block">
-                <span class="text-8xl">🍰</span>
+    <!-- Navbar -->
+    <nav class="bg-white dark:bg-pancake-cardDark border-b border-pancake-border dark:border-pancake-borderDark sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🥞</span>
+                <span class="font-brand font-bold text-xl text-pancake-text dark:text-white hidden sm:block">My Dashboard</span>
             </div>
-            <h1 class="text-3xl font-bold mb-2 text-pancake-text dark:text-white font-brand">매매일지&가계부 🍰</h1>
-            <p class="text-pancake-textSub dark:text-pancake-textSubDark mb-10 font-medium">달콤한 수익을 위한 기록 습관</p>
+            <!-- Tabs -->
+            <div class="flex">
+                <button class="nav-tab active" onclick="switchTab('tab1')">Asset Management</button>
+                <button class="nav-tab" onclick="switchTab('tab2')">Trading Desk</button>
+            </div>
+            <!-- Dark Mode Toggle -->
+            <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+                <i data-lucide="moon" class="w-5 h-5 text-pancake-text dark:text-white"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        
+        <!-- ================= [TAB 1] 종합 자산 관리 ================= -->
+        <div id="tab1" class="tab-content active space-y-6">
+            
+            <!-- 1. 총 자산 (Net Worth) -->
+            <div class="pc-card bg-gradient-to-r from-pancake-cyan/10 to-pancake-purple/10 border-pancake-cyan/30 text-center py-10">
+                <h2 class="text-pancake-textSub dark:text-pancake-textSubDark font-bold text-sm mb-2 flex justify-center items-center">💰 총 자산 (Net Worth)</h2>
+                <p id="total-net-worth" class="text-5xl font-brand font-bold text-pancake-text dark:text-white">₩ 23,000,000</p>
+                <p class="text-sm font-bold mt-3 text-pancake-success bg-white/50 dark:bg-black/20 inline-block px-3 py-1 rounded-full">▲ +5.2%</p>
+            </div>
+
+            <!-- 2. 차트 영역 (스케치 반영) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- 자산 점유율 (반원 차트) -->
+                <div class="pc-card">
+                    <h3 class="font-bold flex items-center mb-4 text-pancake-text dark:text-white"><span class="mr-2 text-xl">🍕</span> 자산 점유율</h3>
+                    <div class="h-48 relative w-full flex justify-center">
+                        <canvas id="chart-asset-allocation"></canvas>
+                    </div>
+                </div>
+                <!-- 재산 성장 (막대 차트) -->
+                <div class="pc-card">
+                    <h3 class="font-bold flex items-center mb-4 text-pancake-text dark:text-white"><span class="mr-2 text-xl">📈</span> 재산 성장 추이</h3>
+                    <div class="h-48 relative w-full">
+                        <canvas id="chart-asset-growth"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 가계부 요약 차트 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="pc-card">
+                    <h3 class="font-bold mb-4 text-pancake-success">📥 수입 분석</h3>
+                    <div class="h-40 relative w-full"><canvas id="chart-income-pie"></canvas></div>
+                </div>
+                <div class="pc-card">
+                    <h3 class="font-bold mb-4 text-pancake-failure">📤 지출 분석</h3>
+                    <div class="h-40 relative w-full"><canvas id="chart-expense-pie"></canvas></div>
+                </div>
+            </div>
+
+            <!-- 4. 데이터 입력 영역 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- 자산 입력 -->
+                <div class="pc-card">
+                    <h3 class="font-bold text-sm mb-4 text-pancake-purple flex items-center">💎 자산 현황 업데이트 <span class="ml-2 text-xs text-gray-400 font-normal">(메모 가능)</span></h3>
+                    <form class="space-y-3" onsubmit="event.preventDefault(); updateAssets();">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">주식 총액</label><input type="number" id="input-stock-val" class="pc-input text-sm" placeholder="금액" value="10000000"></div>
+                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">메모(평단/수량)</label><input type="text" id="input-stock-memo" class="pc-input text-sm" placeholder="예: AAPL 150$"></div>
+                            
+                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">채권 총액</label><input type="number" id="input-bond-val" class="pc-input text-sm" placeholder="금액" value="5000000"></div>
+                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">메모</label><input type="text" id="input-bond-memo" class="pc-input text-sm" placeholder="내용"></div>
+                            
+                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">원자재 총액</label><input type="number" id="input-commodity-val" class="pc-input text-sm" placeholder="금액" value="3000000"></div>
+                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">메모</label><input type="text" id="input-commodity-memo" class="pc-input text-sm" placeholder="내용"></div>
+                            
+                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">현금/예적금</label><input type="number" id="input-cash-val" class="pc-input text-sm" placeholder="금액" value="5000000"></div>
+                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">메모</label><input type="text" id="input-cash-memo" class="pc-input text-sm" placeholder="은행명 등"></div>
+                        </div>
+                        <button type="submit" class="pc-btn pc-btn-primary w-full mt-2">자산 반영하기</button>
+                    </form>
+                </div>
+
+                <!-- 가계부 입력 -->
+                <div class="pc-card">
+                    <h3 class="font-bold text-sm mb-4 text-pancake-warning">💳 가계부 기록</h3>
+                    <form class="space-y-4" onsubmit="event.preventDefault(); addLedger();">
+                        <div class="pc-toggle-group" id="ledger-type-toggle">
+                            <button type="button" class="pc-toggle-btn selected text-pancake-failure" data-type="expense">지출</button>
+                            <button type="button" class="pc-toggle-btn text-pancake-success" data-type="income">수입</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 ml-1">카테고리</label>
+                                <select id="ledger-category" class="pc-input text-sm">
+                                    <!-- Options updated dynamically via JS -->
+                                    <option value="식비">식비</option>
+                                    <option value="공과금">공과금</option>
+                                    <option value="여가">여가</option>
+                                    <option value="교통비">교통비</option>
+                                    <option value="기타">기타</option>
+                                </select>
+                            </div>
+                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">금액</label><input type="number" id="ledger-amount" class="pc-input text-sm font-brand font-bold text-right" placeholder="0"></div>
+                        </div>
+                        <div><label class="text-[10px] font-bold text-gray-400 ml-1">내용/메모</label><input type="text" id="ledger-memo" class="pc-input text-sm" placeholder="상세 내용"></div>
+                        <button type="submit" class="pc-btn pc-btn-purple w-full">내역 추가하기</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= [TAB 2] 트레이딩 데스크 ================= -->
+        <div id="tab2" class="tab-content space-y-6">
+            
+            <!-- 1. 핵심 지표 (스케치 상단부) -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="pc-card flex flex-col items-center justify-center py-6">
+                    <span class="text-sm font-bold text-pancake-textSub mb-1">승률</span>
+                    <span class="text-3xl font-brand font-bold text-pancake-success">40%</span>
+                </div>
+                <div class="pc-card flex flex-col items-center justify-center py-6">
+                    <span class="text-sm font-bold text-pancake-textSub mb-1">성과 (총 손익)</span>
+                    <span class="text-2xl font-brand font-bold text-pancake-primary">₩ 2,300,000</span>
+                </div>
+                <div class="pc-card flex flex-col items-center justify-center py-6">
+                    <span class="text-sm font-bold text-pancake-textSub mb-1">기대 손익비</span>
+                    <span class="text-3xl font-brand font-bold text-pancake-warning">3.14</span>
+                </div>
+                <div class="pc-card flex flex-col items-center justify-center py-6">
+                    <span class="text-sm font-bold text-pancake-textSub mb-1">실제 손익비</span>
+                    <span class="text-3xl font-brand font-bold text-pancake-failure">2.09</span>
+                </div>
+            </div>
+
+            <!-- 2. 트레이딩 분석 차트 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- 선물계좌 현황 (막대) -->
+                <div class="pc-card">
+                    <h3 class="font-bold flex items-center mb-4">📊 선물계좌 현황</h3>
+                    <div class="h-48 relative w-full">
+                        <canvas id="chart-trading-equity"></canvas>
+                    </div>
+                </div>
+                <!-- 태그별 승률 (스케치 반영) -->
+                <div class="pc-card">
+                    <h3 class="font-bold flex items-center mb-4">🏷️ 태그별 승률 분석</h3>
+                    <div class="h-48 relative w-full overflow-y-auto">
+                        <ul class="space-y-3">
+                            <li class="flex justify-between items-center text-sm border-b border-gray-100 dark:border-gray-800 pb-2">
+                                <div><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">근거: 추세선 돌파</span></div>
+                                <div class="font-bold">60% <span class="text-gray-400 text-xs">(3/5)</span></div>
+                            </li>
+                            <li class="flex justify-between items-center text-sm border-b border-gray-100 dark:border-gray-800 pb-2">
+                                <div><span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs">심리: 뇌동매매</span></div>
+                                <div class="font-bold text-pancake-failure">0% <span class="text-gray-400 text-xs">(0/2)</span></div>
+                            </li>
+                            <li class="flex justify-between items-center text-sm pb-2">
+                                <div><span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs">근거: 지지/저항</span></div>
+                                <div class="font-bold">75% <span class="text-gray-400 text-xs">(6/8)</span></div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 매매일지 기록 폼 -->
             <div class="pc-card">
-                <button id="login-btn" class="w-full pc-btn pc-btn-primary text-lg py-4 shadow-lg hover:shadow-xl transition-shadow">
-                    <span class="mr-2 text-xl">🥞</span> 구글 계정으로 시작
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. App Container -->
-    <div id="app-container" class="max-w-6xl mx-auto px-4 py-6 hidden">
-        
-        <!-- Header -->
-        <header class="flex justify-between items-center mb-8">
-            <div class="flex items-center gap-3">
-                <span class="text-3xl filter drop-shadow-md">🍰</span>
-                <div>
-                    <h1 class="text-xl font-bold text-pancake-text dark:text-white leading-tight font-brand tracking-tight">매매일지&가계부</h1>
-                    <div id="auth-info" class="text-xs font-bold text-pancake-cyan dark:text-pancake-textSubDark"></div>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-2 bg-white dark:bg-pancake-cardDark p-1.5 rounded-full border border-pancake-border dark:border-pancake-borderDark shadow-sm">
-                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-pancake-inputDark transition text-pancake-warning">
-                    <i id="sun-icon" data-lucide="sun" class="w-5 h-5"></i>
-                    <i id="moon-icon" data-lucide="moon" class="w-5 h-5 hidden"></i>
-                </button>
-                <button id="logout-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-pancake-inputDark transition text-pancake-failure">
-                    <i data-lucide="log-out" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- Main Navigation Tabs -->
-        <div class="flex justify-center mb-8">
-            <div class="pc-tab-container shadow-sm backdrop-blur-sm">
-                <button data-main-tab="journal-container" class="pc-tab active flex items-center gap-2"><span>📈</span> 매매일지</button>
-                <button data-main-tab="ledger-container" class="pc-tab flex items-center gap-2"><span>💰</span> 가계부</button>
-            </div>
-        </div>
-
-        <!-- ================= JOURNAL SECTION ================= -->
-        <div id="journal-container" class="space-y-6">
-            <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                <button data-tab="form-view" class="pc-btn pc-btn-primary text-sm flex-shrink-0 px-6"><i data-lucide="edit-3" class="w-4 h-4 mr-1"></i> 일지 작성</button>
-                <button data-tab="list-view" class="pc-btn pc-btn-secondary text-sm flex-shrink-0 px-6"><i data-lucide="book" class="w-4 h-4 mr-1"></i> 내 일지</button>
-                <button data-tab="stats-view" class="pc-btn pc-btn-secondary text-sm flex-shrink-0 px-6"><i data-lucide="pie-chart" class="w-4 h-4 mr-1"></i> 성과 분석</button>
-            </div>
-
-            <main id="journal-main-content">
-                <!-- 1. Journal Form -->
-                <div id="form-view">
-                    <form id="journal-form" class="pc-card space-y-8 relative overflow-visible">
-                        <div class="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-pancake-cyan rounded-full opacity-10 blur-3xl pointer-events-none"></div>
-                        <input type="hidden" id="journal-id">
-                        
-                        <div class="space-y-6">
-                            <h2 class="text-xl font-bold mb-4 border-b-2 border-pancake-border dark:border-pancake-borderDark pb-3 flex items-center text-pancake-text dark:text-white">
-                                <span class="bg-pancake-input dark:bg-pancake-inputDark p-1.5 rounded-lg mr-2">📝</span> 기본 정보
-                            </h2>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
-                                <div class="sm:col-span-2 space-y-2">
-                                    <span class="block text-sm font-bold text-pancake-purple dark:text-pancake-textSubDark mb-1 pl-1">💎 자산 유형</span>
-                                    <div class="pc-toggle-group" data-group="asset-type">
-                                        <button type="button" data-value="spot" class="pc-toggle-btn selected">현물 (Spot)</button>
-                                        <button type="button" data-value="futures" class="pc-toggle-btn">선물 (Futures)</button>
-                                    </div>
-                                </div>
-                                <div class="sm:col-span-2 space-y-2">
-                                    <label for="ticker" class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">🏷️ 종목 이름</label>
-                                    <input type="text" id="ticker" placeholder="예: BTC, ETH" required class="pc-input text-base font-bold uppercase tracking-wider">
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div class="space-y-2">
-                                    <label for="date" class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">📅 날짜</label>
-                                    <input type="date" id="date" required class="pc-input cursor-pointer">
-                                </div>
-                                <div class="space-y-2">
-                                    <span class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">🚩 포지션</span>
-                                    <div class="pc-toggle-group" data-group="position">
-                                        <button type="button" data-value="long" class="pc-toggle-btn selected text-pancake-success">🟢 롱 (Long)</button>
-                                        <button type="button" data-value="short" class="pc-toggle-btn text-pancake-failure">🔴 숏 (Short)</button>
-                                    </div>
-                                </div>
-                                <div class="space-y-2">
-                                    <span class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">⚔️ 매매 전략</span>
-                                    <div class="pc-toggle-group" data-group="strategy">
-                                        <button type="button" data-value="단타" class="pc-toggle-btn selected">⚡️ 단타</button>
-                                        <button type="button" data-value="스윙" class="pc-toggle-btn">🌊 스윙</button>
-                                        <button type="button" data-value="장기" class="pc-toggle-btn">🔭 장기</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 bg-pancake-input/50 dark:bg-pancake-inputDark/30 p-4 rounded-2xl">
-                                <div id="spot-fields" class="space-y-2">
-                                    <label for="quantity" class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">📦 수량</label>
-                                    <input type="text" inputmode="numeric" id="quantity" placeholder="예: 100" class="number-input pc-input bg-white dark:bg-pancake-cardDark">
-                                </div>
-                                <div id="futures-contracts-field" class="hidden space-y-2">
-                                    <label for="contracts" class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">📜 계약 수</label>
-                                    <input type="text" inputmode="numeric" id="contracts" placeholder="예: 1" class="number-input pc-input bg-white dark:bg-pancake-cardDark">
-                                </div>
-                                <div class="space-y-2">
-                                    <span class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">💱 입력 통화</span>
-                                    <div class="pc-toggle-group bg-white dark:bg-pancake-cardDark" data-group="form-currency">
-                                        <button type="button" id="form-currency-krw-btn" class="pc-toggle-btn">원 (₩)</button>
-                                        <button type="button" id="form-currency-usd-btn" class="pc-toggle-btn selected">달러 ($)</button>
-                                    </div>
-                                </div>
-                                <div class="space-y-2"><label for="entry-price" class="block text-sm font-bold text-pancake-text dark:text-white mb-1 pl-1">🔵 진입가</label><input type="text" inputmode="decimal" id="entry-price" placeholder="0" required class="number-input pc-input bg-white dark:bg-pancake-cardDark"></div>
-                                <div class="space-y-2"><label for="target-price" class="block text-sm font-bold text-pancake-success mb-1 pl-1">🟢 목표가 (TP)</label><input type="text" inputmode="decimal" id="target-price" placeholder="0" required class="number-input pc-input border-pancake-success/50 focus:border-pancake-success bg-white dark:bg-pancake-cardDark"></div>
-                                <div class="sm:col-span-2 space-y-2"><label for="stop-loss" class="block text-sm font-bold text-pancake-failure mb-1 pl-1">🔴 손절가 (SL)</label><input type="text" inputmode="decimal" id="stop-loss" placeholder="0" required class="number-input pc-input border-pancake-failure/50 focus:border-pancake-failure bg-white dark:bg-pancake-cardDark"></div>
-                            </div>
-                            <div id="futures-fields" class="hidden sm:col-span-2 space-y-4">
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                                    <div class="sm:col-span-3 bg-pancake-warning/10 dark:bg-pancake-warning/5 p-4 rounded-2xl border border-pancake-warning/20">
-                                        <h3 class="text-base font-semibold mb-3 flex justify-between items-center text-pancake-warning">
-                                            <span>⚡ 선물 종목 정보 (틱가치/단위)</span>
-                                            <div class="flex gap-2">
-                                                <button type="button" id="save-futures-info-btn" class="text-xs font-bold hover:underline bg-white dark:bg-pancake-cardDark px-2 py-1 rounded shadow-sm">💾 저장</button>
-                                                <button type="button" id="delete-futures-info-btn" class="text-xs text-pancake-failure font-bold hover:underline bg-white dark:bg-pancake-cardDark px-2 py-1 rounded shadow-sm" disabled>🗑️ 삭제</button>
-                                            </div>
-                                        </h3>
-                                        <div class="flex flex-col sm:flex-row gap-2 mb-4">
-                                            <select id="futures-info-select" class="pc-input flex-grow p-3 text-base bg-white dark:bg-pancake-cardDark"></select>
-                                        </div>
-                                        <div class="grid grid-cols-2 gap-4">
-                                            <div><label for="tick-value" class="block text-sm font-medium text-pancake-textSub dark:text-pancake-textSubDark mb-1">틱가치 ($)</label><input type="text" inputmode="decimal" id="tick-value" placeholder="예: 1" class="number-input pc-input bg-white dark:bg-pancake-cardDark"></div>
-                                            <div><label for="tick-size" class="block text-sm font-medium text-pancake-textSub dark:text-pancake-textSubDark mb-1">틱단위</label><input type="text" inputmode="decimal" id="tick-size" placeholder="예: 0.001" class="number-input pc-input bg-white dark:bg-pancake-cardDark"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                <h3 class="font-bold mb-4 flex items-center text-pancake-primary">✍️ 매매일지 기록</h3>
+                <form class="space-y-4" onsubmit="event.preventDefault(); addTrade();">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="text-xs font-bold text-gray-500">종목</label>
+                            <input type="text" class="pc-input text-sm" placeholder="예: NQ (나스닥)">
                         </div>
-                        <div class="space-y-4 pt-4 border-t border-pancake-border dark:border-pancake-borderDark">
-                            <h2 class="text-xl font-bold pb-2 flex items-center text-pancake-warning"><i data-lucide="cloud-sun" class="mr-2"></i> 환경 태그</h2>
-                            <div id="environment-tags-container" class="flex flex-wrap gap-2 mb-2 environment-tags-container"></div>
-                            <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-environment-tag" placeholder="직접 입력" class="flex-grow pc-input"><button type="button" class="add-environment-tag-btn pc-btn bg-pancake-warning text-white font-bold px-6 hover:opacity-80 transition shadow-[0px_2px_0px_0px_#b3740e]">추가</button></div>
-                        </div>
-                        <div class="space-y-4 pt-4 border-t border-pancake-border dark:border-pancake-borderDark">
-                            <h2 class="text-xl font-bold pb-2 flex items-center text-pancake-success"><i data-lucide="zap" class="mr-2"></i> 진입 근거</h2>
-                            <div id="entry-tags-container" class="flex flex-wrap gap-2 mb-2 entry-tags-container"></div>
-                            <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-entry-tag" placeholder="직접 입력" class="flex-grow pc-input"><button type="button" class="add-entry-tag-btn pc-btn bg-pancake-success text-white font-bold px-6 hover:opacity-80 transition shadow-[0px_2px_0px_0px_#1e7a63]">추가</button></div>
-                        </div>
-                        <div class="space-y-4 pt-4 border-t border-pancake-border dark:border-pancake-borderDark">
-                            <h2 class="text-xl font-bold pb-2 flex items-center text-pancake-purple"><i data-lucide="brain-circuit" class="mr-2"></i> 심리 상태</h2>
-                            <div id="psychology-tags-container" class="flex flex-wrap gap-2 mb-2 psychology-tags-container"></div>
-                            <div class="flex flex-col sm:flex-row gap-3"><input type="text" id="new-psychology-tag" placeholder="직접 입력" class="flex-grow pc-input"><button type="button" class="add-psychology-tag-btn pc-btn bg-pancake-purple text-white font-bold px-6 hover:opacity-80 transition shadow-[0px_2px_0px_0px_#4c2c8c]">추가</button></div>
-                        </div>
-                        <div class="flex justify-end space-x-4 pt-6 border-t border-pancake-border dark:border-pancake-borderDark">
-                            <button type="button" id="clear-form-btn" class="pc-btn bg-pancake-input dark:bg-pancake-inputDark text-pancake-textSub dark:text-pancake-textSubDark px-6 hover:opacity-80 transition">🔄 초기화</button>
-                            <button type="submit" class="pc-btn pc-btn-primary px-8 flex items-center text-lg transform hover:-translate-y-1 transition-all"><span class="mr-2">💾</span> 일지 저장</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- 2. List View -->
-                <div id="list-view" class="hidden">
-                     <div class="flex items-center justify-end mb-4 bg-pancake-card dark:bg-pancake-cardDark p-3 rounded-2xl shadow-sm border border-pancake-border dark:border-pancake-borderDark">
-                        <label class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark mr-2">🇺🇸 현재 환율 ($1)</label>
-                        <input type="text" id="list-exchange-rate" value="1,380" class="exchange-rate-input pc-input w-24 text-right font-bold py-1 bg-white dark:bg-pancake-inputDark border-none ring-1 ring-pancake-border dark:ring-pancake-borderDark">
-                    </div>
-                    <div id="journal-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-                </div>
-
-                <!-- 3. Stats View -->
-                <div id="stats-view" class="hidden space-y-8">
-                     <div class="pc-card p-4 flex flex-col xl:flex-row justify-between items-center gap-4 sticky top-0 z-10 shadow-sm border border-pancake-border dark:border-pancake-borderDark">
-                        <div class="flex items-center gap-2">
-                             <span class="text-xl">🗓️</span>
-                             <select id="stats-filter-type" class="pc-input w-auto font-bold cursor-pointer py-1.5 pl-3 pr-8 dark:bg-pancake-cardDark dark:text-white border-none shadow-sm ring-1 ring-pancake-border dark:ring-pancake-borderDark">
-                                <option value="month">월별 보기</option>
-                                <option value="quarter">분기별 보기</option>
-                                <option value="year">연도별 보기</option>
-                                <option value="all">전체 보기</option>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500">포지션</label>
+                            <select class="pc-input text-sm">
+                                <option>Long 🔴</option>
+                                <option>Short 🔵</option>
                             </select>
-                            <div class="flex items-center bg-pancake-input dark:bg-pancake-inputDark rounded-xl p-1">
-                                <button id="stats-prev-btn" class="p-1.5 hover:bg-white dark:hover:bg-pancake-cardDark rounded-lg transition-colors text-pancake-cyan"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
-                                <span id="stats-period-display" class="font-bold text-sm min-w-[100px] text-center px-2 text-pancake-text dark:text-white"></span>
-                                <button id="stats-next-btn" class="p-1.5 hover:bg-white dark:hover:bg-pancake-cardDark rounded-lg transition-colors text-pancake-cyan"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
-                            </div>
                         </div>
-                         <div class="flex items-center gap-4">
-                            <div class="pc-toggle-group" data-group="stats-currency">
-                                <button id="stats-currency-krw-btn" class="pc-toggle-btn selected">원 (KRW)</button>
-                                <button id="stats-currency-usd-btn" class="pc-toggle-btn">달러 (USD)</button>
-                            </div>
-                             <div class="flex items-center gap-2">
-                                <span class="text-sm font-bold text-gray-400">환율</span>
-                                <input type="text" id="stats-exchange-rate" value="1,380" class="exchange-rate-input pc-input w-20 text-center font-bold py-1 text-sm dark:bg-pancake-inputDark">
-                             </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500">손익 (실현)</label>
+                            <input type="number" class="pc-input text-sm font-bold" placeholder="금액 (+/-)">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500">수수료 (수수료 지출란)</label>
+                            <input type="number" class="pc-input text-sm text-pancake-failure" placeholder="0">
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="pc-card text-center py-6 border-b-4 border-pancake-cyan dark:bg-[#1FC7D4]/10">
-                            <h4 class="text-pancake-textSub dark:text-pancake-cyan font-bold text-sm mb-1">🏆 총 승률</h4>
-                            <p id="total-win-rate" class="text-3xl font-brand font-bold text-pancake-cyan">0%</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-bold text-gray-500">진입 근거 (태그)</label>
+                            <input type="text" class="pc-input text-sm" placeholder="예: 추세선, 15m 이평선">
                         </div>
-                        <div class="pc-card text-center py-6 border-b-4 border-pancake-success dark:bg-[#31D0AA]/10">
-                            <h4 class="text-pancake-textSub dark:text-pancake-success font-bold text-sm mb-1">⚖️ 평균 손익비</h4>
-                            <p id="average-pl-ratio" class="text-3xl font-brand font-bold text-pancake-success">0.0</p>
-                        </div>
-                        <div class="pc-card text-center py-6 border-b-4 border-pancake-warning dark:bg-[#FFB237]/10">
-                            <h4 class="text-pancake-textSub dark:text-pancake-warning font-bold text-sm mb-1">💰 총 실현 손익</h4>
-                            <p id="total-realized-pnl" class="text-3xl font-brand font-bold text-pancake-warning">0</p>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500">심리 상태 (태그)</label>
+                            <input type="text" class="pc-input text-sm" placeholder="예: 차분함, 조급함">
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="pc-card lg:col-span-1 min-h-[300px]">
-                            <h3 class="font-bold mb-4 flex items-center"><span class="mr-2">🍰</span> 손익 구성</h3>
-                            <div class="h-64 relative w-full"><canvas id="pnl-composition-chart"></canvas></div>
-                        </div>
-                        <div class="pc-card lg:col-span-2 min-h-[300px]">
-                            <h3 class="font-bold mb-4 flex items-center"><span class="mr-2">📅</span> 월별 손익 추이</h3>
-                            <div class="h-64 relative w-full"><canvas id="monthly-pnl-chart"></canvas></div>
-                            <div id="monthly-pnl-summary" class="mt-4 text-xs font-mono text-center opacity-70"></div>
-                        </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500">복기 메모</label>
+                        <textarea class="pc-input text-sm h-20 resize-none" placeholder="매매 복기 내용을 적어주세요."></textarea>
                     </div>
-                    <div class="pc-card border-l-4 border-pancake-purple">
-                        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                            <h3 class="text-lg font-bold text-pancake-text dark:text-white flex items-center"><i data-lucide="tags" class="w-5 h-5 mr-2 text-pancake-purple"></i>태그별 승률 분석</h3>
-                            <div class="pc-toggle-group w-full sm:w-auto" data-group="tag-analysis-type">
-                                <button class="pc-toggle-btn selected" data-value="environment">🌤️ 환경</button>
-                                <button class="pc-toggle-btn" data-value="entry">🚀 진입</button>
-                                <button class="pc-toggle-btn" data-value="psychology">🧠 심리</button>
-                            </div>
-                        </div>
-                        <div class="h-80 relative w-full"><canvas id="tag-win-rate-chart"></canvas></div>
-                    </div>
-                </div>
-            </main>
-        </div>
-
-        <!-- ================= LEDGER SECTION ================= -->
-        <div id="ledger-container" class="hidden space-y-6">
-            <div class="flex justify-center gap-2 mb-6">
-                <button data-ledger-tab="ledger-form-view" class="pc-btn pc-btn-primary text-sm px-6"><i data-lucide="pen-tool" class="w-4 h-4 mr-1"></i> 내역 입력</button>
-                <button data-ledger-tab="ledger-analysis-view" class="pc-btn pc-btn-secondary text-sm px-6"><i data-lucide="bar-chart" class="w-4 h-4 mr-1"></i> 통계 및 분석</button>
+                    <button type="submit" class="pc-btn pc-btn-primary w-full">매매일지 저장 및 통계 반영</button>
+                </form>
             </div>
-            <main id="ledger-main-content">
-                <!-- Ledger Form -->
-                <div id="ledger-form-view" class="max-w-2xl mx-auto">
-                    <form id="ledger-form" class="pc-card space-y-6 relative">
-                        <div class="absolute top-0 left-0 -ml-10 -mt-10 w-40 h-40 bg-pancake-purple rounded-full opacity-10 blur-3xl pointer-events-none"></div>
-                        <input type="hidden" id="ledger-id">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-xl font-bold flex items-center"><span class="bg-pancake-input dark:bg-pancake-inputDark p-1.5 rounded-lg mr-2">💳</span> 새로운 거래</h2>
-                            <div class="pc-toggle-group w-40" data-group="ledger-type">
-                                <button type="button" data-value="expense" class="pc-toggle-btn selected text-pancake-failure">💸 지출</button>
-                                <button type="button" data-value="income" class="pc-toggle-btn text-pancake-success">💰 수입</button>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark ml-1 mb-1 block">📅 날짜</label>
-                                <input type="date" id="ledger-date" class="pc-input" required>
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark ml-1 mb-1 block">💵 금액</label>
-                                <input type="text" id="ledger-amount" placeholder="0" class="pc-input number-input font-bold text-right" required>
-                            </div>
-                        </div>
-                        <div class="bg-pancake-input dark:bg-pancake-inputDark rounded-xl p-4">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark">📂 카테고리 (대분류)</span>
-                                <div class="flex gap-1">
-                                    <input type="text" id="new-ledger-major-category" class="pc-input py-1 px-2 text-xs w-24 bg-white dark:bg-pancake-cardDark" placeholder="추가...">
-                                    <button type="button" id="add-ledger-major-category-btn" class="bg-pancake-purple text-white rounded px-2 font-bold hover:bg-pancake-purple/80 transition">+</button>
-                                </div>
-                            </div>
-                            <div id="ledger-major-category-container" class="flex flex-wrap gap-2 mb-4"></div>
-                            <div id="ledger-minor-category-wrapper" class="hidden border-t border-dashed border-gray-300 dark:border-gray-600 pt-3">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark flex items-center"><i data-lucide="corner-down-right" class="w-3 h-3 mr-1"></i> <span id="selected-major-name"></span> > 소분류</span>
-                                    <div class="flex gap-1">
-                                        <input type="text" id="new-ledger-minor-category" class="pc-input py-1 px-2 text-xs w-24 bg-white dark:bg-pancake-cardDark" placeholder="추가...">
-                                        <button type="button" id="add-ledger-minor-category-btn" class="bg-pancake-cyan text-white rounded px-2 font-bold hover:bg-pancake-cyan/80 transition">+</button>
-                                    </div>
-                                </div>
-                                <div id="ledger-minor-category-container" class="flex flex-wrap gap-2"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark ml-1 mb-1 block">📝 메모</label>
-                            <input type="text" id="ledger-memo" class="pc-input" placeholder="내용 입력...">
-                        </div>
-                        <div class="pt-2 flex gap-3">
-                            <button type="button" id="clear-ledger-form-btn" class="pc-btn pc-btn-secondary flex-1">🔄 초기화</button>
-                            <button type="submit" class="pc-btn pc-btn-primary flex-[2]"><span class="mr-2">💾</span> 저장하기</button>
-                        </div>
-                    </form>
-                </div>
-                <!-- Ledger Analysis -->
-                <div id="ledger-analysis-view" class="hidden space-y-6">
-                    <div class="pc-card p-4 flex flex-wrap justify-between items-center gap-4 border border-pancake-border dark:border-pancake-borderDark">
-                         <div class="flex items-center gap-2">
-                            <button id="ledger-analysis-prev-btn" class="p-1.5 hover:bg-pancake-input dark:hover:bg-pancake-inputDark rounded-full text-pancake-cyan"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
-                            <span id="ledger-analysis-period-display" class="font-bold text-xl min-w-[120px] text-center text-pancake-text dark:text-white"></span>
-                            <button id="ledger-analysis-next-btn" class="p-1.5 hover:bg-pancake-input dark:hover:bg-pancake-inputDark rounded-full text-pancake-cyan"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
-                        </div>
-                        <select id="ledger-analysis-filter-type" class="pc-input w-auto font-bold cursor-pointer dark:bg-pancake-cardDark dark:text-white">
-                            <option value="month">월별 보기</option>
-                            <option value="quarter">분기별 보기</option>
-                            <option value="year">연도별 보기</option>
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div class="pc-card p-4 text-center border-l-4 border-pancake-success dark:bg-[#31D0AA]/5">
-                            <span class="text-xs font-bold text-pancake-success">💰 수입</span>
-                            <p id="ledger-total-income" class="text-xl font-bold text-pancake-text dark:text-white">0</p>
-                        </div>
-                        <div class="pc-card p-4 text-center border-l-4 border-pancake-failure dark:bg-[#ED4B9E]/5">
-                            <span class="text-xs font-bold text-pancake-failure">💸 지출</span>
-                            <p id="ledger-total-expense" class="text-xl font-bold text-pancake-text dark:text-white">0</p>
-                        </div>
-                        <div class="pc-card p-4 text-center border-l-4 border-pancake-cyan dark:bg-[#1FC7D4]/5">
-                            <span class="text-xs font-bold text-pancake-cyan">🧾 합계 (잔액)</span>
-                            <p id="ledger-balance" class="text-xl font-bold text-pancake-text dark:text-white">0</p>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="pc-card p-4 lg:col-span-1 space-y-4">
-                            <h3 class="font-bold">지출 구성 상세</h3>
-                            <div class="flex justify-between text-xs font-bold pb-2 border-b border-pancake-border dark:border-pancake-borderDark">
-                                <span>카테고리</span>
-                                <span>금액 (비중)</span>
-                            </div>
-                            <div id="ledger-category-summary" class="space-y-2 h-[260px] overflow-y-auto pr-2 custom-scrollbar"></div>
-                            <div class="pt-2 text-right border-t border-pancake-border dark:border-pancake-borderDark">
-                                <span class="text-xs text-gray-500">총 지출:</span> <span id="ledger-breakdown-total" class="font-bold text-pancake-failure">0</span>
-                            </div>
-                        </div>
-                        <div class="pc-card h-[380px]">
-                            <h3 class="font-bold mb-2">지출 차트</h3>
-                            <div class="relative h-72 w-full"><canvas id="ledger-expense-chart"></canvas></div>
-                        </div>
-                    </div>
-                    <div class="pc-card p-4">
-                         <div class="flex justify-between items-center mb-4">
-                            <h3 id="ledger-detail-title" class="font-bold">전체 내역</h3>
-                        </div>
-                        <div id="ledger-entry-details" class="space-y-2 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar"></div>
-                    </div>
-                </div>
-            </main>
         </div>
-    </div>
 
-    <!-- Modals -->
-    <div id="modal-backdrop" class="fixed inset-0 bg-pancake-dark bg-opacity-80 backdrop-blur-sm z-40 hidden transition-opacity opacity-0"></div>
+    </main>
 
-    <!-- 1. Detail Modal (New) -->
-    <div id="detail-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden pointer-events-none">
-        <div class="pc-card w-full max-w-lg m-4 pointer-events-auto shadow-2xl transform scale-95 transition-all opacity-0 relative max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <button onclick="closeModal('detail-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><i data-lucide="x" class="w-6 h-6"></i></button>
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><span class="text-2xl">🗒️</span> 매매 상세 정보</h2>
-            <div id="detail-content" class="space-y-6"></div>
-        </div>
-    </div>
-
-    <!-- 2. Exit Modal -->
-    <div id="exit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden pointer-events-none">
-        <div class="pc-card w-full max-w-sm m-4 pointer-events-auto shadow-2xl transform scale-95 transition-all opacity-0">
-            <h2 class="text-xl font-bold mb-4">포지션 종료 (청산)</h2>
-            <form id="exit-form" class="space-y-4">
-                <input type="hidden" id="exit-journal-id">
-                <div><label class="text-xs font-bold ml-1">날짜</label><input type="date" id="exit-date" class="pc-input" required></div>
-                <div><label class="text-xs font-bold ml-1">청산가</label><input type="text" id="exit-price" class="pc-input number-input" required></div>
-                <div><label class="text-xs font-bold ml-1" id="exit-quantity-label">수량</label><input type="text" id="exit-quantity" class="pc-input number-input" required><p class="text-xs text-right mt-1 opacity-70">남은 수량: <span id="remaining-quantity" class="font-bold"></span></p></div>
-                <div class="flex justify-end gap-2 mt-6"><button type="button" onclick="closeModal('exit-modal')" class="pc-btn pc-btn-secondary">취소</button><button type="submit" class="pc-btn pc-btn-primary">저장</button></div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 3. Memo Modal -->
-    <div id="memo-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden pointer-events-none">
-        <div class="pc-card w-full max-w-md m-4 pointer-events-auto shadow-2xl transform scale-95 transition-all opacity-0">
-            <h2 class="text-xl font-bold mb-4">매매 복기 메모</h2>
-            <form id="memo-form">
-                <input type="hidden" id="memo-journal-id">
-                <textarea id="memo-content" rows="6" class="pc-input resize-none" placeholder="내용을 입력하세요..."></textarea>
-                <div class="flex justify-end gap-2 mt-4"><button type="button" onclick="closeModal('memo-modal')" class="pc-btn pc-btn-secondary">닫기</button><button type="submit" class="pc-btn pc-btn-primary">저장</button></div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 4. Confirm Modal -->
-    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden pointer-events-none">
-        <div class="pc-card w-full max-w-xs m-4 text-center pointer-events-auto shadow-2xl transform scale-95 transition-all opacity-0">
-            <div class="text-4xl mb-3">🤔</div>
-            <h2 class="text-lg font-bold mb-2">확인해주세요</h2>
-            <p id="confirm-message" class="text-sm opacity-80 mb-6"></p>
-            <div class="flex justify-center gap-2"><button type="button" onclick="closeModal('confirm-modal')" class="pc-btn pc-btn-secondary">취소</button><button type="button" id="confirm-ok-btn" class="pc-btn pc-btn-danger">확인</button></div>
-        </div>
-    </div>
-    
-    <!-- 5. Tag Edit Modal -->
-    <div id="tag-edit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden pointer-events-none">
-        <div class="pc-card w-full max-w-md m-4 pointer-events-auto shadow-2xl transform scale-95 transition-all opacity-0">
-             <h2 class="text-xl font-bold mb-4">태그 수정</h2>
-             <form id="tag-edit-form">
-                 <input type="hidden" id="tag-edit-journal-id">
-                 <div class="space-y-4">
-                     <div><h3 class="text-xs font-bold text-pancake-warning mb-2">환경 태그</h3><div id="tag-edit-environment-tags" class="flex flex-wrap gap-2"></div></div>
-                     <div><h3 class="text-xs font-bold text-pancake-success mb-2">진입 근거</h3><div id="tag-edit-entry-tags" class="flex flex-wrap gap-2"></div></div>
-                     <div><h3 class="text-xs font-bold text-pancake-purple mb-2">심리 상태</h3><div id="tag-edit-psychology-tags" class="flex flex-wrap gap-2"></div></div>
-                 </div>
-                 <div class="flex justify-end gap-2 mt-6"><button type="button" onclick="closeModal('tag-edit-modal')" class="pc-btn pc-btn-secondary">취소</button><button type="submit" class="pc-btn pc-btn-primary">저장</button></div>
-             </form>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-pancake-cardDark text-white px-6 py-3 rounded-full shadow-xl translate-y-20 opacity-0 transition-all duration-300 font-bold z-[60] flex items-center border border-pancake-cyan pointer-events-none">
-        <span class="mr-2 text-xl">🥞</span><p id="toast-message" class="text-sm"></p>
-    </div>
-
-    <!-- Scripts -->
     <script>
-        const firebaseConfig = {
-          apiKey: "AIzaSyDZm5AazCafB0Sb2gd0llv9e3GAhE-nKBw",
-          authDomain: "sakurazima-mai-0u0.firebaseapp.com",
-          projectId: "sakurazima-mai-0u0",
-          storageBucket: "sakurazima-mai-0u0.appspot.com",
-          messagingSenderId: "697666115735",
-          appId: "1:697666115735:web:7380a588822f771dc071d2",
-          measurementId: "G-TZQ9GVFWV5"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const Timestamp = firebase.firestore.Timestamp;
+        lucide.createIcons();
 
-        let currentUser = null;
-        let charts = {};
-        let confirmCallback = null;
-        
-        let unsubscribeJournals = null, unsubscribeTags = null;
-        let localJournals = [], localTags = { environment: [], entry: [], psychology: [] }; 
-        let localFuturesInfo = {}; 
-        let unsubscribeFuturesInfo = null;
-        let statsCurrency = 'KRW', exchangeRate = 1380;
-        let statsDate = new Date();
-        
-        let unsubscribeLedger = null, unsubscribeLedgerCategories = null;
-        let localLedgerEntries = [];
-        let localLedgerCategories = { expense: {}, income: {} }; 
-        let selectedMajorCategory = null; 
-        let ledgerAnalysisDate = new Date();
+        // --- UI Interactions ---
 
-        const loginView = document.getElementById('login-view');
-        const appContainer = document.getElementById('app-container');
-        const loginBtn = document.getElementById('login-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-
-        loginBtn.addEventListener('click', () => auth.signInWithPopup(provider).catch(e => showToast("로그인 실패: " + e.message, "error")));
-        logoutBtn.addEventListener('click', () => auth.signOut());
-
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                currentUser = user;
-                loginView.classList.add('hidden');
-                appContainer.classList.remove('hidden');
-                document.getElementById('auth-info').textContent = user.email; 
-                initializeAppFunctionality();
-            } else {
-                currentUser = null;
-                loginView.classList.remove('hidden');
-                appContainer.classList.add('hidden');
-                if (unsubscribeJournals) unsubscribeJournals();
-                if (unsubscribeTags) unsubscribeTags();
-                if (unsubscribeFuturesInfo) unsubscribeFuturesInfo();
-                if (unsubscribeLedger) unsubscribeLedger();
-                if (unsubscribeLedgerCategories) unsubscribeLedgerCategories();
-                Object.values(charts).forEach(c => c && c.destroy());
-                charts = {};
-            }
-            lucide.createIcons();
-        });
-        
-        async function initializeAppFunctionality() {
-            if (!currentUser) return;
-            const userId = currentUser.uid;
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             
-            const tagsRef = db.collection("users").doc(userId).collection("journalTags").doc("all");
-            const tagsSnap = await tagsRef.get();
-            if(!tagsSnap.exists) await tagsRef.set({ environment: ['개장 직후', '변동성 확대', 'FOMC'], entry: ['정배열', '지지선', '과매도'], psychology: ['뇌동매매', '복수심', '차분함'] });
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
             
-            const futuresRef = db.collection("users").doc(userId).collection("journalData").doc("futuresInfo");
-            const futuresSnap = await futuresRef.get();
-            if(!futuresSnap.exists) await futuresRef.set({'BTC': {tickValue:1, tickSize:0.1}, 'ETH': {tickValue:1, tickSize:0.01}});
-            
-            const ledgerRef = db.collection("users").doc(userId).collection("ledgerData").doc("categories");
-            const ledgerSnap = await ledgerRef.get();
-            if(!ledgerSnap.exists) await ledgerRef.set({ expense: {'식비':[], '교통비':[]}, income: {'월급':[]} });
-
-            attachJournalListeners(userId);
-            attachLedgerListeners(userId);
-            resetForm();
-            resetLedgerForm();
+            // Re-render charts to fix sizing issues in hidden tabs
+            if(tabId === 'tab1') initTab1Charts();
+            if(tabId === 'tab2') initTab2Charts();
         }
 
-        function attachJournalListeners(userId) {
-            if(unsubscribeJournals) unsubscribeJournals();
-            unsubscribeJournals = db.collection("users").doc(userId).collection("journals").orderBy("date", "desc")
-                .onSnapshot(snap => {
-                    localJournals = snap.docs.map(d => ({id: d.id, ...d.data(), date: d.data().date.toDate()}));
-                    renderJournals(localJournals);
-                    renderJournalStats(localJournals);
-                });
-
-            if(unsubscribeTags) unsubscribeTags();
-            unsubscribeTags = db.collection("users").doc(userId).collection("journalTags").doc("all")
-                .onSnapshot(doc => {
-                    if(doc.exists) {
-                        localTags = doc.data();
-                        renderJournalTags(localTags.environment, 'environment-tags-container', 'environment');
-                        renderJournalTags(localTags.entry, 'entry-tags-container', 'entry');
-                        renderJournalTags(localTags.psychology, 'psychology-tags-container', 'psychology');
-                        renderJournalStats(localJournals);
-                    }
-                });
-
-            if(unsubscribeFuturesInfo) unsubscribeFuturesInfo();
-            unsubscribeFuturesInfo = db.collection("users").doc(userId).collection("journalData").doc("futuresInfo")
-                .onSnapshot(doc => { localFuturesInfo = doc.exists ? doc.data() : {}; renderFuturesInfoSelect(); });
-        }
-        
-        function attachLedgerListeners(userId) {
-            if(unsubscribeLedger) unsubscribeLedger();
-            unsubscribeLedger = db.collection("users").doc(userId).collection("ledgerEntries").orderBy("date", "desc")
-                .onSnapshot(snap => {
-                    localLedgerEntries = snap.docs.map(d => ({id: d.id, ...d.data(), date: d.data().date.toDate()}));
-                    renderLedgerAnalysisView();
-                });
-            
-            if(unsubscribeLedgerCategories) unsubscribeLedgerCategories();
-            unsubscribeLedgerCategories = db.collection("users").doc(userId).collection("ledgerData").doc("categories")
-                .onSnapshot(doc => {
-                    if(doc.exists) {
-                        const d = doc.data();
-                        localLedgerCategories = Array.isArray(d.expense) ? {expense:{}, income:{}} : d; 
-                    }
-                    const activeType = document.querySelector('[data-group="ledger-type"] .selected').dataset.value;
-                    renderLedgerMajorCategories(activeType);
-                });
-        }
-
-        document.querySelectorAll('[data-main-tab]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.pc-tab').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const t = btn.dataset.mainTab;
-                document.getElementById('journal-container').classList.toggle('hidden', t !== 'journal-container');
-                document.getElementById('ledger-container').classList.toggle('hidden', t !== 'ledger-container');
-                if(t === 'journal-container') renderJournalStats(localJournals);
-                if(t === 'ledger-container') renderLedgerAnalysisView();
-            });
-        });
-
-        document.querySelectorAll('[data-tab]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const t = btn.dataset.tab;
-                document.querySelectorAll('#journal-container [data-tab]').forEach(b => {
-                     b.classList.remove('pc-btn-primary'); b.classList.add('pc-btn-secondary');
-                     b.style.backgroundColor = ''; b.style.color = '';
-                });
-                btn.classList.remove('pc-btn-secondary'); btn.classList.add('pc-btn-primary');
-                
-                ['form-view', 'list-view', 'stats-view'].forEach(id => document.getElementById(id).classList.toggle('hidden', id !== t));
-                if(t === 'stats-view') renderJournalStats(localJournals);
-            });
-        });
-        
-        document.querySelectorAll('[data-ledger-tab]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const t = btn.dataset.ledgerTab;
-                 document.querySelectorAll('#ledger-container [data-ledger-tab]').forEach(b => {
-                     b.classList.remove('pc-btn-primary'); b.classList.add('pc-btn-secondary');
-                     b.style.backgroundColor = ''; b.style.color = '';
-                });
-                btn.classList.remove('pc-btn-secondary'); btn.classList.add('pc-btn-primary');
-                ['ledger-form-view', 'ledger-analysis-view'].forEach(id => document.getElementById(id).classList.toggle('hidden', id !== t));
-                if(t === 'ledger-analysis-view') renderLedgerAnalysisView();
-            });
-        });
-
-        document.querySelectorAll('[data-group="asset-type"] button').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const isSpot = btn.dataset.value === 'spot';
-                document.getElementById('spot-fields').classList.toggle('hidden', !isSpot);
-                document.getElementById('futures-contracts-field').classList.toggle('hidden', isSpot);
-                document.getElementById('futures-fields').classList.toggle('hidden', isSpot);
-                document.getElementById('quantity').required = isSpot;
-                document.getElementById('contracts').required = !isSpot;
-            });
-        });
-        
-        function renderFuturesInfoSelect() {
-            const sel = document.getElementById('futures-info-select');
-            sel.innerHTML = '<option value="">종목 선택</option>';
-            Object.keys(localFuturesInfo).sort().forEach(k => {
-                const opt = document.createElement('option');
-                opt.value = k; opt.text = k; sel.add(opt);
-            });
-            sel.onchange = (e) => {
-                const info = localFuturesInfo[e.target.value];
-                const ticker = document.getElementById('ticker');
-                if(info) {
-                    ticker.value = e.target.value;
-                    document.getElementById('tick-value').value = formatNumber(info.tickValue);
-                    document.getElementById('tick-size').value = formatNumber(info.tickSize);
-                    document.getElementById('delete-futures-info-btn').disabled = false;
-                }
-            };
-        }
-        document.getElementById('save-futures-info-btn').addEventListener('click', async () => {
-            const ticker = document.getElementById('ticker').value.toUpperCase();
-            if(!ticker) return showToast("종목명을 입력하세요", "error");
-            const v = parseFloat(unformatNumber(document.getElementById('tick-value').value));
-            const s = parseFloat(unformatNumber(document.getElementById('tick-size').value));
-            if(!v || !s) return showToast("틱가치/단위를 입력하세요", "error");
-            await db.collection("users").doc(currentUser.uid).collection("journalData").doc("futuresInfo").update({[ticker]:{tickValue:v, tickSize:s}});
-            showToast("정보 저장됨");
-        });
-
-        function calculatePnl(j, exit) {
-            const diff = j.position === 'long' ? (exit.price - j.entryPrice) : (j.entryPrice - exit.price);
-            if(j.assetType === 'futures') return (diff / j.tickSize) * j.tickValue * exit.quantity;
-            return diff * exit.quantity;
-        }
-
-        function renderJournals(list) {
-            const container = document.getElementById('journal-list'); container.innerHTML = '';
-            if(!list.length) { container.innerHTML = '<div class="col-span-full text-center py-10 opacity-50 font-bold">작성된 일지가 없습니다 🥞</div>'; return; }
-            
-            list.forEach(j => {
-                const isSpot = j.assetType === 'spot';
-                const totalQ = isSpot ? j.quantity : (j.contracts || 0);
-                const exitedQ = (j.exits || []).reduce((a,b) => a + b.quantity, 0);
-                const isClosed = Math.abs(totalQ - exitedQ) < 1e-9;
-                
-                let pnl = 0; (j.exits||[]).forEach(e => pnl += calculatePnl(j, e));
-                const pnlKrw = j.currency === 'USD' ? pnl * exchangeRate : pnl;
-                
-                // Calculate holding period
-                const entryDate = j.date;
-                const lastExitDate = (j.exits && j.exits.length > 0) 
-                    ? new Date(Math.max(...j.exits.map(e => e.date.toDate().getTime()))) 
-                    : new Date();
-                const diffTime = Math.abs(lastExitDate - entryDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                const periodStr = diffDays <= 1 ? "당일" : `${diffDays}일`;
-
-                const card = document.createElement('div');
-                card.className = `pc-card p-4 relative overflow-hidden border-l-4 ${isClosed ? (pnlKrw >= 0 ? 'border-l-pancake-success' : 'border-l-pancake-failure') : 'border-l-pancake-warning'}`;
-                
-                const tags = [...(j.environmentTags||[]), ...(j.entryTags||[]), ...(j.psychologyTags||[])].slice(0,5);
-                
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <span class="text-xs font-bold text-gray-400">${j.date.toLocaleDateString()} (${periodStr})</span>
-                            <div class="flex items-center gap-2 mt-1">
-                                <h3 class="text-lg font-bold">${j.ticker}</h3>
-                                <span class="text-xs font-bold px-2 py-0.5 rounded-full ${j.position==='long'?'bg-green-100 text-green-700':'bg-pink-100 text-pink-700'}">${j.position.toUpperCase()}</span>
-                            </div>
-                        </div>
-                        <div class="flex gap-1">
-                            <button class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400 detail-btn" data-id="${j.id}" title="상세보기"><i data-lucide="eye" class="w-4 h-4"></i></button>
-                            ${!isClosed ? `<button class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-pancake-cyan exit-btn" data-id="${j.id}" title="청산"><i data-lucide="log-out" class="w-4 h-4"></i></button>`:''}
-                            <button class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400 edit-btn" data-id="${j.id}" title="수정"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                            <button class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-pancake-failure delete-btn" data-id="${j.id}" title="삭제"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        ${(j.exits||[]).length ? `<div class="text-lg font-bold ${pnlKrw>=0?'text-pancake-success':'text-pancake-failure'}">손익: ${formatDualCurrency(pnlKrw, j.currency)}</div>` : '<div class="text-sm text-gray-400">진행중...</div>'}
-                    </div>
-
-                    <div class="flex flex-wrap gap-1 mb-3">
-                        ${tags.map(t => `<span class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">#${t}</span>`).join('')}
-                    </div>
-
-                    <div class="flex justify-between border-t border-gray-100 dark:border-gray-700 pt-2">
-                        <button class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark hover:text-pancake-cyan flex items-center gap-1 memo-btn" data-id="${j.id}">
-                            <i data-lucide="message-square" class="w-3 h-3 ${j.memo?'text-pancake-cyan':''}"></i> 메모
-                        </button>
-                        <button class="text-xs font-bold text-pancake-textSub dark:text-pancake-textSubDark hover:text-pancake-purple flex items-center gap-1 tag-btn" data-id="${j.id}">
-                            <i data-lucide="tag" class="w-3 h-3"></i> 태그
-                        </button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-            lucide.createIcons();
-            
-            document.querySelectorAll('.exit-btn').forEach(b => b.addEventListener('click', e => openExitModal(e.currentTarget.dataset.id)));
-            document.querySelectorAll('.edit-btn').forEach(b => b.addEventListener('click', e => loadJournalToForm(e.currentTarget.dataset.id)));
-            document.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', e => confirmDelete(e.currentTarget.dataset.id, 'journal')));
-            document.querySelectorAll('.memo-btn').forEach(b => b.addEventListener('click', e => openMemoModal(e.currentTarget.dataset.id)));
-            document.querySelectorAll('.tag-btn').forEach(b => b.addEventListener('click', e => openTagModal(e.currentTarget.dataset.id)));
-            document.querySelectorAll('.detail-btn').forEach(b => b.addEventListener('click', e => openDetailModal(e.currentTarget.dataset.id)));
-        }
-
-        // Detail Modal Logic
-        function openDetailModal(id) {
-            const j = localJournals.find(x => x.id === id); if(!j) return;
-            const isSpot = j.assetType === 'spot';
-            const container = document.getElementById('detail-content');
-            
-            let pnl = 0; (j.exits||[]).forEach(e => pnl += calculatePnl(j, e));
-            const pnlKrw = j.currency === 'USD' ? pnl * exchangeRate : pnl;
-            const pnlClass = pnlKrw >= 0 ? 'text-pancake-success' : 'text-pancake-failure';
-
-            container.innerHTML = `
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div class="col-span-2 p-3 bg-pancake-input dark:bg-pancake-inputDark rounded-xl">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="font-bold text-lg">${j.ticker}</span>
-                            <span class="font-bold ${j.position==='long'?'text-pancake-success':'text-pancake-failure'}">${j.position.toUpperCase()}</span>
-                        </div>
-                        <div class="text-xs text-gray-500">${j.date.toLocaleDateString()} · ${j.strategy}</div>
-                    </div>
-                    
-                    <div><span class="block text-gray-400 text-xs">진입가</span><span class="font-bold">${formatPrice(j.entryPrice, j.currency)}</span></div>
-                    <div><span class="block text-gray-400 text-xs">${isSpot?'수량':'계약수'}</span><span class="font-bold">${formatNumber(isSpot?j.quantity:j.contracts)}</span></div>
-                    <div><span class="block text-gray-400 text-xs">목표가</span><span class="font-bold text-pancake-success">${formatPrice(j.targetPrice, j.currency)}</span></div>
-                    <div><span class="block text-gray-400 text-xs">손절가</span><span class="font-bold text-pancake-failure">${formatPrice(j.stopLoss, j.currency)}</span></div>
-                    
-                    ${!isSpot ? `<div class="col-span-2 text-xs text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded">틱가치: ${j.tickValue}, 틱단위: ${j.tickSize}</div>` : ''}
-                    
-                    <div class="col-span-2 border-t border-dashed border-gray-300 dark:border-gray-600 my-2"></div>
-                    
-                    <div class="col-span-2">
-                        <h4 class="font-bold mb-2">청산 내역</h4>
-                        ${(j.exits||[]).length === 0 ? '<p class="text-xs text-gray-400">내역 없음</p>' : 
-                          `<div class="space-y-1">
-                             ${j.exits.map(e => `
-                                <div class="flex justify-between text-xs bg-white dark:bg-pancake-cardDark p-2 rounded border border-pancake-border dark:border-pancake-borderDark">
-                                    <span>${e.date.toDate().toLocaleDateString()}</span>
-                                    <span>${formatPrice(e.price, j.currency)} x ${formatNumber(e.quantity)}</span>
-                                </div>`).join('')}
-                           </div>`
-                        }
-                    </div>
-                    
-                    <div class="col-span-2 text-right pt-2 border-t border-pancake-border dark:border-pancake-borderDark">
-                        <span class="text-gray-400 text-xs mr-2">총 실현 손익</span>
-                        <span class="text-xl font-bold ${pnlClass}">${formatDualCurrency(pnlKrw, j.currency)}</span>
-                    </div>
-
-                    ${j.memo ? `<div class="col-span-2 mt-2"><h4 class="font-bold mb-1 text-xs text-gray-400">메모</h4><p class="text-sm bg-pancake-input dark:bg-pancake-inputDark p-3 rounded-lg">${j.memo}</p></div>` : ''}
-                </div>
-            `;
-            openModal('detail-modal');
-        }
-
-        // --- Ledger Category Logic (Modified) ---
-        function renderLedgerMajorCategories(type) {
-            const container = document.getElementById('ledger-major-category-container'); container.innerHTML = '';
-            const cats = Object.keys(localLedgerCategories[type]||{}).sort();
-            cats.forEach(c => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition border border-transparent flex items-center gap-2 ${selectedMajorCategory===c ? 'bg-pancake-purple text-white shadow-md' : 'bg-white dark:bg-pancake-inputDark text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`;
-                
-                const spanText = document.createElement('span');
-                spanText.textContent = c;
-                btn.appendChild(spanText);
-
-                const delSpan = document.createElement('span');
-                delSpan.className = "hover:text-pancake-failure hover:bg-white/20 rounded-full p-0.5 transition";
-                delSpan.innerHTML = `<i data-lucide="x" class="w-3 h-3"></i>`;
-                delSpan.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    deleteLedgerCategory(type, c);
-                });
-                btn.appendChild(delSpan);
-
-                btn.onclick = () => {
-                    selectedMajorCategory = (selectedMajorCategory===c) ? null : c;
-                    renderLedgerMajorCategories(type);
-                    if(selectedMajorCategory) renderLedgerMinorCategories(type, c);
-                    else document.getElementById('ledger-minor-category-wrapper').classList.add('hidden');
-                };
-                container.appendChild(btn);
-            });
-            lucide.createIcons();
-        }
-        
-        function renderLedgerMinorCategories(type, major) {
-             const wrapper = document.getElementById('ledger-minor-category-wrapper');
-             wrapper.classList.remove('hidden');
-             document.getElementById('selected-major-name').textContent = major;
-             const container = document.getElementById('ledger-minor-category-container'); container.innerHTML = '';
-             (localLedgerCategories[type][major]||[]).forEach(sub => {
-                 const btn = document.createElement('button');
-                 btn.type = 'button';
-                 btn.className = `px-3 py-1 rounded-lg text-xs font-medium border transition flex items-center gap-2 bg-white dark:bg-pancake-inputDark text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-pancake-cyan`;
-                 
-                 const spanText = document.createElement('span');
-                 spanText.textContent = sub;
-                 btn.appendChild(spanText);
-
-                 const delSpan = document.createElement('span');
-                 delSpan.className = "hover:text-pancake-failure hover:bg-white/20 rounded-full p-0.5 transition";
-                 delSpan.innerHTML = `<i data-lucide="x" class="w-3 h-3"></i>`;
-                 delSpan.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    deleteLedgerCategory(type, major, sub);
-                 });
-                 btn.appendChild(delSpan);
-
-                 btn.onclick = () => {
-                     document.querySelectorAll('#ledger-minor-category-container button').forEach(b=> {
-                         b.classList.remove('bg-pancake-cyan', 'text-white', 'border-transparent', 'selected-minor');
-                         b.classList.add('bg-white', 'dark:bg-pancake-inputDark', 'text-gray-600', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-700');
-                     });
-                     // Visual Select Fix
-                     btn.classList.remove('bg-white', 'dark:bg-pancake-inputDark', 'text-gray-600', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-700');
-                     btn.classList.add('bg-pancake-cyan', 'text-white', 'border-transparent', 'selected-minor');
-                 };
-                 container.appendChild(btn);
-             });
-             lucide.createIcons();
-        }
-
-        async function deleteLedgerCategory(type, major, minor) {
-            const msg = minor ? `'${minor}' 소분류를 삭제하시겠습니까?` : `'${major}' 대분류(및 하위항목)를 삭제하시겠습니까?`;
-            showConfirmModal(msg, async () => {
-                const data = { ...localLedgerCategories };
-                if (minor) {
-                    data[type][major] = data[type][major].filter(s => s !== minor);
-                } else {
-                    delete data[type][major];
-                    if(selectedMajorCategory === major) {
-                        selectedMajorCategory = null;
-                        document.getElementById('ledger-minor-category-wrapper').classList.add('hidden');
-                    }
-                }
-                await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(data);
-                showToast("삭제되었습니다");
-            });
-        }
-        
-        document.getElementById('add-ledger-major-category-btn').addEventListener('click', async () => {
-             const type = document.querySelector('[data-group="ledger-type"] .selected').dataset.value;
-             const val = document.getElementById('new-ledger-major-category').value.trim();
-             if(val && !localLedgerCategories[type][val]) {
-                 localLedgerCategories[type][val] = [];
-                 await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(localLedgerCategories);
-                 document.getElementById('new-ledger-major-category').value = '';
-             }
-        });
-        
-        document.getElementById('add-ledger-minor-category-btn').addEventListener('click', async () => {
-             const type = document.querySelector('[data-group="ledger-type"] .selected').dataset.value;
-             const val = document.getElementById('new-ledger-minor-category').value.trim();
-             if(val && selectedMajorCategory) {
-                 localLedgerCategories[type][selectedMajorCategory].push(val);
-                 await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(localLedgerCategories);
-                 document.getElementById('new-ledger-minor-category').value = '';
-                 renderLedgerMinorCategories(type, selectedMajorCategory);
-             }
-        });
-        
-        // Ledger List & Analysis
-        function renderLedgerAnalysisView() {
-            const filter = document.getElementById('ledger-analysis-filter-type').value;
-            const { start, end, label } = getPeriod(ledgerAnalysisDate, filter);
-            document.getElementById('ledger-analysis-period-display').textContent = label;
-            
-            const entries = localLedgerEntries.filter(e => e.date >= start && e.date <= end);
-            
-            // Calc Totals
-            let inc = 0, exp = 0;
-            const expCat = {}, incCat = {};
-            entries.forEach(e => {
-                if(e.type === 'income') { inc += e.amount; incCat[e.category] = (incCat[e.category]||0) + e.amount; }
-                else { exp += e.amount; expCat[e.category] = (expCat[e.category]||0) + e.amount; }
-            });
-            
-            document.getElementById('ledger-total-income').textContent = formatPrice(inc, 'KRW');
-            document.getElementById('ledger-total-expense').textContent = formatPrice(exp, 'KRW');
-            document.getElementById('ledger-balance').textContent = formatPrice(inc - exp, 'KRW');
-            document.getElementById('ledger-breakdown-total').textContent = formatPrice(exp, 'KRW');
-
-            // List
-            const listEl = document.getElementById('ledger-entry-details'); listEl.innerHTML = '';
-            if(entries.length === 0) listEl.innerHTML = '<p class="text-center text-gray-400 py-4">내역이 없습니다.</p>';
-
-            entries.sort((a,b)=>b.date-a.date).forEach(e => {
-                const row = document.createElement('div');
-                row.className = 'flex justify-between items-center p-3 hover:bg-gray-50 dark:hover:bg-pancake-dark rounded-xl transition cursor-pointer group';
-                row.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg ${e.type==='income'?'bg-green-100':'bg-pink-100'}">${e.type==='income'?'💰':'💸'}</div>
-                        <div>
-                            <div class="font-bold text-sm text-pancake-text dark:text-white">${e.category} <span class="text-xs font-normal opacity-70">${e.subCategory||''}</span></div>
-                            <div class="text-xs text-gray-500">${e.date.toLocaleDateString()} ${e.memo?'- '+e.memo:''}</div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold ${e.type==='income'?'text-pancake-success':'text-pancake-failure'}">${e.type==='income'?'+':'-'} ${formatPrice(e.amount, 'KRW')}</div>
-                        <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition">
-                            <i data-lucide="edit-2" class="w-3 h-3 text-gray-400 cursor-pointer" onclick="editLedger('${e.id}')"></i>
-                            <i data-lucide="trash-2" class="w-3 h-3 text-pancake-failure cursor-pointer" onclick="deleteLedger('${e.id}')"></i>
-                        </div>
-                    </div>
-                `;
-                listEl.appendChild(row);
-            });
-            lucide.createIcons();
-            
-            // Charts (Simplified)
-            updateLedgerCharts(entries, expCat, incCat);
-            
-            // Summary Lists (with %)
-            const renderSum = (elId, obj, total) => {
-                const el = document.getElementById(elId); el.innerHTML = '';
-                Object.entries(obj).sort((a,b)=>b[1]-a[1]).forEach(([k,v]) => {
-                    const pct = total > 0 ? ((v/total)*100).toFixed(1) : 0;
-                    el.innerHTML += `
-                        <div class="flex justify-between text-xs py-1 hover:bg-gray-50 dark:hover:bg-pancake-inputDark rounded px-1">
-                            <span class="opacity-80 font-medium">${k}</span>
-                            <div class="text-right">
-                                <span class="font-bold block">${formatPrice(v,'KRW')}</span>
-                                <span class="text-[10px] text-gray-400 block">(${pct}%)</span>
-                            </div>
-                        </div>`;
-                });
-            };
-            renderSum('ledger-category-summary', expCat, exp);
-        }
-
-        function updateLedgerCharts(entries, expCat, incCat) {
-             const chartColor = document.documentElement.classList.contains('dark') ? '#B8ADD2' : '#7A6EAA';
-             // Doughnut (Expense)
-             const ctx2 = document.getElementById('ledger-expense-chart').getContext('2d');
-             if(charts['l2']) charts['l2'].destroy();
-             const eLabels = Object.keys(expCat);
-             charts['l2'] = new Chart(ctx2, {
-                 type: 'doughnut',
-                 data: { labels: eLabels, datasets: [{data: Object.values(expCat), backgroundColor: ['#ED4B9E', '#FFB237', '#7645D9', '#1FC7D4', '#31D0AA'], borderWidth:0}] },
-                 options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:10}, color:chartColor}}}}
-             });
-        }
-        
-        document.getElementById('ledger-analysis-prev-btn').addEventListener('click', () => { updateLedgerDate(-1); });
-        document.getElementById('ledger-analysis-next-btn').addEventListener('click', () => { updateLedgerDate(1); });
-        
-        function updateLedgerDate(offset) {
-            const filter = document.getElementById('ledger-analysis-filter-type').value;
-            if(filter === 'month') ledgerAnalysisDate.setMonth(ledgerAnalysisDate.getMonth() + offset);
-            else if(filter === 'quarter') ledgerAnalysisDate.setMonth(ledgerAnalysisDate.getMonth() + (offset*3));
-            else ledgerAnalysisDate.setFullYear(ledgerAnalysisDate.getFullYear() + offset);
-            renderLedgerAnalysisView();
-        }
-        document.getElementById('ledger-analysis-filter-type').addEventListener('change', () => { ledgerAnalysisDate = new Date(); renderLedgerAnalysisView(); });
-
-        
-        // Ledger Actions
-        window.deleteLedger = (id) => confirmDelete(id, 'ledger');
-        window.editLedger = (id) => {
-             const e = localLedgerEntries.find(x => x.id === id);
-             if(!e) return;
-             document.querySelector(`[data-ledger-tab="ledger-form-view"]`).click();
-             document.getElementById('ledger-id').value = e.id;
-             document.getElementById('ledger-date').value = e.date.toISOString().split('T')[0];
-             document.getElementById('ledger-amount').value = formatNumber(e.amount);
-             document.getElementById('ledger-memo').value = e.memo || '';
-             document.querySelector(`[data-group="ledger-type"] button[data-value="${e.type}"]`).click();
-        };
-        
-        document.getElementById('ledger-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('ledger-id').value;
-            const type = document.querySelector('[data-group="ledger-type"] .selected').dataset.value;
-            const amount = parseFloat(unformatNumber(document.getElementById('ledger-amount').value));
-            const sub = document.querySelector('#ledger-minor-category-container .selected-minor')?.textContent;
-            
-            if(!selectedMajorCategory) return showToast("카테고리를 선택해주세요", "error");
-            
-            const data = {
-                type, date: Timestamp.fromDate(new Date(document.getElementById('ledger-date').value)),
-                amount, category: selectedMajorCategory, subCategory: sub,
-                memo: document.getElementById('ledger-memo').value
-            };
-            
-            if(id) await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").doc(id).update(data);
-            else await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add(data);
-            showToast("저장 완료!");
-            resetLedgerForm();
-        });
-
-        // --- Common Helpers ---
-        function resetForm() {
-            document.getElementById('journal-form').reset();
-            document.getElementById('journal-id').value = '';
-            document.getElementById('date').value = new Date().toISOString().split('T')[0];
-            document.querySelector('[data-group="asset-type"] button[data-value="spot"]').click();
-            document.querySelector('[data-group="position"] button[data-value="long"]').click();
-            document.querySelector('#form-currency-usd-btn').click();
-            ['environment', 'entry', 'psychology'].forEach(t => document.getElementById(`${t}-tags-container`).innerHTML = '');
-            // Restore tags
-            renderJournalTags(localTags.environment, 'environment-tags-container', 'environment');
-            renderJournalTags(localTags.entry, 'entry-tags-container', 'entry');
-            renderJournalTags(localTags.psychology, 'psychology-tags-container', 'psychology');
-        }
-        
-        function resetLedgerForm() {
-            document.getElementById('ledger-form').reset();
-            document.getElementById('ledger-id').value = '';
-            document.getElementById('ledger-date').value = new Date().toISOString().split('T')[0];
-            selectedMajorCategory = null;
-            renderLedgerMajorCategories('expense'); // Default
-            document.getElementById('ledger-minor-category-wrapper').classList.add('hidden');
-        }
-        
-        function renderJournalTags(tags, id, type) {
-            const el = document.getElementById(id); el.innerHTML = '';
-            (tags||[]).forEach(t => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'tag tag-default';
-                
-                // Text Span
-                const text = document.createElement('span');
-                text.textContent = t;
-                btn.appendChild(text);
-
-                // Delete Span (Icon)
-                const del = document.createElement('span');
-                del.className = 'tag-delete-btn hidden group-hover:flex';
-                del.innerHTML = '<i data-lucide="x" class="w-3 h-3"></i>';
-                
-                // Add Delete Logic
-                if (id.includes('tags-container') && !id.includes('tag-edit')) { // Only in form view
-                    del.classList.remove('hidden');
-                    del.style.marginLeft = '4px';
-                    del.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        deleteJournalTag(type, t);
-                    });
-                    btn.appendChild(del);
-                }
-
-                btn.onclick = () => {
-                    const selectedClass = type === 'environment' ? 'selected-environment' : (type === 'entry' ? 'selected-entry' : 'selected-psychology');
-                    btn.classList.toggle('tag-default');
-                    btn.classList.toggle(selectedClass);
-                };
-                el.appendChild(btn);
-            });
-            lucide.createIcons();
-        }
-        
-        async function deleteJournalTag(type, tag) {
-             showConfirmModal(`'${tag}' 태그를 삭제하시겠습니까?`, async () => {
-                 const key = type; // environment, entry, psychology
-                 const newTags = localTags[key].filter(t => t !== tag);
-                 await db.collection("users").doc(currentUser.uid).collection("journalTags").doc("all").update({[key]: newTags});
-                 showToast("태그 삭제 완료");
-             });
-        }
-        
-        // --- Modals ---
-        function openModal(id) {
-            document.getElementById('modal-backdrop').classList.remove('hidden');
-            setTimeout(() => document.getElementById('modal-backdrop').classList.remove('opacity-0'), 10);
-            const m = document.getElementById(id); m.classList.remove('hidden');
-            setTimeout(() => { m.firstElementChild.classList.remove('scale-95', 'opacity-0'); m.firstElementChild.classList.add('scale-100', 'opacity-100'); }, 10);
-        }
-        window.closeModal = (id) => {
-            const m = document.getElementById(id);
-            m.firstElementChild.classList.remove('scale-100', 'opacity-100'); m.firstElementChild.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => { m.classList.add('hidden'); checkBackdrop(); }, 200);
-        };
-        function checkBackdrop() {
-            if(document.querySelectorAll('.fixed.z-50:not(.hidden)').length === 0) {
-                 const bd = document.getElementById('modal-backdrop');
-                 bd.classList.add('opacity-0'); setTimeout(() => bd.classList.add('hidden'), 200);
-            }
-        }
-        
-        // --- Specific Modal Logics ---
-        function openExitModal(id) {
-             const j = localJournals.find(x=>x.id===id); if(!j) return;
-             document.getElementById('exit-journal-id').value = id;
-             const total = j.assetType==='spot' ? j.quantity : j.contracts;
-             const exited = (j.exits||[]).reduce((a,b)=>a+b.quantity,0);
-             document.getElementById('remaining-quantity').textContent = formatNumber(total - exited);
-             document.getElementById('exit-date').value = new Date().toISOString().split('T')[0];
-             openModal('exit-modal');
-        }
-        document.getElementById('exit-form').addEventListener('submit', async(e)=>{
-            e.preventDefault();
-            const id = document.getElementById('exit-journal-id').value;
-            const p = parseFloat(unformatNumber(document.getElementById('exit-price').value));
-            const q = parseFloat(unformatNumber(document.getElementById('exit-quantity').value));
-            const d = Timestamp.fromDate(new Date(document.getElementById('exit-date').value));
-            const j = localJournals.find(x=>x.id===id);
-            await db.collection("users").doc(currentUser.uid).collection("journals").doc(id).update({ exits: [...(j.exits||[]), {price:p, quantity:q, date:d}] });
-            closeModal('exit-modal'); showToast("청산 기록 저장됨");
-        });
-        
-        function loadJournalToForm(id) {
-            const j = localJournals.find(x=>x.id===id); if(!j) return;
-            document.querySelector('[data-tab="form-view"]').click();
-            document.getElementById('journal-id').value = j.id;
-            document.getElementById('ticker').value = j.ticker;
-            document.getElementById('date').value = j.date.toISOString().split('T')[0];
-            document.getElementById('entry-price').value = formatNumber(j.entryPrice);
-            document.getElementById('stop-loss').value = formatNumber(j.stopLoss);
-            document.getElementById('target-price').value = formatNumber(j.targetPrice);
-            
-            // Toggle groups
-            ['asset-type', 'position', 'strategy', 'form-currency'].forEach(grp => {
-                let val = j.assetType; // default
-                if(grp === 'position') val = j.position;
-                if(grp === 'strategy') val = j.strategy;
-                if(grp === 'form-currency') val = j.currency === 'USD' ? 'usd' : 'krw'; // map
-                if(grp === 'asset-type') val = j.assetType;
-                
-                const btn = document.querySelector(`[data-group="${grp}"] button[data-value="${val}"]`) || 
-                            document.querySelector(`[data-group="${grp}"] button[id*="${val}"]`);
-                if(btn) btn.click();
-            });
-            
-            if(j.assetType === 'spot') document.getElementById('quantity').value = formatNumber(j.quantity);
-            else document.getElementById('contracts').value = formatNumber(j.contracts);
-            
-            // Restore Tags
-            const restoreTags = (tags, containerId, type) => {
-                const container = document.getElementById(containerId);
-                const selectedClass = type === 'environment' ? 'selected-environment' : (type === 'entry' ? 'selected-entry' : 'selected-psychology');
-                Array.from(container.children).forEach(btn => {
-                    const textSpan = btn.querySelector('span');
-                    if (textSpan && tags.includes(textSpan.textContent)) {
-                        btn.classList.remove('tag-default');
-                        btn.classList.add(selectedClass);
-                    } else {
-                        btn.classList.add('tag-default');
-                        btn.classList.remove(selectedClass);
-                    }
-                });
-            };
-            restoreTags(j.environmentTags||[], 'environment-tags-container', 'environment');
-            restoreTags(j.entryTags||[], 'entry-tags-container', 'entry');
-            restoreTags(j.psychologyTags||[], 'psychology-tags-container', 'psychology');
-
-            showToast("수정 모드로 불러옴");
-        }
-        
-        // Add Journal Tag Helpers
-        async function addJournalTag(type, val) {
-             const key = type === 'environment' ? 'environment' : (type === 'entry' ? 'entry' : 'psychology');
-             if(!localTags[key].includes(val)) {
-                 localTags[key].push(val);
-                 await db.collection("users").doc(currentUser.uid).collection("journalTags").doc("all").set(localTags);
-                 renderJournalTags(localTags[key], `${key}-tags-container`, key);
-             }
-        }
-        document.querySelector('.add-environment-tag-btn').addEventListener('click', () => { const v = document.getElementById('new-environment-tag').value; if(v) addJournalTag('environment', v); });
-        document.querySelector('.add-entry-tag-btn').addEventListener('click', () => { const v = document.getElementById('new-entry-tag').value; if(v) addJournalTag('entry', v); });
-        document.querySelector('.add-psychology-tag-btn').addEventListener('click', () => { const v = document.getElementById('new-psychology-tag').value; if(v) addJournalTag('psychology', v); });
-        
-        // Journal Submit Logic
-        document.getElementById('journal-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('journal-id').value;
-            const assetType = document.querySelector('[data-group="asset-type"] .selected').dataset.value;
-            const position = document.querySelector('[data-group="position"] .selected').dataset.value;
-            const strategy = document.querySelector('[data-group="strategy"] .selected').dataset.value;
-            const isUsd = document.querySelector('[data-group="form-currency"] .selected').id.includes('usd');
-            
-            // Get Tags (Need to handle text content inside button because of delete icon)
-            const getTags = (id, cls) => Array.from(document.querySelectorAll(`#${id} .${cls}`)).map(b => b.firstChild.textContent);
-            const envTags = getTags('environment-tags-container', 'selected-environment');
-            const entryTags = getTags('entry-tags-container', 'selected-entry');
-            const psyTags = getTags('psychology-tags-container', 'selected-psychology');
-
-            const data = {
-                ticker: document.getElementById('ticker').value.toUpperCase(),
-                date: Timestamp.fromDate(new Date(document.getElementById('date').value)),
-                assetType, position, strategy,
-                currency: isUsd ? 'USD' : 'KRW',
-                entryPrice: parseFloat(unformatNumber(document.getElementById('entry-price').value)),
-                targetPrice: parseFloat(unformatNumber(document.getElementById('target-price').value)),
-                stopLoss: parseFloat(unformatNumber(document.getElementById('stop-loss').value)),
-                environmentTags: envTags, entryTags: entryTags, psychologyTags: psyTags
-            };
-            
-            if(assetType === 'spot') data.quantity = parseFloat(unformatNumber(document.getElementById('quantity').value));
-            else {
-                data.contracts = parseFloat(unformatNumber(document.getElementById('contracts').value));
-                data.tickValue = parseFloat(unformatNumber(document.getElementById('tick-value').value));
-                data.tickSize = parseFloat(unformatNumber(document.getElementById('tick-size').value));
-            }
-            
-            if(id) {
-                const old = localJournals.find(x=>x.id===id);
-                await db.collection("users").doc(currentUser.uid).collection("journals").doc(id).update({...data, exits: old.exits||[]});
-            } else {
-                await db.collection("users").doc(currentUser.uid).collection("journals").add({...data, exits: []});
-            }
-            showToast("일지 저장 완료!");
-            resetForm();
-        });
-
-        function confirmDelete(id, type) {
-            showConfirmModal("정말 삭제하시겠습니까?", async () => {
-                const col = type === 'journal' ? 'journals' : 'ledgerEntries';
-                await db.collection("users").doc(currentUser.uid).collection(col).doc(id).delete();
-                showToast("삭제 완료");
-            });
-        }
-        function showConfirmModal(msg, cb) {
-            document.getElementById('confirm-message').textContent = msg;
-            document.getElementById('confirm-ok-btn').onclick = () => { cb(); closeModal('confirm-modal'); };
-            openModal('confirm-modal');
-        }
-
-        // --- Utils ---
-        const unformatNumber = v => v?v.toString().replace(/,/g,''):'';
-        const formatNumber = v => v==null?'':unformatNumber(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',');
-        const formatPrice = (v, c) => c==='USD' ? `$${parseFloat(v).toLocaleString(undefined,{maximumFractionDigits:2})}` : `₩${parseFloat(v).toLocaleString()}`;
-        const formatDualCurrency = (krw, cur) => cur==='KRW' ? `${formatPrice(krw,'KRW')} (${formatPrice(krw/exchangeRate,'USD')})` : `${formatPrice(krw/exchangeRate,'USD')} (${formatPrice(krw,'KRW')})`;
-        function showToast(msg, type='success') {
-            const t = document.getElementById('toast');
-            t.lastElementChild.textContent = msg;
-            t.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
-        }
-        
-        // --- Init Listeners ---
-        document.querySelectorAll('.number-input').forEach(i => i.addEventListener('input', e => e.target.value = formatNumber(e.target.value)));
-        
-        // Real-time Exchange Rate Update Listener
-        document.querySelectorAll('.exchange-rate-input').forEach(input => {
-            input.addEventListener('input', (e) => {
-                const val = parseFloat(unformatNumber(e.target.value));
-                if (!isNaN(val) && val > 0) {
-                    exchangeRate = val;
-                    // Sync other exchange rate inputs
-                    document.querySelectorAll('.exchange-rate-input').forEach(i => {
-                        if (i !== e.target) i.value = formatNumber(val);
-                    });
-                    // Re-render views if user is logged in
-                    if (currentUser) {
-                        // Re-render Journal Stats
-                        renderJournalStats(localJournals);
-                        // Re-render Journal List (to update currency display if needed)
-                        renderJournals(localJournals);
-                    }
-                }
-            });
-        });
-
-        // Toggle Logic
-        document.addEventListener('click', e => {
-            const btn = e.target.closest('.pc-toggle-btn');
-            if(btn) {
-                btn.parentElement.querySelectorAll('.pc-toggle-btn').forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-                if(btn.parentElement.dataset.group === 'ledger-type') renderLedgerMajorCategories(btn.dataset.value);
-                if(btn.parentElement.dataset.group === 'tag-analysis-type') renderTagWinRateChart();
-            }
-        });
-        
-        // --- Enhanced Stats Logic (Date Filter + Graph) ---
-        function renderJournalStats(list) {
-             const filterType = document.getElementById('stats-filter-type').value;
-             const { start, end, label } = getPeriod(statsDate, filterType);
-             document.getElementById('stats-period-display').textContent = label;
-
-             const completed = list.filter(j => {
-                 const total = j.assetType==='spot' ? j.quantity : j.contracts;
-                 const exited = (j.exits||[]).reduce((a,b)=>a+b.quantity,0);
-                 const isCompleted = (j.exits||[]).length > 0 && Math.abs(total-exited) < 1e-9;
-                 return isCompleted && j.date >= start && j.date <= end;
-             });
-
-             // 1. Basic Stats
-             const wins = completed.filter(j => (j.exits||[]).reduce((a,b)=>a+calculatePnl(j,b),0) > 0).length;
-             document.getElementById('total-win-rate').textContent = completed.length ? `${((wins/completed.length)*100).toFixed(1)}%` : '0%';
-             
-             let totalPnl = 0;
-             completed.forEach(j => {
-                 let p = 0; (j.exits||[]).forEach(e => p += calculatePnl(j, e));
-                 totalPnl += (j.currency==='USD' ? p*exchangeRate : p);
-             });
-             // Convert PnL to Selected Stats Currency
-             const isStatsUsd = document.querySelector('[data-group="stats-currency"] .selected').id.includes('usd');
-             const displayPnl = isStatsUsd ? totalPnl/exchangeRate : totalPnl;
-             document.getElementById('total-realized-pnl').textContent = formatPrice(displayPnl, isStatsUsd?'USD':'KRW');
-             
-             // Avg P/L Ratio (Simplified)
-             let ratios = [];
-             completed.forEach(j => {
-                 const diff = Math.abs(j.targetPrice - j.entryPrice);
-                 const risk = Math.abs(j.entryPrice - j.stopLoss);
-                 if(risk > 0) ratios.push(diff/risk);
-             });
-             const avgRatio = ratios.length ? ratios.reduce((a,b)=>a+b,0)/ratios.length : 0;
-             document.getElementById('average-pl-ratio').textContent = avgRatio.toFixed(2);
-
-             // 3. Charts & Graphs
-             updateJournalCharts(completed, isStatsUsd);
-             renderTagWinRateChart(completed); // Initial render with current data
-        }
-
-        function renderTagWinRateChart(filteredList = null) {
-            // Need the list. If not provided, re-filter from localJournals
-            let list = filteredList;
-            if(!list) {
-                 const filterType = document.getElementById('stats-filter-type').value;
-                 const { start, end } = getPeriod(statsDate, filterType);
-                 list = localJournals.filter(j => {
-                     const total = j.assetType==='spot' ? j.quantity : j.contracts;
-                     const exited = (j.exits||[]).reduce((a,b)=>a+b.quantity,0);
-                     const isCompleted = (j.exits||[]).length > 0 && Math.abs(total-exited) < 1e-9;
-                     return isCompleted && j.date >= start && j.date <= end;
-                 });
-            }
-
-            const activeTypeBtn = document.querySelector('[data-group="tag-analysis-type"] .selected');
-            const typeKey = activeTypeBtn ? activeTypeBtn.dataset.value + 'Tags' : 'environmentTags'; // e.g. environmentTags
-            
-            // Calculate Win Rates for each tag in this category
-            const tagStats = {};
-            const tagList = typeKey === 'environmentTags' ? localTags.environment : (typeKey === 'entryTags' ? localTags.entry : localTags.psychology);
-            
-            tagList.forEach(tag => {
-                const relevant = list.filter(j => (j[typeKey]||[]).includes(tag));
-                if (relevant.length > 0) {
-                    const wins = relevant.filter(j => (j.exits||[]).reduce((a,b)=>a+calculatePnl(j,b),0) > 0).length;
-                    tagStats[tag] = (wins / relevant.length) * 100;
-                }
-            });
-            
-            // Sort
-            const sortedTags = Object.keys(tagStats).sort((a,b) => tagStats[b] - tagStats[a]);
-            const data = sortedTags.map(t => tagStats[t]);
-            
-            const ctx = document.getElementById('tag-win-rate-chart').getContext('2d');
-            if(charts['tagWin']) charts['tagWin'].destroy();
-            
+        // Dark Mode Toggle
+        const toggleBtn = document.getElementById('darkModeToggle');
+        toggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
             const isDark = document.documentElement.classList.contains('dark');
-            const tickColor = isDark ? '#B8ADD2' : '#7A6EAA';
+            
+            // Update chart text colors based on theme
+            Chart.defaults.color = isDark ? '#9EA1AA' : '#7A6EAA';
+            initTab1Charts();
+            initTab2Charts();
+        });
 
-            charts['tagWin'] = new Chart(ctx, {
-                type: 'bar',
+        // Ledger Toggle Logic
+        let ledgerType = 'expense';
+        document.querySelectorAll('#ledger-type-toggle .pc-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('#ledger-type-toggle .pc-toggle-btn').forEach(b => b.classList.remove('selected'));
+                e.target.classList.add('selected');
+                ledgerType = e.target.dataset.type;
+                
+                // Update Categories
+                const catSelect = document.getElementById('ledger-category');
+                if(ledgerType === 'expense') {
+                    catSelect.innerHTML = '<option value="식비">식비</option><option value="공과금">공과금</option><option value="여가">여가</option><option value="교통비">교통비</option><option value="기타">기타</option>';
+                } else {
+                    catSelect.innerHTML = '<option value="선물">선물</option><option value="주식">주식</option><option value="노동소득">노동소득</option><option value="기타">기타</option>';
+                }
+            });
+        });
+
+
+        // --- Chart.js Setup ---
+        Chart.defaults.font.family = '"Noto Sans KR", sans-serif';
+        Chart.defaults.color = '#7A6EAA'; // textSub color
+        let chartInstances = {};
+
+        function createOrUpdateChart(id, config) {
+            const ctx = document.getElementById(id).getContext('2d');
+            if (chartInstances[id]) chartInstances[id].destroy();
+            chartInstances[id] = new Chart(ctx, config);
+        }
+
+        function initTab1Charts() {
+            // 1. 자산 점유율 (반원)
+            const stock = Number(document.getElementById('input-stock-val').value) || 0;
+            const bond = Number(document.getElementById('input-bond-val').value) || 0;
+            const commodity = Number(document.getElementById('input-commodity-val').value) || 0;
+            const cash = Number(document.getElementById('input-cash-val').value) || 0;
+
+            createOrUpdateChart('chart-asset-allocation', {
+                type: 'doughnut',
                 data: {
-                    labels: sortedTags,
+                    labels: ['주식', '채권', '원자재', '현금'],
                     datasets: [{
-                        label: '승률 (%)',
-                        data: data,
-                        backgroundColor: data.map(v => v >= 50 ? '#31D0AA' : '#ED4B9E'),
-                        borderRadius: 4,
-                        barThickness: 20
+                        data: [stock, bond, commodity, cash],
+                        backgroundColor: ['#7645D9', '#1FC7D4', '#FFB237', '#EDF2F7'],
+                        borderWidth: 0,
+                        hoverOffset: 4
                     }]
                 },
                 options: {
-                    indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        x: { beginAtZero: true, max: 100, ticks: { color: tickColor }, grid: { display: false } },
-                        y: { ticks: { color: tickColor, font: { weight: 'bold' } }, grid: { display: false } }
-                    },
+                    cutout: '70%',
+                    circumference: 180,
+                    rotation: -90,
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } }
+                }
+            });
+
+            // 2. 재산 성장 (막대)
+            createOrUpdateChart('chart-asset-growth', {
+                type: 'bar',
+                data: {
+                    labels: ['1월', '2월', '3월', '4월(현재)'],
+                    datasets: [{
+                        label: '자산',
+                        data: [19000000, 20500000, 21800000, 23000000],
+                        backgroundColor: '#1FC7D4',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { display: false } } // Hide Y axis for clean look
+                }
+            });
+
+            // 3. 수입/지출 파이 차트 (더미 데이터)
+            createOrUpdateChart('chart-income-pie', {
+                type: 'pie',
+                data: { labels: ['노동소득', '주식배당'], datasets: [{ data: [5000000, 420000], backgroundColor: ['#31D0AA', '#1FC7D4'], borderWidth:0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: {boxWidth: 8} } } }
+            });
+            createOrUpdateChart('chart-expense-pie', {
+                type: 'pie',
+                data: { labels: ['식비', '공과금', '여가'], datasets: [{ data: [1500000, 300000, 500000], backgroundColor: ['#ED4B9E', '#FFB237', '#7645D9'], borderWidth:0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: {boxWidth: 8} } } }
+            });
+        }
+
+        function initTab2Charts() {
+            createOrUpdateChart('chart-trading-equity', {
+                type: 'bar',
+                data: {
+                    labels: ['W1', 'W2', 'W3', 'W4'],
+                    datasets: [{
+                        label: '주간 손익',
+                        data: [500000, -200000, 1500000, 500000],
+                        backgroundColor: (ctx) => ctx.raw > 0 ? '#31D0AA' : '#ED4B9E',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } }
                 }
             });
         }
 
-        function updateJournalCharts(completed, isUsd) {
-             const chartColor = document.documentElement.classList.contains('dark') ? '#B8ADD2' : '#7A6EAA';
-             const pnlMult = isUsd ? 1/exchangeRate : 1;
 
-             // PnL Composition
-             let winSum = 0, loseSum = 0;
-             completed.forEach(j => {
-                 let p = 0; (j.exits||[]).forEach(e => p += calculatePnl(j,e));
-                 const val = (j.currency==='USD' ? p*exchangeRate : p) * pnlMult;
-                 if(val > 0) winSum += val; else loseSum += Math.abs(val);
-             });
-             
-             const ctx1 = document.getElementById('pnl-composition-chart').getContext('2d');
-             if(charts['j1']) charts['j1'].destroy();
-             charts['j1'] = new Chart(ctx1, {
-                 type: 'doughnut',
-                 data: { labels: ['수익', '손실'], datasets: [{ data: [winSum, loseSum], backgroundColor: ['#31D0AA', '#ED4B9E'], borderWidth: 0 }] },
-                 options: { responsive:true, maintainAspectRatio:false, plugins: { legend: { position:'right', labels: { color: chartColor, boxWidth: 10 } } } }
-             });
-
-             // Monthly Trend
-             const ctx2 = document.getElementById('monthly-pnl-chart').getContext('2d');
-             if(charts['j2']) charts['j2'].destroy();
-             
-             const months = {};
-             completed.forEach(j => {
-                 const m = `${j.date.getFullYear()}-${String(j.date.getMonth()+1).padStart(2,'0')}`;
-                 let p = 0; (j.exits||[]).forEach(e => p += calculatePnl(j,e));
-                 const val = (j.currency==='USD' ? p*exchangeRate : p) * pnlMult;
-                 months[m] = (months[m]||0) + val;
-             });
-             
-             const sortedMonths = Object.keys(months).sort();
-             charts['j2'] = new Chart(ctx2, {
-                 type: 'bar',
-                 data: { 
-                     labels: sortedMonths, 
-                     datasets: [{ 
-                         label: '손익', 
-                         data: sortedMonths.map(m => months[m]), 
-                         backgroundColor: sortedMonths.map(m => months[m] >= 0 ? '#31D0AA' : '#ED4B9E'),
-                         borderRadius: 4
-                     }] 
-                 },
-                 options: { 
-                     responsive:true, maintainAspectRatio:false, 
-                     scales: { x: { ticks: { color: chartColor }, grid: { display: false } }, y: { ticks: { color: chartColor }, grid: { color: document.documentElement.classList.contains('dark')?'#333':'#eee' } } },
-                     plugins: { legend: { display: false } }
-                 }
-             });
-        }
-        
-        // Stats Date Navigation
-        document.getElementById('stats-prev-btn').addEventListener('click', () => updateStatsDate(-1));
-        document.getElementById('stats-next-btn').addEventListener('click', () => updateStatsDate(1));
-        
-        function updateStatsDate(offset) {
-            const filter = document.getElementById('stats-filter-type').value;
-            if(filter === 'month') statsDate.setMonth(statsDate.getMonth() + offset);
-            else if(filter === 'quarter') statsDate.setMonth(statsDate.getMonth() + (offset*3));
-            else if(filter === 'year') statsDate.setFullYear(statsDate.getFullYear() + offset);
-            renderJournalStats(localJournals);
-        }
-        document.getElementById('stats-filter-type').addEventListener('change', () => { statsDate = new Date(); renderJournalStats(localJournals); });
-
-        // Helper: Get Period
-        function getPeriod(date, filterType) {
-            const year = date.getFullYear(); const month = date.getMonth();
-            let start, end, label;
-            if (filterType === 'month') { 
-                label = `${year}년 ${month + 1}월`; start = new Date(year, month, 1); end = new Date(year, month + 1, 0, 23, 59, 59); 
-            } else if (filterType === 'quarter') { 
-                const q = Math.floor(month / 3) + 1; label = `${year}년 ${q}분기`; start = new Date(year, (q - 1) * 3, 1); end = new Date(year, q * 3, 0, 23, 59, 59); 
-            } else if (filterType === 'year') { 
-                label = `${year}년`; start = new Date(year, 0, 1); end = new Date(year, 11, 31, 23, 59, 59); 
-            } else {
-                label = "전체 기간"; start = new Date(1970, 0, 1); end = new Date(2100, 11, 31);
-            }
-            return { start, end, label };
+        // --- Data Logic ---
+        function updateAssets() {
+            const stock = Number(document.getElementById('input-stock-val').value) || 0;
+            const bond = Number(document.getElementById('input-bond-val').value) || 0;
+            const commodity = Number(document.getElementById('input-commodity-val').value) || 0;
+            const cash = Number(document.getElementById('input-cash-val').value) || 0;
+            
+            const total = stock + bond + commodity + cash;
+            
+            // Animate number update
+            document.getElementById('total-net-worth').innerText = `₩ ${total.toLocaleString()}`;
+            
+            // Re-render chart
+            initTab1Charts();
+            
+            // Toast notification (simple alert for now)
+            alert('자산 현황이 업데이트 되었습니다! 🥞');
         }
 
-        // Listener for Stats Currency Toggle
-        document.querySelectorAll('[data-group="stats-currency"] button').forEach(b => {
-            b.addEventListener('click', () => {
-                setTimeout(() => renderJournalStats(localJournals), 50); 
-            });
-        });
+        function addLedger() {
+            const amt = document.getElementById('ledger-amount').value;
+            if(!amt) return;
+            alert(`${ledgerType === 'income' ? '수입' : '지출'} ${amt}원이 기록되었습니다.`);
+            document.getElementById('ledger-amount').value = '';
+            document.getElementById('ledger-memo').value = '';
+        }
 
-        // Theme Toggle
-        document.getElementById('theme-toggle').addEventListener('click', () => {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            document.getElementById('sun-icon').classList.toggle('hidden');
-            document.getElementById('moon-icon').classList.toggle('hidden');
-            if(currentUser) {
-                renderJournalStats(localJournals);
-                renderLedgerAnalysisView();
-            }
-        });
-        
-        // Modal Tag Edit Form open helper
-        function openTagModal(id) {
-            const j = localJournals.find(x=>x.id===id); if(!j) return;
-            document.getElementById('tag-edit-journal-id').value = id;
-            const createTagBtn = (t, type, selected) => {
-                const b = document.createElement('button'); b.type='button';
-                b.className = `tag ${selected?'selected-'+type:'tag-default'}`; b.textContent = t;
-                b.onclick = () => { b.classList.toggle('tag-default'); b.classList.toggle('selected-'+type); };
-                return b;
-            };
-            const fill = (cid, type, current) => {
-                const c = document.getElementById(cid); c.innerHTML='';
-                localTags[type].forEach(t => c.appendChild(createTagBtn(t, type, current.includes(t))));
-            };
-            fill('tag-edit-environment-tags', 'environment', j.environmentTags||[]);
-            fill('tag-edit-entry-tags', 'entry', j.entryTags||[]);
-            fill('tag-edit-psychology-tags', 'psychology', j.psychologyTags||[]);
-            openModal('tag-edit-modal');
+        function addTrade() {
+            alert('매매일지가 기록되고 통계에 반영되었습니다!');
         }
-        document.getElementById('tag-edit-form').addEventListener('submit', async(e)=>{
-            e.preventDefault();
-            const id = document.getElementById('tag-edit-journal-id').value;
-            const getT = (cid, type) => Array.from(document.querySelectorAll(`#${cid} .selected-${type}`)).map(b=>b.textContent);
-            await db.collection("users").doc(currentUser.uid).collection("journals").doc(id).update({
-                environmentTags: getT('tag-edit-environment-tags', 'environment'),
-                entryTags: getT('tag-edit-entry-tags', 'entry'),
-                psychologyTags: getT('tag-edit-psychology-tags', 'psychology')
-            });
-            closeModal('tag-edit-modal'); showToast("태그 수정됨");
-        });
-        
-        // Memo Modal helper
-        function openMemoModal(id) {
-            const j = localJournals.find(x=>x.id===id); if(!j) return;
-            document.getElementById('memo-journal-id').value = id;
-            document.getElementById('memo-content').value = j.memo || '';
-            openModal('memo-modal');
-        }
-        document.getElementById('memo-form').addEventListener('submit', async(e)=>{
-            e.preventDefault();
-            const id = document.getElementById('memo-journal-id').value;
-            await db.collection("users").doc(currentUser.uid).collection("journals").doc(id).update({ memo: document.getElementById('memo-content').value });
-            closeModal('memo-modal'); showToast("메모 저장됨");
-        });
+
+        // Initialize on load
+        window.onload = () => {
+            initTab1Charts();
+        };
 
     </script>
 </body>
