@@ -19,6 +19,33 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
 
     <script>
+        // --- Firebase Configuration (본인의 키로 교체하세요) ---
+        const firebaseConfig = {
+            // apiKey: "YOUR_API_KEY",
+            // authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            // projectId: "YOUR_PROJECT_ID",
+        };
+        
+        // Firebase 초기화 방어 로직 (키가 없으면 로컬 모드로 작동)
+        let db, auth, currentUser;
+        try {
+            if (!firebase.apps.length && firebaseConfig.projectId) {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                auth = firebase.auth();
+                
+                // 익명 로그인으로 임시 테스트 환경 구성
+                auth.signInAnonymously().then(() => {
+                    currentUser = auth.currentUser;
+                    console.log("Firebase Connected: ", currentUser.uid);
+                    loadAssets();
+                    loadLedger();
+                });
+            } else {
+                console.warn("Firebase config is empty. Running in Local Mode (Refresh will wipe data).");
+            }
+        } catch(e) { console.error("Firebase init error:", e); }
+
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -220,11 +247,11 @@
             <!-- 3. 가계부 요약 차트 -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="pc-card">
-                    <h3 class="font-bold mb-4 text-pancake-success">📥 수입 분석</h3>
+                    <h3 class="font-bold mb-4 text-pancake-success">📥 이번 달 수입 분포</h3>
                     <div class="h-40 relative w-full"><canvas id="chart-income-pie"></canvas></div>
                 </div>
                 <div class="pc-card">
-                    <h3 class="font-bold mb-4 text-pancake-failure">📤 지출 분석</h3>
+                    <h3 class="font-bold mb-4 text-pancake-failure">📤 이번 달 지출 분포</h3>
                     <div class="h-40 relative w-full"><canvas id="chart-expense-pie"></canvas></div>
                 </div>
             </div>
@@ -278,6 +305,14 @@
                         <div><label class="text-[10px] font-bold text-gray-400 ml-1">내용/메모</label><input type="text" id="ledger-memo" class="pc-input text-sm" placeholder="상세 내용"></div>
                         <button type="submit" class="pc-btn pc-btn-purple w-full">내역 추가하기</button>
                     </form>
+
+                    <!-- 최근 내역 리스트 (추가된 부분) -->
+                    <div class="mt-6">
+                        <h4 class="text-xs font-bold text-gray-400 mb-2 border-b border-pancake-border dark:border-pancake-borderDark pb-1">최근 내역 (최대 5건)</h4>
+                        <ul id="ledger-list" class="space-y-2 max-h-32 overflow-y-auto">
+                            <li class="text-xs text-center text-gray-400 py-2">아직 기록된 내역이 없습니다.</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -470,14 +505,14 @@
                 }
             });
 
-            // 2. 재산 성장 (막대)
+            // 2. 재산 성장 (막대 - 현재는 정적 데이터)
             createOrUpdateChart('chart-asset-growth', {
                 type: 'bar',
                 data: {
                     labels: ['1월', '2월', '3월', '4월(현재)'],
                     datasets: [{
                         label: '자산',
-                        data: [19000000, 20500000, 21800000, 23000000],
+                        data: [19000000, 20500000, 21800000, stock+bond+commodity+cash], // 현재 합계 반영
                         backgroundColor: '#1FC7D4',
                         borderRadius: 4
                     }]
@@ -486,69 +521,180 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: { y: { display: false } } // Hide Y axis for clean look
+                    scales: { y: { display: false } }
                 }
             });
 
-            // 3. 수입/지출 파이 차트 (더미 데이터)
-            createOrUpdateChart('chart-income-pie', {
-                type: 'pie',
-                data: { labels: ['노동소득', '주식배당'], datasets: [{ data: [5000000, 420000], backgroundColor: ['#31D0AA', '#1FC7D4'], borderWidth:0 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: {boxWidth: 8} } } }
-            });
-            createOrUpdateChart('chart-expense-pie', {
-                type: 'pie',
-                data: { labels: ['식비', '공과금', '여가'], datasets: [{ data: [1500000, 300000, 500000], backgroundColor: ['#ED4B9E', '#FFB237', '#7645D9'], borderWidth:0 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: {boxWidth: 8} } } }
-            });
+            // 3. 수입/지출 파이 차트 (로컬 변수 ledgerData 사용)
+            renderLedgerCharts();
         }
 
-        function initTab2Charts() {
-            createOrUpdateChart('chart-trading-equity', {
-                type: 'bar',
-                data: {
-                    labels: ['W1', 'W2', 'W3', 'W4'],
-                    datasets: [{
-                        label: '주간 손익',
-                        data: [500000, -200000, 1500000, 500000],
-                        backgroundColor: (ctx) => ctx.raw > 0 ? '#31D0AA' : '#ED4B9E',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
-                }
-            });
+        // --- Data Logic (Firebase 연동 및 로컬 상태 관리) ---
+        let localLedgerData = [];
+
+        // 자산 데이터 불러오기
+        async function loadAssets() {
+            if(!db || !currentUser) return;
+            const doc = await db.collection("users").doc(currentUser.uid).collection("settings").doc("assets").get();
+            if(doc.exists) {
+                const d = doc.data();
+                document.getElementById('input-stock-val').value = d.stock || 0;
+                document.getElementById('input-stock-memo').value = d.stockMemo || '';
+                document.getElementById('input-bond-val').value = d.bond || 0;
+                document.getElementById('input-bond-memo').value = d.bondMemo || '';
+                document.getElementById('input-commodity-val').value = d.commodity || 0;
+                document.getElementById('input-commodity-memo').value = d.commodityMemo || '';
+                document.getElementById('input-cash-val').value = d.cash || 0;
+                document.getElementById('input-cash-memo').value = d.cashMemo || '';
+                updateAssets(false); // UI 업데이트 (저장 안함)
+            }
         }
 
-
-        // --- Data Logic ---
-        function updateAssets() {
+        // 자산 업데이트 로직
+        async function updateAssets(saveToDb = true) {
             const stock = Number(document.getElementById('input-stock-val').value) || 0;
             const bond = Number(document.getElementById('input-bond-val').value) || 0;
             const commodity = Number(document.getElementById('input-commodity-val').value) || 0;
             const cash = Number(document.getElementById('input-cash-val').value) || 0;
             
             const total = stock + bond + commodity + cash;
-            
-            // Animate number update
             document.getElementById('total-net-worth').innerText = `₩ ${total.toLocaleString()}`;
             
-            // Re-render chart
             initTab1Charts();
             
-            // Toast notification (simple alert for now)
-            alert('자산 현황이 업데이트 되었습니다! 🥞');
+            if(saveToDb && db && currentUser) {
+                const assetData = {
+                    stock: stock, stockMemo: document.getElementById('input-stock-memo').value,
+                    bond: bond, bondMemo: document.getElementById('input-bond-memo').value,
+                    commodity: commodity, commodityMemo: document.getElementById('input-commodity-memo').value,
+                    cash: cash, cashMemo: document.getElementById('input-cash-memo').value,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                await db.collection("users").doc(currentUser.uid).collection("settings").doc("assets").set(assetData);
+                alert('자산 현황이 안전하게 저장되었습니다! 🥞');
+            } else if (saveToDb) {
+                 alert('자산 업데이트 (로컬 모드)');
+            }
         }
 
-        function addLedger() {
-            const amt = document.getElementById('ledger-amount').value;
-            if(!amt) return;
-            alert(`${ledgerType === 'income' ? '수입' : '지출'} ${amt}원이 기록되었습니다.`);
+        // 가계부 내역 추가
+        async function addLedger() {
+            const amt = Number(document.getElementById('ledger-amount').value);
+            const cat = document.getElementById('ledger-category').value;
+            const memo = document.getElementById('ledger-memo').value;
+            
+            if(!amt || amt <= 0) return alert("올바른 금액을 입력하세요.");
+
+            const entry = {
+                type: ledgerType,
+                category: cat,
+                amount: amt,
+                memo: memo,
+                date: new Date().toISOString()
+            };
+
+            // 로컬 배열에 추가
+            localLedgerData.unshift(entry); 
+            
+            // Firebase에 저장
+            if(db && currentUser) {
+                entry.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+                await db.collection("users").doc(currentUser.uid).collection("ledger").add(entry);
+            }
+
+            // UI 초기화 및 업데이트
             document.getElementById('ledger-amount').value = '';
             document.getElementById('ledger-memo').value = '';
+            updateLedgerUI();
+        }
+
+        // 가계부 데이터 불러오기 (Firebase)
+        async function loadLedger() {
+            if(!db || !currentUser) return;
+            // 이번 달 데이터만 가져오는 쿼리가 이상적이나, 우선 최신 50개만 로드
+            const snapshot = await db.collection("users").doc(currentUser.uid).collection("ledger")
+                                     .orderBy("timestamp", "desc").limit(50).get();
+            localLedgerData = [];
+            snapshot.forEach(doc => {
+                localLedgerData.push({ id: doc.id, ...doc.data() });
+            });
+            updateLedgerUI();
+        }
+
+        // 가계부 UI (리스트 및 파이 차트) 업데이트
+        function updateLedgerUI() {
+            // 1. 리스트 업데이트 (최근 5개)
+            const listEl = document.getElementById('ledger-list');
+            listEl.innerHTML = '';
+            
+            if(localLedgerData.length === 0) {
+                listEl.innerHTML = '<li class="text-xs text-center text-gray-400 py-2">아직 기록된 내역이 없습니다.</li>';
+            } else {
+                localLedgerData.slice(0, 5).forEach(item => {
+                    const isInc = item.type === 'income';
+                    const colorCls = isInc ? 'text-pancake-success' : 'text-pancake-failure';
+                    const sign = isInc ? '+' : '-';
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-2 rounded-lg text-xs';
+                    li.innerHTML = `
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-700 dark:text-gray-300">${item.category}</span>
+                            <span class="text-[10px] text-gray-400">${item.memo || '-'}</span>
+                        </div>
+                        <span class="font-brand font-bold ${colorCls}">${sign}₩ ${item.amount.toLocaleString()}</span>
+                    `;
+                    listEl.appendChild(li);
+                });
+            }
+
+            // 2. 파이 차트 업데이트 로직 호출
+            renderLedgerCharts();
+        }
+
+        // 가계부 파이 차트 렌더링
+        function renderLedgerCharts() {
+            let incSum = {}, expSum = {};
+            
+            // 데이터 집계
+            localLedgerData.forEach(item => {
+                if(item.type === 'income') {
+                    incSum[item.category] = (incSum[item.category] || 0) + item.amount;
+                } else {
+                    expSum[item.category] = (expSum[item.category] || 0) + item.amount;
+                }
+            });
+
+            // 수입 차트
+            const incLabels = Object.keys(incSum);
+            const incData = Object.values(incSum);
+            createOrUpdateChart('chart-income-pie', {
+                type: 'pie',
+                data: { 
+                    labels: incLabels.length > 0 ? incLabels : ['데이터 없음'], 
+                    datasets: [{ 
+                        data: incData.length > 0 ? incData : [1], 
+                        backgroundColor: incData.length > 0 ? ['#31D0AA', '#1FC7D4', '#7645D9'] : ['#e2e8f0'], 
+                        borderWidth: 0 
+                    }] 
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: {boxWidth: 8} } } }
+            });
+
+            // 지출 차트
+            const expLabels = Object.keys(expSum);
+            const expData = Object.values(expSum);
+            createOrUpdateChart('chart-expense-pie', {
+                type: 'pie',
+                data: { 
+                    labels: expLabels.length > 0 ? expLabels : ['데이터 없음'], 
+                    datasets: [{ 
+                        data: expData.length > 0 ? expData : [1], 
+                        backgroundColor: expData.length > 0 ? ['#ED4B9E', '#FFB237', '#7645D9', '#1FC7D4'] : ['#e2e8f0'], 
+                        borderWidth:0 
+                    }] 
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: {boxWidth: 8} } } }
+            });
         }
 
         function addTrade() {
