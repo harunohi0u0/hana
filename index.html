@@ -19,10 +19,15 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
 
     <script>
+        // 1. 파이어베이스 연결 (원본 데이터 복구)
         const firebaseConfig = {
-            // apiKey: "YOUR_API_KEY",
-            // authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            // projectId: "YOUR_PROJECT_ID",
+          apiKey: "AIzaSyDZm5AazCafB0Sb2gd0llv9e3GAhE-nKBw",
+          authDomain: "sakurazima-mai-0u0.firebaseapp.com",
+          projectId: "sakurazima-mai-0u0",
+          storageBucket: "sakurazima-mai-0u0.appspot.com",
+          messagingSenderId: "697666115735",
+          appId: "1:697666115735:web:7380a588822f771dc071d2",
+          measurementId: "G-TZQ9GVFWV5"
         };
         
         let db, auth, currentUser;
@@ -71,33 +76,35 @@
         }
     </script>
     <style>
-        body { background-color: theme('colors.pancake.bgLight'); color: theme('colors.pancake.text'); }
+        /* 2 & 3. 가독성 및 버튼 사라짐 완벽 해결 (CSS 문법 오류 수정) */
+        body { background-color: #F0FDFA; color: #280D5F; }
         
-        .pc-card { background-color: theme('colors.pancake.card'); border-radius: 24px; box-shadow: theme('boxShadow.pc-card'); padding: 24px; border: 1px solid theme('colors.pancake.border'); transition: all 0.2s ease; }
+        .pc-card { background-color: #FFFFFF; border-radius: 24px; box-shadow: 0px 2px 12px -8px rgba(25, 19, 38, 0.1), 0px 1px 1px rgba(25, 19, 38, 0.05); padding: 24px; border: 1px solid #E7E3EB; transition: all 0.2s ease; }
         
-        .pc-input { width: 100%; background-color: theme('colors.pancake.input'); color: theme('colors.pancake.text'); border: 2px solid transparent; border-radius: 12px; padding: 10px 16px; font-size: 0.875rem; font-weight: 600; transition: all 0.2s ease; outline: none; }
-        .pc-input:focus { border-color: theme('colors.pancake.primary'); background-color: #FFFFFF; }
+        .pc-input { width: 100%; background-color: #EEEAF4; color: #280D5F; border: 2px solid transparent; border-radius: 12px; padding: 10px 16px; font-size: 0.875rem; font-weight: 600; transition: all 0.2s ease; outline: none; }
+        .pc-input:focus { border-color: #1FC7D4; background-color: #FFFFFF; }
         
-        /* 🔥 저장 버튼 완벽 개선: 색 꽉차고 그림자 있는 팬케이크 오리지널 스타일 */
+        /* 버튼 공통 속성 (투명해지는 버그 수정) */
         .pc-btn { display: inline-flex; align-items: center; justify-content: center; font-family: '"Noto Sans KR"', sans-serif; font-weight: 700; border-radius: 16px; padding: 12px 24px; cursor: pointer; transition: transform 0.1s, opacity 0.2s; border: none; outline: none; position: relative; z-index: 10; }
         .pc-btn:active { transform: translateY(4px); box-shadow: none !important; }
         
-        .pc-btn-primary { background-color: theme('colors.pancake.primary'); color: white; box-shadow: theme('boxShadow.pc-btn-primary'); }
-        .pc-btn-purple { background-color: theme('colors.pancake.secondary'); color: white; box-shadow: theme('boxShadow.pc-btn-purple'); }
-        .pc-btn-success { background-color: theme('colors.pancake.success'); color: white; box-shadow: theme('boxShadow.pc-btn-success'); }
-        .pc-btn-failure { background-color: theme('colors.pancake.failure'); color: white; box-shadow: theme('boxShadow.pc-btn-failure'); }
+        /* 버튼 개별 색상 (절대값 부여로 안전성 확보) */
+        .pc-btn-primary { background-color: #1FC7D4; color: white; box-shadow: 0px 4px 0px #139ea8; }
+        .pc-btn-purple { background-color: #7645D9; color: white; box-shadow: 0px 4px 0px #522f99; }
+        .pc-btn-success { background-color: #31D0AA; color: white; box-shadow: 0px 4px 0px #1e7a63; }
+        .pc-btn-failure { background-color: #ED4B9E; color: white; box-shadow: 0px 4px 0px #c03d80; }
         
-        .pc-btn-secondary { background-color: theme('colors.pancake.input'); color: theme('colors.pancake.textSub'); box-shadow: 0px 3px 0px #D7CAEC; }
+        .pc-btn-secondary { background-color: #FFFFFF; color: #7A6EAA; border: 2px solid #E7E3EB; box-shadow: 0px 3px 0px #D7CAEC; }
         .pc-btn-secondary:active { box-shadow: none !important; transform: translateY(3px); }
 
-        /* Toggle Group */
-        .pc-toggle-group { display: inline-flex; background-color: theme('colors.pancake.input'); border-radius: 12px; padding: 4px; position: relative; z-index: 20; }
-        .pc-toggle-btn { padding: 8px 20px; border-radius: 8px; font-weight: 700; font-size: 0.875rem; color: theme('colors.pancake.textSub'); cursor: pointer; transition: all 0.2s ease; white-space: nowrap; border: none; background: transparent; outline: none; }
-        .pc-toggle-btn.selected { background-color: theme('colors.pancake.card'); color: theme('colors.pancake.text'); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        /* 토글 메뉴 */
+        .pc-toggle-group { display: inline-flex; background-color: #EEEAF4; border-radius: 12px; padding: 4px; position: relative; z-index: 20; }
+        .pc-toggle-btn { padding: 8px 20px; border-radius: 8px; font-weight: 700; font-size: 0.875rem; color: #7A6EAA; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; border: none; background: transparent; outline: none; }
+        .pc-toggle-btn.selected { background-color: #FFFFFF; color: #280D5F; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-        /* Navigation */
-        .nav-tab { padding: 12px 24px; font-family: '"Kanit"', sans-serif; font-weight: 700; color: theme('colors.pancake.textSub'); border-bottom: 4px solid transparent; cursor: pointer; transition: all 0.2s; }
-        .nav-tab.active { color: theme('colors.pancake.primary'); border-bottom-color: theme('colors.pancake.primary'); }
+        /* 메인 네비게이션 탭 */
+        .nav-tab { padding: 12px 24px; font-family: '"Kanit"', sans-serif; font-weight: 700; color: #7A6EAA; border-bottom: 4px solid transparent; cursor: pointer; transition: all 0.2s; }
+        .nav-tab.active { color: #1FC7D4; border-bottom-color: #1FC7D4; }
 
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
@@ -106,11 +113,11 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #E7E3EB; border-radius: 3px; }
 
-        /* Category Tags */
-        .category-btn { background-color: theme('colors.pancake.input'); color: theme('colors.pancake.text'); border: 2px solid transparent; font-weight: 700; border-radius: 12px; padding: 6px 12px; }
-        .category-btn.selected-cat { background-color: theme('colors.pancake.secondary') !important; color: white !important; box-shadow: 0 4px 6px -1px rgba(118, 69, 217, 0.3); }
-        .minor-category-btn { background-color: white; color: theme('colors.pancake.primary'); border: 2px solid theme('colors.pancake.primary'); font-weight: 700; border-radius: 8px; padding: 4px 10px; }
-        .minor-category-btn.selected-minor { background-color: theme('colors.pancake.primary') !important; color: white !important; box-shadow: 0 4px 6px -1px rgba(31, 199, 212, 0.3); }
+        /* 카테고리 태그 확실하게 보이도록 개선 */
+        .category-btn { background-color: #EEEAF4; color: #280D5F; border: 2px solid transparent; font-weight: 700; border-radius: 12px; padding: 6px 12px; }
+        .category-btn.selected-cat { background-color: #7645D9 !important; color: white !important; box-shadow: 0 4px 6px -1px rgba(118, 69, 217, 0.3); }
+        .minor-category-btn { background-color: white; color: #1FC7D4; border: 2px solid #1FC7D4; font-weight: 700; border-radius: 8px; padding: 4px 10px; }
+        .minor-category-btn.selected-minor { background-color: #1FC7D4 !important; color: white !important; box-shadow: 0 4px 6px -1px rgba(31, 199, 212, 0.3); }
     </style>
 </head>
 <body class="pb-20 selection:bg-pancake-cyan selection:text-white relative">
@@ -133,7 +140,7 @@
         </div>
     </nav>
 
-    <!-- Toast Notification (알람 버그 완벽 수정) -->
+    <!-- Toast Notification -->
     <div id="toast" class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-pancake-success text-white px-8 py-4 rounded-2xl shadow-xl -translate-y-32 opacity-0 transition-all duration-300 font-bold z-[100] flex items-center pointer-events-none">
         <i data-lucide="check-circle" class="w-6 h-6 mr-3"></i><p id="toast-message" class="text-base"></p>
     </div>
@@ -191,7 +198,6 @@
                 <div class="pc-card">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-gray-100 pb-4 gap-4">
                         <h3 class="font-bold text-base text-pancake-text flex items-center"><i data-lucide="bar-chart-2" class="w-5 h-5 mr-2 text-pancake-purple"></i> 가계부 수입/지출 분포</h3>
-                        <!-- 🔥 문제점 4 & 5: 기간 직접 설정 필터 도입 -->
                         <div class="flex items-center gap-2 bg-pancake-input p-1.5 rounded-xl">
                             <input type="date" id="ledger-filter-start" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold">
                             <span class="text-xs text-gray-500">~</span>
@@ -208,7 +214,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- 가계부 작성 폼 -->
+                    <!-- 가계부 작성 폼 (저장/초기화 버튼 부활 및 가독성 개선) -->
                     <div class="pc-card relative z-10 overflow-hidden" id="ledger-write-section">
                         <div class="flex justify-between items-center mb-6 relative z-20">
                             <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="edit-3" class="w-5 h-5 mr-2 text-pancake-purple"></i> 가계부 작성</h2>
@@ -243,9 +249,9 @@
 
                             <div><label class="text-xs font-bold text-gray-500 block mb-1">메모</label><input type="text" id="ledger-memo" class="pc-input bg-white border-gray-200" placeholder="내용 입력..."></div>
                             
-                            <div class="flex justify-end gap-3 pt-2">
+                            <div class="flex justify-end gap-3 pt-4">
+                                <!-- 버튼 가독성, UI 깨짐 완벽 복구 구역 -->
                                 <button type="button" onclick="resetLedgerForm()" class="pc-btn pc-btn-secondary text-sm px-6">초기화</button>
-                                <!-- 🔥 확실하고 큰 저장 버튼 -->
                                 <button type="submit" class="pc-btn pc-btn-purple text-base w-full sm:w-auto"><i data-lucide="save" class="w-5 h-5 mr-2"></i> 가계부 저장</button>
                             </div>
                         </form>
@@ -258,7 +264,7 @@
                                 <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="repeat" class="w-5 h-5 mr-2 text-pancake-primary"></i> 매월 고정비 (구독)</h2>
                                 <p class="text-[10px] text-gray-500 mt-1">월 시작 시 '기본 예금'에서 자동 차감</p>
                             </div>
-                            <button onclick="openModal('fixed-modal')" class="pc-btn pc-btn-primary py-2 px-4 text-xs !shadow-[0px_3px_0px_#139ea8] !rounded-xl"><i data-lucide="plus" class="w-3 h-3 mr-1"></i> 추가</button>
+                            <button onclick="openModal('fixed-modal')" class="pc-btn pc-btn-primary py-2 px-4 text-xs"><span class="text-lg mr-1">+</span> 추가</button>
                         </div>
                         <div id="fixed-expense-list" class="space-y-3 flex-grow overflow-y-auto custom-scrollbar pr-2 min-h-[200px]"></div>
                     </div>
@@ -286,9 +292,8 @@
                                 <input type="text" id="holding-name" class="pc-input bg-white border-gray-200" placeholder="예: AAPL">
                             </div>
 
-                            <!-- 🔥 개선점 1: 통화 선택 로직 (KRW / USD) -->
                             <div id="holding-currency-container" class="space-y-1">
-                                <label class="text-xs font-bold text-gray-500 block">결제 통화 (매수 단가 기준)</label>
+                                <label class="text-xs font-bold text-gray-500 block">결제 통화</label>
                                 <div class="pc-toggle-group w-full" data-group="holding-currency">
                                     <button type="button" data-value="krw" class="pc-toggle-btn selected w-1/2" onclick="updateHoldingPreview()">원화 (KRW)</button>
                                     <button type="button" data-value="usd" class="pc-toggle-btn w-1/2" onclick="updateHoldingPreview()">달러 (USD)</button>
@@ -312,9 +317,9 @@
                             </div>
 
                             <div class="flex gap-3 pt-4 border-t border-gray-100">
-                                <button type="button" onclick="resetHoldingForm()" class="pc-btn pc-btn-secondary text-sm">초기화</button>
-                                <!-- 🔥 확실하고 큰 등록 버튼 -->
-                                <button type="submit" class="pc-btn pc-btn-primary flex-1 text-base"><i data-lucide="check" class="w-5 h-5 mr-1"></i> 포트폴리오 추가</button>
+                                <!-- 버튼 UI 복구 구역 -->
+                                <button type="button" onclick="resetHoldingForm()" class="pc-btn pc-btn-secondary text-sm px-6">초기화</button>
+                                <button type="submit" class="pc-btn pc-btn-primary flex-1 text-base"><i data-lucide="check" class="w-5 h-5 mr-1"></i> 포트폴리오 등록</button>
                             </div>
                         </form>
                     </div>
@@ -340,11 +345,10 @@
                                 <button type="button" data-value="ledger" class="pc-toggle-btn px-4">가계부만</button>
                                 <button type="button" data-value="trade" class="pc-toggle-btn px-4">매매만</button>
                             </div>
-                            <!-- 🔥 문제점 4 & 5: 기간 직접 설정 필터 도입 -->
                             <div class="flex items-center gap-2 bg-pancake-input p-1.5 rounded-xl">
-                                <input type="date" id="timeline-filter-start" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold">
-                                <span class="text-xs text-gray-500">~</span>
-                                <input type="date" id="timeline-filter-end" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold">
+                                <input type="date" id="timeline-filter-start" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold outline-none">
+                                <span class="text-xs text-gray-500 font-bold">~</span>
+                                <input type="date" id="timeline-filter-end" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold outline-none">
                                 <button onclick="renderTimeline()" class="pc-btn pc-btn-primary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#139ea8]">조회</button>
                                 <button onclick="setAllTime('timeline')" class="pc-btn pc-btn-secondary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#D7CAEC]">전체</button>
                             </div>
@@ -362,31 +366,29 @@
             <div class="pc-card text-center py-20 bg-[#F9F8FA]">
                 <span class="text-6xl mb-4 block">🚧</span>
                 <h2 class="text-2xl font-bold text-pancake-text mb-2">트레이딩 데스크 세팅중</h2>
-                <p class="text-gray-500 font-bold">1번 탭의 모든 구조/버튼 디자인이 팬케이크스왑 형태로 완벽 픽스되었습니다.</p>
+                <p class="text-gray-500 font-bold">1번 탭의 모든 구조와 버튼 렌더링 문제가 지시하신 원본대로 복원되었습니다.</p>
             </div>
         </div>
     </main>
 
     <!-- Modals -->
-    <!-- 고정비 모달 -->
     <div id="fixed-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
         <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
-            <button onclick="closeModal('fixed-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><i data-lucide="x" class="w-5 h-5"></i></button>
-            <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="repeat" class="w-5 h-5 mr-2 text-pancake-primary"></i> 매월 고정 지출 등록</h2>
+            <button onclick="closeModal('fixed-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+            <h2 class="text-lg font-bold mb-4 flex items-center">🔄 매월 고정 지출 등록</h2>
             <form id="fixed-form" class="space-y-4" onsubmit="saveFixedExpense(event)">
-                <div><label class="text-xs font-bold text-gray-500 mb-1 block">항목명</label><input type="text" id="fx-name" class="pc-input bg-white border border-gray-200" placeholder="예: 넷플릭스, 월세" required></div>
-                <div><label class="text-xs font-bold text-gray-500 mb-1 block">매월 결제일</label><select id="fx-day" class="pc-input bg-white cursor-pointer border border-gray-200" required></select></div>
-                <div><label class="text-xs font-bold text-gray-500 mb-1 block">금액</label><input type="text" id="fx-amount" class="pc-input bg-white number-input border border-gray-200" required></div>
+                <div><label class="text-xs font-bold text-gray-500 mb-1 block">항목명</label><input type="text" id="fx-name" class="pc-input bg-white border-gray-200" placeholder="예: 넷플릭스, 월세" required></div>
+                <div><label class="text-xs font-bold text-gray-500 mb-1 block">매월 결제일</label><select id="fx-day" class="pc-input bg-white cursor-pointer border-gray-200" required></select></div>
+                <div><label class="text-xs font-bold text-gray-500 mb-1 block">금액</label><input type="text" id="fx-amount" class="pc-input bg-white number-input border-gray-200" required></div>
                 <div class="pt-4"><button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">구독료 등록</button></div>
             </form>
         </div>
     </div>
 
-    <!-- 매도 모달 -->
     <div id="sell-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
         <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
-            <button onclick="closeModal('sell-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><i data-lucide="x" class="w-5 h-5"></i></button>
-            <h2 class="text-lg font-bold mb-1 flex items-center"><i data-lucide="trending-up" class="w-5 h-5 mr-2 text-pancake-success"></i> 자산 매도 (수익 실현)</h2>
+            <button onclick="closeModal('sell-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+            <h2 class="text-lg font-bold mb-1 flex items-center">📈 자산 매도 (수익 실현)</h2>
             <p id="sell-asset-name" class="text-xs font-bold text-pancake-textSub mb-4 bg-gray-100 inline-block px-3 py-1 rounded-full"></p>
             
             <form id="sell-form" class="space-y-4" onsubmit="processSell(event)">
@@ -399,9 +401,9 @@
                 </div>
                 <div class="bg-[#F0FDFA] p-4 rounded-xl border border-pancake-primary/30 text-sm mt-2">
                     <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-200">
-                        <span class="font-bold text-gray-600">기본 예금 (원화) 입금액</span><span id="sell-proceeds" class="font-bold text-pancake-text text-lg">₩ 0</span>
+                        <span class="font-bold text-gray-600">기본 예금 입금액</span><span id="sell-proceeds" class="font-bold text-pancake-text text-lg">₩ 0</span>
                     </div>
-                    <div class="flex justify-between items-center"><span class="font-bold text-gray-600">실현 손익 (원화 기준)</span><span id="sell-pnl" class="font-bold text-base">₩ 0</span></div>
+                    <div class="flex justify-between items-center"><span class="font-bold text-gray-600">실현 손익</span><span id="sell-pnl" class="font-bold text-base">₩ 0</span></div>
                 </div>
                 <button type="submit" class="pc-btn pc-btn-success w-full py-3 mt-2 text-base">원화(예금)로 현금화</button>
             </form>
@@ -421,23 +423,27 @@
             document.querySelectorAll('.sub-tab-content').forEach(c=>{c.classList.remove('active');c.classList.add('hidden');}); 
             const target=document.getElementById(id); target.classList.remove('hidden'); target.classList.add('active'); 
             if(id==='sub-dashboard') initTab1Charts(); 
-            // 문제점 6 해결: 타임라인 탭 열 때 '전체보기'를 무조건 세팅
             if(id==='sub-timeline') {
-                document.querySelector('[data-group="timeline-filter"] button[data-value="all"]').click();
+                const allBtn = document.querySelector('[data-group="timeline-filter"] button[data-value="all"]');
+                if(allBtn) allBtn.click();
+                setAllTime('timeline');
             }
         }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
 
-        // ================= NUMBER FORMATTING (치명적 버그 완벽 픽스) =================
-        const unformatNumber = v => v ? v.toString().replace(/[^\d.-]/g, '') : '';
+        // ================= NUMBER FORMATTING (버그 완벽 수정) =================
+        const unformatNumber = v => v ? v.toString().replace(/,/g, '') : '0';
         const formatNumber = v => {
             if (v === null || v === undefined || v === '') return '';
-            const numStr = unformatNumber(v);
-            if(numStr === '-') return '-'; 
-            const parts = numStr.split('.');
-            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); 
-            return parts.join('.');
+            let str = unformatNumber(v);
+            if (str === '0' && v.toString().trim() === '') return ''; 
+            const isNeg = str.startsWith('-');
+            str = str.replace(/[^\d.]/g, '');
+            if(str === '') return isNeg ? '-' : '';
+            const parts = str.split('.');
+            parts[0] = parseInt(parts[0], 10).toLocaleString('en-US');
+            return (isNeg ? '-' : '') + parts.join('.');
         };
         
         document.addEventListener('input', e => { 
@@ -446,6 +452,20 @@
                 e.target.value = formatNumber(val);
             } 
         });
+
+        // ================= TOAST ALARM =================
+        function showToast(msg) { 
+            const t = document.getElementById('toast'); 
+            document.getElementById('toast-message').textContent = msg; 
+            
+            t.style.transition = 'none';
+            t.classList.remove('-translate-y-32', 'opacity-0');
+            void t.offsetWidth; // trigger reflow
+            t.style.transition = 'all 0.3s ease';
+
+            if(window.toastTimeout) clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => t.classList.add('-translate-y-32', 'opacity-0'), 3000); 
+        }
 
         // 환율 글로벌 연동
         document.getElementById('global-exchange-rate').addEventListener('input', (e) => {
@@ -457,21 +477,6 @@
                 initTab1Charts();
             }
         });
-
-        // Toast 알림 (문제점 3 해결: 애니메이션 리셋 로직 보강)
-        function showToast(msg) { 
-            const t = document.getElementById('toast'); 
-            document.getElementById('toast-message').textContent = msg; 
-            
-            // 리플로우를 통한 애니메이션 강제 초기화
-            t.style.transition = 'none';
-            t.classList.remove('-translate-y-32', 'opacity-0');
-            void t.offsetWidth; // trigger reflow
-            t.style.transition = 'all 0.3s ease';
-
-            if(window.toastTimeout) clearTimeout(window.toastTimeout);
-            window.toastTimeout = setTimeout(() => t.classList.add('-translate-y-32', 'opacity-0'), 3000); 
-        }
 
         // 기간 필터 기본값 셋팅
         function setDefaultDates() {
@@ -537,16 +542,17 @@
             });
         });
 
+        // 🔥 가독성 개선된 카테고리
         function renderLedgerMajorCategories(type) {
             const container = document.getElementById('ledger-major-container'); container.innerHTML = '';
             const cats = Object.keys(localLedgerCategories[type]||{}).sort();
             cats.forEach(c => {
                 const btn = document.createElement('button'); btn.type = 'button';
                 btn.className = `px-4 py-2 text-sm transition flex items-center gap-1 category-btn ${selectedMajorCategory===c ? 'selected-cat' : ''}`;
-                btn.innerHTML = `<span>${c}</span> <i data-lucide="x" class="w-3 h-3 ml-2 opacity-50 hover:opacity-100 hover:text-red-500" onclick="event.stopPropagation(); deleteCat('${type}','${c}')"></i>`;
+                btn.innerHTML = `<span>${c}</span> <span class="ml-2 font-bold opacity-50 hover:opacity-100 hover:text-red-500 text-lg leading-none" onclick="event.stopPropagation(); deleteCat('${type}','${c}')">×</span>`;
                 btn.onclick = () => { selectedMajorCategory = selectedMajorCategory===c ? null : c; renderLedgerMajorCategories(type); if(selectedMajorCategory) renderLedgerMinorCategories(type, c); else document.getElementById('ledger-minor-wrapper').classList.add('hidden'); };
                 container.appendChild(btn);
-            }); lucide.createIcons();
+            }); 
         }
         function renderLedgerMinorCategories(type, major) {
              document.getElementById('ledger-minor-wrapper').classList.remove('hidden');
@@ -555,24 +561,25 @@
              (localLedgerCategories[type][major]||[]).forEach(sub => {
                  const btn = document.createElement('button'); btn.type = 'button';
                  btn.className = `px-3 py-1.5 text-xs transition flex items-center gap-1 minor-category-btn`;
-                 btn.innerHTML = `<span>${sub}</span> <i data-lucide="x" class="w-3 h-3 ml-1 opacity-50 hover:opacity-100 hover:text-red-500" onclick="event.stopPropagation(); deleteCat('${type}','${major}','${sub}')"></i>`;
+                 btn.innerHTML = `<span>${sub}</span> <span class="ml-1 font-bold opacity-50 hover:opacity-100 hover:text-red-500 text-base leading-none" onclick="event.stopPropagation(); deleteCat('${type}','${major}','${sub}')">×</span>`;
                  btn.onclick = () => { document.querySelectorAll('.minor-category-btn').forEach(b=>b.classList.remove('selected-minor')); btn.classList.add('selected-minor'); };
                  container.appendChild(btn);
-             }); lucide.createIcons();
+             }); 
         }
 
         window.deleteCat = async (type, major, minor) => {
             if(!confirm("해당 카테고리를 삭제하시겠습니까?")) return;
             if(minor) localLedgerCategories[type][major] = localLedgerCategories[type][major].filter(x=>x!==minor);
             else { delete localLedgerCategories[type][major]; if(selectedMajorCategory===major) selectedMajorCategory=null; }
+            if(db && currentUser) await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(localLedgerCategories);
             renderLedgerMajorCategories(type); if(selectedMajorCategory) renderLedgerMinorCategories(type, selectedMajorCategory);
         }
-        document.getElementById('add-ledger-major-btn').onclick=()=>{const t=document.querySelector('[data-group="ledger-type"] .selected').dataset.value; const v=document.getElementById('new-ledger-major').value.trim(); if(v && !localLedgerCategories[t][v]){localLedgerCategories[t][v]=[]; document.getElementById('new-ledger-major').value=''; renderLedgerMajorCategories(t);}};
-        document.getElementById('add-ledger-minor-btn').onclick=()=>{const t=document.querySelector('[data-group="ledger-type"] .selected').dataset.value; const v=document.getElementById('new-ledger-minor').value.trim(); if(v && selectedMajorCategory){localLedgerCategories[t][selectedMajorCategory].push(v); document.getElementById('new-ledger-minor').value=''; renderLedgerMinorCategories(t,selectedMajorCategory);}};
+        document.getElementById('add-ledger-major-btn').onclick=async ()=>{const t=document.querySelector('[data-group="ledger-type"] .selected').dataset.value; const v=document.getElementById('new-ledger-major').value.trim(); if(v && !localLedgerCategories[t][v]){localLedgerCategories[t][v]=[]; if(db && currentUser) await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(localLedgerCategories); document.getElementById('new-ledger-major').value=''; renderLedgerMajorCategories(t);}};
+        document.getElementById('add-ledger-minor-btn').onclick=async ()=>{const t=document.querySelector('[data-group="ledger-type"] .selected').dataset.value; const v=document.getElementById('new-ledger-minor').value.trim(); if(v && selectedMajorCategory){localLedgerCategories[t][selectedMajorCategory].push(v); if(db && currentUser) await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(localLedgerCategories); document.getElementById('new-ledger-minor').value=''; renderLedgerMinorCategories(t,selectedMajorCategory);}};
 
         document.getElementById('ledger-date').value = new Date().toISOString().split('T')[0];
 
-        function resetLedgerForm() {
+        window.resetLedgerForm = function() {
             document.getElementById('ledger-id').value = ''; document.getElementById('ledger-amount').value = ''; document.getElementById('ledger-memo').value = '';
             document.getElementById('ledger-date').value = new Date().toISOString().split('T')[0];
             selectedMajorCategory = null; document.querySelectorAll('#ledger-minor-container .selected-minor').forEach(b => b.classList.remove('selected-minor'));
@@ -582,12 +589,13 @@
 
         async function addLedger() {
             const id = document.getElementById('ledger-id').value;
-            const amt = parseFloat(unformatNumber(document.getElementById('ledger-amount').value));
+            const amtStr = document.getElementById('ledger-amount').value;
+            const amt = parseFloat(unformatNumber(amtStr));
             const type = document.querySelector('[data-group="ledger-type"] .selected').dataset.value;
             const sub = document.querySelector('#ledger-minor-container .selected-minor')?.textContent || '';
             const dateStr = document.getElementById('ledger-date').value;
             
-            if(!amt || isNaN(amt) || amt <= 0) return alert("올바른 금액을 입력하세요.");
+            if(isNaN(amt) || amt <= 0) return alert("올바른 금액을 입력하세요.");
             if(!selectedMajorCategory) return alert("대분류 카테고리를 선택하세요.");
 
             const wallet = getSystemWallet();
@@ -610,7 +618,7 @@
                 else localLedgerEntries.push({ id: 'led_'+Date.now(), ...entry });
                 updateWalletDisplay(); renderTimeline(); initTab1Charts();
             }
-            resetLedgerForm(); showToast("가계부가 저장되었습니다.");
+            resetLedgerForm(); showToast("가계부가 안전하게 저장되었습니다.");
         }
 
         window.editLedgerEntry = function(id) {
@@ -639,7 +647,7 @@
         };
 
         window.deleteLedgerEntry = async function(id) {
-            if(!confirm("정말 삭제하시겠습니까? (자산 수량 및 현금 잔액이 롤백됩니다)")) return;
+            if(!confirm("정말 삭제하시겠습니까? (자산 수량 및 현금 잔액이 과거로 롤백됩니다)")) return;
             const entry = localLedgerEntries.find(e => e.id === id); if(!entry) return;
             
             const wallet = getSystemWallet();
@@ -651,16 +659,17 @@
                 if(entry.assetId) {
                     const asset = localHoldings.find(h => h.id === entry.assetId);
                     if(asset) {
-                        asset.qty -= (entry.assetQty || 0); asset.total = asset.qty * asset.price;
-                        if(asset.qty <= 0.0001) localHoldings = localHoldings.filter(h => h.id !== entry.assetId); 
+                        asset.qty -= (entry.assetQty || 0); asset.totalKRW = asset.qty * asset.price * (asset.currency==='USD'?globalExchangeRate:1);
                     }
                 }
             } else if(entry.type === 'sell') {
                 wallet.total -= entry.amount; 
                 if(entry.assetId) {
                     let asset = localHoldings.find(h => h.id === entry.assetId);
-                    if(asset) { asset.qty += (entry.assetQty || 0); asset.total = asset.qty * asset.price; }
-                    else alert("자산이 완전히 삭제되어 수량을 복구할 수 없습니다.");
+                    if(asset) { 
+                        asset.qty += (entry.assetQty || 0); 
+                        asset.totalKRW = asset.qty * asset.price * (asset.currency==='USD'?globalExchangeRate:1); 
+                    } else { alert("자산이 완전히 삭제되어 수량을 복구할 수 없습니다."); }
                 }
             }
 
@@ -681,8 +690,10 @@
 
         async function saveFixedExpense(e) {
             e.preventDefault();
-            const data = { id: 'fx_'+Date.now(), name: document.getElementById('fx-name').value, day: parseInt(document.getElementById('fx-day').value), amount: parseFloat(unformatNumber(document.getElementById('fx-amount').value)), lastPaidMonth: '' };
-            localFixedExpenses.push(data); renderFixedExpenses(); closeModal('fixed-modal'); showToast("고정 지출 등록됨"); checkAutoFixedExpenses();
+            const data = { name: document.getElementById('fx-name').value, day: parseInt(document.getElementById('fx-day').value), amount: parseFloat(unformatNumber(document.getElementById('fx-amount').value)), lastPaidMonth: '' };
+            if(db && currentUser) { await db.collection("users").doc(currentUser.uid).collection("fixedExpenses").add(data); await loadAllData(); }
+            else { localFixedExpenses.push({id: 'fx_'+Date.now(), ...data}); renderFixedExpenses(); }
+            closeModal('fixed-modal'); showToast("고정 지출 등록됨"); checkAutoFixedExpenses();
         }
 
         function checkAutoFixedExpenses() {
@@ -691,11 +702,19 @@
             localFixedExpenses.forEach(fx => {
                 if(fx.lastPaidMonth !== currentMonthStr && currentDay >= fx.day) {
                     const wallet = getSystemWallet(); wallet.total -= fx.amount; 
-                    localLedgerEntries.push({ id: 'led_auto_'+Date.now()+Math.random(), type:'expense', category: '고정지출(자동)', subCategory: fx.name, amount: fx.amount, memo: '자동 납부', date: new Date().toISOString() });
+                    const entry = { type:'expense', category: '고정지출(자동)', subCategory: fx.name, amount: fx.amount, memo: '자동 납부', date: new Date().toISOString() };
+                    
+                    if(db && currentUser) {
+                        db.collection("users").doc(currentUser.uid).collection("fixedExpenses").doc(fx.id).update({lastPaidMonth: currentMonthStr});
+                        db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entry, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
+                        db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
+                    } else {
+                        localLedgerEntries.push({ id: 'led_auto_'+Date.now()+Math.random(), ...entry });
+                    }
                     fx.lastPaidMonth = currentMonthStr; autoPaidCount++;
                 }
             });
-            if(autoPaidCount > 0) { updateWalletDisplay(); renderTimeline(); initTab1Charts(); renderFixedExpenses(); showToast(`${autoPaidCount}건의 고정비가 자동 결제되었습니다.`); }
+            if(autoPaidCount > 0) { updateWalletDisplay(); renderTimeline(); initTab1Charts(); renderFixedExpenses(); showToast(`${autoPaidCount}건의 고정비 자동 결제!`); }
         }
 
         async function payFixedExpense(id) {
@@ -703,12 +722,26 @@
             const currentMonthStr = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
             if(fx.lastPaidMonth === currentMonthStr) return alert("이미 납부되었습니다.");
             const wallet = getSystemWallet(); wallet.total -= fx.amount;
-            localLedgerEntries.push({ id: 'led_man_'+Date.now(), type:'expense', category: '고정지출(수동)', subCategory: fx.name, amount: fx.amount, memo: '수동 납부', date: new Date().toISOString() });
-            fx.lastPaidMonth = currentMonthStr;
-            updateWalletDisplay(); renderTimeline(); initTab1Charts(); renderFixedExpenses(); showToast(`${fx.name} 납부 완료`);
+            const entry = { type:'expense', category: '고정지출(수동)', subCategory: fx.name, amount: fx.amount, memo: '수동 납부', date: new Date().toISOString() };
+
+            if(db && currentUser) {
+                await db.collection("users").doc(currentUser.uid).collection("fixedExpenses").doc(id).update({lastPaidMonth: currentMonthStr});
+                await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entry, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
+                await db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
+                await loadAllData();
+            } else {
+                localLedgerEntries.push({ id: 'led_man_'+Date.now(), ...entry });
+                fx.lastPaidMonth = currentMonthStr;
+                updateWalletDisplay(); renderTimeline(); initTab1Charts(); renderFixedExpenses();
+            }
+            showToast(`${fx.name} 납부 완료`);
         }
         
-        window.deleteFixedExpense = function(id) { if(!confirm("삭제할까요?")) return; localFixedExpenses = localFixedExpenses.filter(x=>x.id!==id); renderFixedExpenses(); };
+        window.deleteFixedExpense = async function(id) { 
+            if(!confirm("삭제할까요?")) return; 
+            if(db && currentUser) { await db.collection("users").doc(currentUser.uid).collection("fixedExpenses").doc(id).delete(); await loadAllData(); }
+            else { localFixedExpenses = localFixedExpenses.filter(x=>x.id!==id); renderFixedExpenses(); }
+        };
 
         function renderFixedExpenses() {
             const container = document.getElementById('fixed-expense-list'); container.innerHTML = '';
@@ -727,12 +760,12 @@
             }); lucide.createIcons();
         }
 
-        // ================= ASSET PORTFOLIO (달러 결제 완벽 지원) =================
+        // ================= ASSET PORTFOLIO =================
         function toggleHoldingInputs() {
             const isCash = document.getElementById('holding-type').value === 'cash';
             document.getElementById('holding-name-container').classList.toggle('hidden', isCash);
             document.getElementById('holding-qty-price-container').classList.toggle('hidden', isCash);
-            document.getElementById('holding-currency-container').classList.toggle('hidden', isCash); // 통화 선택 숨김
+            document.getElementById('holding-currency-container').classList.toggle('hidden', isCash);
             document.getElementById('holding-cash-container').classList.toggle('hidden', !isCash);
             document.getElementById('holding-preview-container').classList.toggle('hidden', isCash);
             
@@ -741,7 +774,6 @@
             document.getElementById('holding-cash-amount').required = isCash;
         }
 
-        // 통화 라디오 버튼 토글
         document.querySelectorAll('[data-group="holding-currency"] button').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('[data-group="holding-currency"] button').forEach(b => b.classList.remove('selected'));
@@ -762,7 +794,7 @@
 
         ['holding-qty', 'holding-price'].forEach(id => document.getElementById(id).addEventListener('input', updateHoldingPreview));
 
-        function resetHoldingForm() { document.getElementById('holding-form').reset(); document.getElementById('holding-id').value = ''; document.getElementById('holding-preview-total').textContent = `₩ 0`; toggleHoldingInputs(); }
+        window.resetHoldingForm = function() { document.getElementById('holding-form').reset(); document.getElementById('holding-id').value = ''; document.getElementById('holding-preview-total').textContent = `₩ 0`; toggleHoldingInputs(); }
 
         async function addHolding() {
             const id = document.getElementById('holding-id').value;
@@ -770,13 +802,22 @@
             const wallet = getSystemWallet();
             
             if(type === 'cash') {
-                const amt = parseFloat(unformatNumber(document.getElementById('holding-cash-amount').value)) || 0;
-                if(amt === 0) return alert("입출금 금액을 입력하세요.");
+                const amtStr = document.getElementById('holding-cash-amount').value;
+                const amt = parseFloat(unformatNumber(amtStr));
+                if(isNaN(amt) || amt === 0) return alert("입출금 금액을 올바르게 입력하세요.");
                 
                 wallet.total += amt;
-                localLedgerEntries.push({ id: 'led_cash_'+Date.now(), type: amt > 0 ? 'income' : 'expense', category: '기본예금 수동조절', subCategory: '입출금', amount: Math.abs(amt), memo: '수동 잔액 변경', date: new Date().toISOString() });
-                showToast(`예금 잔액 조정 완료 (${amt>0?'+':''}₩${formatNumber(Math.abs(amt))})`);
-                updateWalletDisplay(); renderHoldings(); renderTimeline(); initTab1Charts(); resetHoldingForm();
+                const entry = { type: amt > 0 ? 'income' : 'expense', category: '기본예금 수동조절', subCategory: '입출금', amount: Math.abs(amt), memo: '수동 잔액 변경', date: new Date().toISOString() };
+                
+                if(db && currentUser) {
+                    await db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
+                    await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entry, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
+                    await loadAllData();
+                } else {
+                    localLedgerEntries.push({ id: 'led_cash_'+Date.now(), ...entry });
+                    updateWalletDisplay(); renderHoldings(); renderTimeline(); initTab1Charts();
+                }
+                resetHoldingForm(); showToast(`예금 잔액 조정 완료 (${amt>0?'+':''}₩${formatNumber(Math.abs(amt))})`);
                 return;
             }
 
@@ -793,23 +834,34 @@
 
             if(id) {
                  const oldAsset = localHoldings.find(h => h.id === id);
-                 if(oldAsset) wallet.total -= (totalKRW - oldAsset.totalKRW); // 기존 원화가치 대비 차액
+                 if(oldAsset) wallet.total -= (totalKRW - oldAsset.totalKRW); 
             } else {
                  wallet.total -= totalKRW; 
             }
 
             const holdingData = { type, name, qty, price, currency: isUsd?'USD':'KRW', exchangeRate: rate, totalKRW };
-            
-            if(!id) {
-                localLedgerEntries.push({ id: 'led_buy_'+Date.now(), type: 'buy', assetId: holdingIdToUse, assetQty: qty, category: '자산매수', subCategory: name, amount: totalKRW, memo: `${formatNumber(qty)}주 매수${isUsd?'(USD)':''}`, date: new Date().toISOString() }); 
-                localHoldings.push({id: holdingIdToUse, ...holdingData});
+            const entryData = { type: 'buy', assetId: holdingIdToUse, assetQty: qty, category: '자산매수', subCategory: name, amount: totalKRW, memo: `${formatNumber(qty)}주 매수${isUsd?'(USD)':''}`, date: new Date().toISOString() };
+
+            if(db && currentUser) {
+                if(id) await db.collection("users").doc(currentUser.uid).collection("holdings").doc(id).update(holdingData);
+                else {
+                     const ref = await db.collection("users").doc(currentUser.uid).collection("holdings").add(holdingData);
+                     entryData.assetId = ref.id;
+                     await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entryData, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
+                }
+                await db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
+                await loadAllData();
             } else {
-                const idx = localHoldings.findIndex(h => h.id === id);
-                if(idx > -1) localHoldings[idx] = { ...localHoldings[idx], ...holdingData };
+                if(!id) {
+                    localLedgerEntries.push({ id: 'led_buy_'+Date.now(), ...entryData }); 
+                    localHoldings.push({id: holdingIdToUse, ...holdingData});
+                } else {
+                    const idx = localHoldings.findIndex(h => h.id === id);
+                    if(idx > -1) localHoldings[idx] = { ...localHoldings[idx], ...holdingData };
+                }
+                updateWalletDisplay(); renderHoldings(); renderTimeline(); initTab1Charts();
             }
-            
-            showToast(`${name} 등록/매수 완료!`);
-            updateWalletDisplay(); renderHoldings(); renderTimeline(); initTab1Charts(); resetHoldingForm();
+            resetHoldingForm(); showToast(`${name} 매수/등록 완료!`);
         }
 
         window.editHolding = function(id) {
@@ -873,21 +925,26 @@
             asset.totalKRW = asset.qty * asset.price * (asset.currency==='USD'?globalExchangeRate:1);
             wallet.total += proceedsKRW; 
 
-            localLedgerEntries.push({ id: 'led_sell_'+Date.now(), type: 'sell', assetId: asset.id, assetQty: q, category: '자산매도', subCategory: asset.name, amount: proceedsKRW, memo: `${formatNumber(q)}주 매도`, pnl: pnlKRW, date: new Date().toISOString() });
+            const entryData = { type: 'sell', assetId: asset.id, assetQty: q, category: '자산매도', subCategory: asset.name, amount: proceedsKRW, memo: `${formatNumber(q)}주 매도`, pnl: pnlKRW, date: new Date().toISOString() };
 
-            if(asset.qty <= 0.0001) localHoldings = localHoldings.filter(h=>h.id!==id); 
-            
-            updateWalletDisplay(); renderHoldings(); renderTimeline(); initTab1Charts(); closeModal('sell-modal'); showToast("수익 실현! 예금 입금됨");
+            if(db && currentUser) {
+                if(asset.qty <= 0.0001) await db.collection("users").doc(currentUser.uid).collection("holdings").doc(id).delete();
+                else await db.collection("users").doc(currentUser.uid).collection("holdings").doc(id).update({qty: asset.qty, totalKRW: asset.totalKRW});
+                await db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
+                await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entryData, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
+                await loadAllData();
+            } else {
+                localLedgerEntries.push({ id: 'led_sell_'+Date.now(), ...entryData });
+                if(asset.qty <= 0.0001) localHoldings = localHoldings.filter(h=>h.id!==id); 
+                updateWalletDisplay(); renderHoldings(); renderTimeline(); initTab1Charts(); 
+            }
+            closeModal('sell-modal'); showToast("수익 실현! 예금 입금됨");
         }
 
         function renderHoldings() {
-            // 환율 변경에 따른 자산가치 실시간 재계산
             localHoldings.forEach(h => {
-                if(h.type !== 'cash' && h.currency === 'USD') {
-                    h.totalKRW = h.qty * h.price * globalExchangeRate;
-                } else if(h.type !== 'cash') {
-                    h.totalKRW = h.qty * h.price; // KRW
-                }
+                if(h.type !== 'cash' && h.currency === 'USD') h.totalKRW = h.qty * h.price * globalExchangeRate;
+                else if(h.type !== 'cash') h.totalKRW = h.qty * h.price; 
             });
 
             const container = document.getElementById('holdings-list-container'); container.innerHTML = '';
@@ -1003,13 +1060,12 @@
             entries.forEach(e => {
                 if (e.type === 'income') change += e.amount;
                 if (e.type === 'expense') change -= e.amount;
-                if (e.type === 'sell' && e.pnl) change += e.pnl; // 실현손익
+                if (e.type === 'sell' && e.pnl) change += e.pnl; 
             });
             return change;
         }
 
         function initTab1Charts() {
-            // 1. 자산 점유율 (퍼센트 툴팁 추가)
             let sums = { stock: 0, bond: 0, commodity: 0 };
             localHoldings.forEach(h => { if(h.type !== 'cash') sums[h.type] += (h.totalKRW || h.total); });
             const wallet = getSystemWallet();
@@ -1036,7 +1092,6 @@
                 }
             });
 
-            // 2. 재산 성장 추이 역산 그래프
             const gTf = document.getElementById('growth-timeframe').value;
             let gLabels=[], gData=[];
             const now = new Date();
@@ -1057,7 +1112,7 @@
                     }
                 }
                 prevAsset = gData[gData.length - 2] || totalAsset;
-            } else { // quarter
+            } else { 
                 let currWorth = totalAsset;
                 let currQ = Math.floor(now.getMonth() / 3); let currY = now.getFullYear();
                 for(let i=0; i<4; i++) {
