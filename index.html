@@ -184,10 +184,13 @@
                         <p id="total-net-worth" class="text-4xl lg:text-5xl font-brand font-bold text-pancake-text">₩ 0</p>
                         <p class="text-xs font-bold mt-2 text-gray-400">포트폴리오 합계 + 기본 예금</p>
                     </div>
-                    <div class="pc-card text-center py-8 flex flex-col justify-center bg-[#F0FDFA] border-b-4 border-pancake-primary">
-                        <h2 class="text-pancake-primary font-bold text-sm mb-1 flex justify-center items-center">💵 기본 예금 (현금)</h2>
-                        <p id="system-wallet-balance" class="text-2xl font-brand font-bold text-pancake-text">₩ 0</p>
-                        <p class="text-[10px] font-bold mt-2 text-pancake-textSub">모든 가계부/매매 자동 연동</p>
+                    <div class="pc-card text-center py-6 flex flex-col justify-center bg-[#F0FDFA] border-b-4 border-pancake-primary">
+                        <h2 class="text-pancake-primary font-bold text-sm mb-2 flex justify-center items-center">💵 보유 현금 (Cash)</h2>
+                        <div class="flex flex-col items-center gap-1">
+                            <p id="system-wallet-balance" class="text-2xl font-brand font-bold text-pancake-text">₩ 0</p>
+                            <p id="usd-wallet-balance" class="text-lg font-brand font-bold text-blue-500">$ 0</p>
+                        </div>
+                        <p class="text-[10px] font-bold mt-3 text-pancake-textSub">모든 가계부/매매 자동 연동</p>
                     </div>
                 </div>
 
@@ -556,12 +559,19 @@
             return wallet;
         }
         
-        // 추가됨: 통화 설정에 따른 예금 표시 업데이트
+        // 추가됨: 통화 설정에 따른 예금 표시 업데이트 (원화와 달러 분리 표기)
         function updateWalletDisplay() {
             const w = getSystemWallet();
-            const amt = displayCurrency === 'USD' ? (w.total / globalExchangeRate).toFixed(2) : w.total;
-            const prefix = displayCurrency === 'USD' ? '$' : '₩';
-            document.getElementById('system-wallet-balance').textContent = `${prefix} ${formatNumber(amt)}`;
+            const usd = getUsdWallet();
+            
+            if (displayCurrency === 'USD') {
+                const wConverted = (w.total / globalExchangeRate).toFixed(2);
+                document.getElementById('system-wallet-balance').innerHTML = `<span class="text-xs font-bold text-gray-400 mr-2">KRW</span><span class="text-pancake-text">$ ${formatNumber(wConverted)}</span>`;
+                document.getElementById('usd-wallet-balance').innerHTML = `<span class="text-xs font-bold text-gray-400 mr-2">USD</span><span class="text-blue-500">$ ${formatNumber(usd.qty.toFixed(2))}</span>`;
+            } else {
+                document.getElementById('system-wallet-balance').innerHTML = `<span class="text-xs font-bold text-gray-400 mr-2">KRW</span><span class="text-pancake-text">₩ ${formatNumber(w.total)}</span>`;
+                document.getElementById('usd-wallet-balance').innerHTML = `<span class="text-xs font-bold text-gray-400 mr-2">USD</span><span class="text-blue-500">$ ${formatNumber(usd.qty.toFixed(2))}</span>`;
+            }
         }
         
         function initSystemWallet() { getSystemWallet(); getUsdWallet(); updateWalletDisplay(); checkAutoFixedExpenses(); }
@@ -1048,7 +1058,8 @@
             });
 
             const container = document.getElementById('holdings-list-container'); container.innerHTML = '';
-            const cats = [{ type: 'stock', title: '📈 주식'}, { type: 'bond', title: '🏛️ 채권'}, { type: 'commodity', title: '🥇 원자재'}, { type: 'usd_cash', title: '💵 외화 예금 (USD)'}];
+            // 외화 예금(usd_cash)을 포트폴리오 목록에서 제외하여 매매기록과 상단 대시보드에만 남김
+            const cats = [{ type: 'stock', title: '📈 주식'}, { type: 'bond', title: '🏛️ 채권'}, { type: 'commodity', title: '🥇 원자재'}];
             let hasItems = false;
             cats.forEach(cat => {
                 const items = localHoldings.filter(h => h.type === cat.type && h.qty > 0);
