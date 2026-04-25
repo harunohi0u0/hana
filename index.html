@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -13,36 +13,38 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDKs (기존 설정 유지) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // --- Firebase Configuration (본인의 키로 교체하세요) ---
+        // --- Firebase Configuration ---
         const firebaseConfig = {
             // apiKey: "YOUR_API_KEY",
             // authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
             // projectId: "YOUR_PROJECT_ID",
         };
         
-        // Firebase 초기화 방어 로직 (키가 없으면 로컬 모드로 작동)
         let db, auth, currentUser;
         try {
             if (!firebase.apps.length && firebaseConfig.projectId) {
                 firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore();
                 auth = firebase.auth();
-                
-                // 익명 로그인으로 임시 테스트 환경 구성
                 auth.signInAnonymously().then(() => {
                     currentUser = auth.currentUser;
-                    console.log("Firebase Connected: ", currentUser.uid);
-                    loadAssets();
-                    loadLedger();
+                    loadCategories().then(() => {
+                        loadAssets();
+                        loadLedger();
+                    });
                 });
             } else {
-                console.warn("Firebase config is empty. Running in Local Mode (Refresh will wipe data).");
+                console.warn("Firebase config is empty. Running in Local Mode.");
+                window.onload = () => {
+                    renderCategoryDropdown();
+                    initTab1Charts();
+                };
             }
         } catch(e) { console.error("Firebase init error:", e); }
 
@@ -56,19 +58,11 @@
                     },
                     colors: {
                         pancake: {
-                            bgLight: '#F0FDFA', // Minty background
-                            primary: '#1FC7D4', // Cyan
-                            primaryHover: '#31D0AA',
-                            secondary: '#7645D9', // Purple
+                            primary: '#1FC7D4',
+                            secondary: '#7645D9',
                             success: '#31D0AA',
                             failure: '#ED4B9E',
                             warning: '#FFB237',
-                            text: '#280D5F', // Dark purple text
-                            textSub: '#7A6EAA',
-                            card: '#FFFFFF',
-                            border: '#E7E3EB',
-                            input: '#EEEAF4',
-                            // Dark mode
                             bgDark: '#08060B',
                             cardDark: '#27262C',
                             borderDark: '#383241',
@@ -79,7 +73,6 @@
                     boxShadow: {
                         'pc-btn': '0px -2px 0px 0px rgba(14, 14, 44, 0.4) inset',
                         'pc-card': '0px 2px 12px -8px rgba(25, 19, 38, 0.1), 0px 1px 1px rgba(25, 19, 38, 0.05)',
-                        'pc-card-bottom': '0px 4px 0px 0px #E7E3EB', // 3D effect for cards
                         'pc-card-bottom-dark': '0px 4px 0px 0px #383241'
                     }
                 }
@@ -87,130 +80,84 @@
         }
     </script>
     <style>
-        body { background-color: theme('colors.pancake.bgLight'); color: theme('colors.pancake.text'); }
-        .dark body { background-color: theme('colors.pancake.bgDark'); color: white; }
+        body { background-color: theme('colors.pancake.bgDark'); color: white; }
         
-        /* PancakeSwap UI Components */
         .pc-card {
-            background-color: theme('colors.pancake.card');
-            border-radius: 24px;
-            box-shadow: theme('boxShadow.pc-card'), theme('boxShadow.pc-card-bottom');
-            padding: 1.5rem;
-            border: 1px solid theme('colors.pancake.border');
-            transition: all 0.2s ease;
-        }
-        .dark .pc-card {
             background-color: theme('colors.pancake.cardDark');
-            border-color: theme('colors.pancake.borderDark');
+            border-radius: 24px;
             box-shadow: theme('boxShadow.pc-card'), theme('boxShadow.pc-card-bottom-dark');
+            padding: 1.5rem;
+            border: 1px solid theme('colors.pancake.borderDark');
+            transition: all 0.2s ease;
         }
 
         .pc-input {
             width: 100%;
-            background-color: theme('colors.pancake.input');
+            background-color: theme('colors.pancake.inputDark');
+            color: white;
             border: 1px solid transparent;
             border-radius: 16px;
             padding: 0.75rem 1rem;
             font-size: 1rem;
-            color: theme('colors.pancake.text');
             transition: border-color 0.2s ease;
             outline: none;
         }
         .pc-input:focus { border-color: theme('colors.pancake.primary'); }
-        .dark .pc-input {
-            background-color: theme('colors.pancake.inputDark');
-            color: white;
-        }
-        .dark .pc-input:focus { border-color: theme('colors.pancake.primary'); }
 
         .pc-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-family: '"Kanit"', sans-serif;
-            font-weight: 600;
-            border-radius: 16px;
-            padding: 0.75rem 1.5rem;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.1s;
-            box-shadow: theme('boxShadow.pc-btn');
-            border: none;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-family: '"Kanit"', sans-serif; font-weight: 600;
+            border-radius: 16px; padding: 0.75rem 1.5rem;
+            cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+            box-shadow: theme('boxShadow.pc-btn'); border: none;
         }
         .pc-btn:active { transform: translateY(2px); box-shadow: none; }
         .pc-btn-primary { background-color: theme('colors.pancake.primary'); color: white; }
         .pc-btn-primary:hover { opacity: 0.85; }
-        .pc-btn-secondary { background-color: theme('colors.pancake.input'); color: theme('colors.pancake.primary'); box-shadow: none; }
-        .dark .pc-btn-secondary { background-color: theme('colors.pancake.inputDark'); }
+        .pc-btn-secondary { background-color: theme('colors.pancake.inputDark'); color: white; box-shadow: none; }
         .pc-btn-purple { background-color: theme('colors.pancake.secondary'); color: white; }
 
-        /* Toggle Group */
         .pc-toggle-group {
-            display: flex;
-            background-color: theme('colors.pancake.input');
-            border-radius: 16px;
-            padding: 4px;
+            display: flex; background-color: theme('colors.pancake.inputDark');
+            border-radius: 16px; padding: 4px;
         }
-        .dark .pc-toggle-group { background-color: theme('colors.pancake.inputDark'); }
         .pc-toggle-btn {
-            flex: 1;
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 0.875rem;
-            text-align: center;
-            color: theme('colors.pancake.textSub');
-            cursor: pointer;
-            transition: all 0.2s ease;
+            flex: 1; padding: 8px 16px; border-radius: 12px;
+            font-weight: 600; font-size: 0.875rem; text-align: center;
+            color: theme('colors.pancake.textSubDark'); cursor: pointer; transition: all 0.2s ease;
         }
-        .dark .pc-toggle-btn { color: theme('colors.pancake.textSubDark'); }
         .pc-toggle-btn.selected {
-            background-color: white;
-            color: theme('colors.pancake.text');
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .dark .pc-toggle-btn.selected {
-            background-color: theme('colors.pancake.cardDark');
-            color: white;
+            background-color: theme('colors.pancake.cardDark'); color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        /* Tab Navigation */
         .nav-tab {
-            padding: 12px 24px;
-            font-family: '"Kanit"', sans-serif;
-            font-weight: 600;
-            color: theme('colors.pancake.textSub');
-            border-bottom: 4px solid transparent;
-            cursor: pointer;
-            transition: all 0.2s;
+            padding: 12px 24px; font-family: '"Kanit"', sans-serif; font-weight: 600;
+            color: theme('colors.pancake.textSubDark'); border-bottom: 4px solid transparent;
+            cursor: pointer; transition: all 0.2s;
         }
-        .nav-tab.active {
-            color: theme('colors.pancake.primary');
-            border-bottom-color: theme('colors.pancake.primary');
-        }
+        .nav-tab.active { color: theme('colors.pancake.primary'); border-bottom-color: theme('colors.pancake.primary'); }
+        
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="pb-20">
 
     <!-- Navbar -->
-    <nav class="bg-white dark:bg-pancake-cardDark border-b border-pancake-border dark:border-pancake-borderDark sticky top-0 z-50">
+    <nav class="bg-pancake-cardDark border-b border-pancake-borderDark sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
             <div class="flex items-center gap-2">
                 <span class="text-2xl">🥞</span>
-                <span class="font-brand font-bold text-xl text-pancake-text dark:text-white hidden sm:block">My Dashboard</span>
+                <span class="font-brand font-bold text-xl text-white hidden sm:block">My Dashboard</span>
             </div>
-            <!-- Tabs -->
             <div class="flex">
                 <button class="nav-tab active" onclick="switchTab('tab1')">Asset Management</button>
                 <button class="nav-tab" onclick="switchTab('tab2')">Trading Desk</button>
             </div>
-            <!-- Dark Mode Toggle -->
-            <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
-                <i data-lucide="moon" class="w-5 h-5 text-pancake-text dark:text-white"></i>
-            </button>
+            <!-- Dark Mode Toggle Removed (Now permanently dark) -->
+            <div class="w-9 h-9"></div> 
         </div>
     </nav>
 
@@ -219,62 +166,79 @@
         <!-- ================= [TAB 1] 종합 자산 관리 ================= -->
         <div id="tab1" class="tab-content active space-y-6">
             
-            <!-- 1. 총 자산 (Net Worth) -->
             <div class="pc-card bg-gradient-to-r from-pancake-cyan/10 to-pancake-purple/10 border-pancake-cyan/30 text-center py-10">
-                <h2 class="text-pancake-textSub dark:text-pancake-textSubDark font-bold text-sm mb-2 flex justify-center items-center">💰 총 자산 (Net Worth)</h2>
-                <p id="total-net-worth" class="text-5xl font-brand font-bold text-pancake-text dark:text-white">₩ 23,000,000</p>
-                <p class="text-sm font-bold mt-3 text-pancake-success bg-white/50 dark:bg-black/20 inline-block px-3 py-1 rounded-full">▲ +5.2%</p>
+                <h2 class="text-pancake-textSubDark font-bold text-sm mb-2 flex justify-center items-center">💰 총 자산 (Net Worth)</h2>
+                <p id="total-net-worth" class="text-5xl font-brand font-bold text-white">₩ 23,000,000</p>
+                <p class="text-sm font-bold mt-3 text-pancake-success bg-black/20 inline-block px-3 py-1 rounded-full">▲ +5.2%</p>
             </div>
 
-            <!-- 2. 차트 영역 (스케치 반영) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- 자산 점유율 (반원 차트) -->
+                <!-- 자산 점유율 -->
                 <div class="pc-card">
-                    <h3 class="font-bold flex items-center mb-4 text-pancake-text dark:text-white"><span class="mr-2 text-xl">🍕</span> 자산 점유율</h3>
+                    <h3 class="font-bold flex items-center mb-4 text-white"><span class="mr-2 text-xl">🍕</span> 자산 점유율</h3>
                     <div class="h-48 relative w-full flex justify-center">
                         <canvas id="chart-asset-allocation"></canvas>
                     </div>
                 </div>
-                <!-- 재산 성장 (막대 차트) -->
+                <!-- 재산 성장 -->
                 <div class="pc-card">
-                    <h3 class="font-bold flex items-center mb-4 text-pancake-text dark:text-white"><span class="mr-2 text-xl">📈</span> 재산 성장 추이</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold flex items-center text-white"><span class="mr-2 text-xl">📈</span> 재산 성장 추이</h3>
+                        <select id="growth-timeframe" class="pc-input text-xs py-1 px-2 w-auto h-auto" onchange="initTab1Charts()">
+                            <option value="month">1개월</option>
+                            <option value="quarter">3개월(분기)</option>
+                            <option value="halfYear">6개월(반기)</option>
+                            <option value="year">1년</option>
+                        </select>
+                    </div>
                     <div class="h-48 relative w-full">
                         <canvas id="chart-asset-growth"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- 3. 가계부 요약 차트 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="pc-card">
-                    <h3 class="font-bold mb-4 text-pancake-success">📥 이번 달 수입 분포</h3>
-                    <div class="h-40 relative w-full"><canvas id="chart-income-pie"></canvas></div>
+            <!-- 가계부 요약 차트 -->
+            <div class="pc-card bg-transparent border-0 shadow-none p-0">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-lg text-white">📊 수입/지출 분포</h3>
+                    <select id="ledger-timeframe" class="pc-input text-xs py-1 px-2 w-auto h-auto bg-pancake-cardDark" onchange="renderLedgerCharts()">
+                        <option value="week">주간</option>
+                        <option value="month" selected>월간</option>
+                        <option value="quarter">분기</option>
+                        <option value="halfYear">반기</option>
+                        <option value="year">1년</option>
+                    </select>
                 </div>
-                <div class="pc-card">
-                    <h3 class="font-bold mb-4 text-pancake-failure">📤 이번 달 지출 분포</h3>
-                    <div class="h-40 relative w-full"><canvas id="chart-expense-pie"></canvas></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="pc-card">
+                        <h4 class="font-bold mb-4 text-pancake-success">📥 수입 분석</h4>
+                        <div class="h-40 relative w-full"><canvas id="chart-income-pie"></canvas></div>
+                    </div>
+                    <div class="pc-card">
+                        <h4 class="font-bold mb-4 text-pancake-failure">📤 지출 분석</h4>
+                        <div class="h-40 relative w-full"><canvas id="chart-expense-pie"></canvas></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 4. 데이터 입력 영역 -->
+            <!-- 데이터 입력 영역 -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
                 <!-- 자산 입력 -->
                 <div class="pc-card">
-                    <h3 class="font-bold text-sm mb-4 text-pancake-purple flex items-center">💎 자산 현황 업데이트 <span class="ml-2 text-xs text-gray-400 font-normal">(메모 가능)</span></h3>
+                    <h3 class="font-bold text-sm mb-4 text-pancake-primary flex items-center">💎 자산 현황 업데이트 <span class="ml-2 text-xs text-pancake-textSubDark font-normal">(메모 가능)</span></h3>
                     <form class="space-y-3" onsubmit="event.preventDefault(); updateAssets();">
                         <div class="grid grid-cols-2 gap-2">
-                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">주식 총액</label><input type="number" id="input-stock-val" class="pc-input text-sm" placeholder="금액" value="10000000"></div>
-                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">메모(평단/수량)</label><input type="text" id="input-stock-memo" class="pc-input text-sm" placeholder="예: AAPL 150$"></div>
+                            <div><label class="text-[10px] font-bold text-pancake-textSubDark ml-1">주식 총액</label><input type="number" id="input-stock-val" class="pc-input text-sm" placeholder="금액" value="10000000"></div>
+                            <div><label class="text-[10px] font-bold text-pancake-textSubDark ml-1">메모(평단/수량)</label><input type="text" id="input-stock-memo" class="pc-input text-sm" placeholder="예: AAPL 150$"></div>
                             
-                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">채권 총액</label><input type="number" id="input-bond-val" class="pc-input text-sm" placeholder="금액" value="5000000"></div>
-                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">메모</label><input type="text" id="input-bond-memo" class="pc-input text-sm" placeholder="내용"></div>
+                            <div><label class="text-[10px] font-bold text-pancake-textSubDark ml-1">채권 (ETF 등)</label><input type="number" id="input-bond-val" class="pc-input text-sm" placeholder="금액" value="5000000"></div>
+                            <div><label class="text-[10px] font-bold text-pancake-textSubDark ml-1">메모 (티커 등)</label><input type="text" id="input-bond-memo" class="pc-input text-sm" placeholder="내용"></div>
                             
-                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">원자재 총액</label><input type="number" id="input-commodity-val" class="pc-input text-sm" placeholder="금액" value="3000000"></div>
-                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">메모</label><input type="text" id="input-commodity-memo" class="pc-input text-sm" placeholder="내용"></div>
+                            <div><label class="text-[10px] font-bold text-pancake-textSubDark ml-1">원자재 (ETF 등)</label><input type="number" id="input-commodity-val" class="pc-input text-sm" placeholder="금액" value="3000000"></div>
+                            <div><label class="text-[10px] font-bold text-pancake-textSubDark ml-1">메모</label><input type="text" id="input-commodity-memo" class="pc-input text-sm" placeholder="내용"></div>
                             
-                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">현금/예적금</label><input type="number" id="input-cash-val" class="pc-input text-sm" placeholder="금액" value="5000000"></div>
-                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">메모</label><input type="text" id="input-cash-memo" class="pc-input text-sm" placeholder="은행명 등"></div>
+                            <div><label class="text-[10px] font-bold text-pancake-textSubDark ml-1">현금/예적금</label><input type="number" id="input-cash-val" class="pc-input text-sm" placeholder="금액" value="5000000"></div>
+                            <div><label class="text-[10px] font-bold text-pancake-textSubDark ml-1">메모</label><input type="text" id="input-cash-memo" class="pc-input text-sm" placeholder="은행명 등"></div>
                         </div>
                         <button type="submit" class="pc-btn pc-btn-primary w-full mt-2">자산 반영하기</button>
                     </form>
@@ -290,27 +254,24 @@
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="text-[10px] font-bold text-gray-400 ml-1">카테고리</label>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="text-[10px] font-bold text-pancake-textSubDark ml-1">태그(카테고리)</label>
+                                    <button type="button" onclick="openCategoryModal()" class="text-[10px] text-pancake-primary hover:underline">태그 관리 ⚙️</button>
+                                </div>
                                 <select id="ledger-category" class="pc-input text-sm">
                                     <!-- Options updated dynamically via JS -->
-                                    <option value="식비">식비</option>
-                                    <option value="공과금">공과금</option>
-                                    <option value="여가">여가</option>
-                                    <option value="교통비">교통비</option>
-                                    <option value="기타">기타</option>
                                 </select>
                             </div>
-                            <div><label class="text-[10px] font-bold text-gray-400 ml-1">금액</label><input type="number" id="ledger-amount" class="pc-input text-sm font-brand font-bold text-right" placeholder="0"></div>
+                            <div><label class="text-[10px] font-bold text-pancake-textSubDark ml-1">금액</label><input type="number" id="ledger-amount" class="pc-input text-sm font-brand font-bold text-right" placeholder="0"></div>
                         </div>
-                        <div><label class="text-[10px] font-bold text-gray-400 ml-1">내용/메모</label><input type="text" id="ledger-memo" class="pc-input text-sm" placeholder="상세 내용"></div>
+                        <div><label class="text-[10px] font-bold text-pancake-textSubDark ml-1">내용/메모</label><input type="text" id="ledger-memo" class="pc-input text-sm" placeholder="상세 내용"></div>
                         <button type="submit" class="pc-btn pc-btn-purple w-full">내역 추가하기</button>
                     </form>
 
-                    <!-- 최근 내역 리스트 (추가된 부분) -->
                     <div class="mt-6">
-                        <h4 class="text-xs font-bold text-gray-400 mb-2 border-b border-pancake-border dark:border-pancake-borderDark pb-1">최근 내역 (최대 5건)</h4>
+                        <h4 class="text-xs font-bold text-pancake-textSubDark mb-2 border-b border-pancake-borderDark pb-1">최근 내역 (최대 5건)</h4>
                         <ul id="ledger-list" class="space-y-2 max-h-32 overflow-y-auto">
-                            <li class="text-xs text-center text-gray-400 py-2">아직 기록된 내역이 없습니다.</li>
+                            <li class="text-xs text-center text-pancake-textSubDark py-2">아직 기록된 내역이 없습니다.</li>
                         </ul>
                     </div>
                 </div>
@@ -319,97 +280,68 @@
 
         <!-- ================= [TAB 2] 트레이딩 데스크 ================= -->
         <div id="tab2" class="tab-content space-y-6">
-            
-            <!-- 1. 핵심 지표 (스케치 상단부) -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="pc-card flex flex-col items-center justify-center py-6">
-                    <span class="text-sm font-bold text-pancake-textSub mb-1">승률</span>
+                    <span class="text-sm font-bold text-pancake-textSubDark mb-1">승률</span>
                     <span class="text-3xl font-brand font-bold text-pancake-success">40%</span>
                 </div>
                 <div class="pc-card flex flex-col items-center justify-center py-6">
-                    <span class="text-sm font-bold text-pancake-textSub mb-1">성과 (총 손익)</span>
+                    <span class="text-sm font-bold text-pancake-textSubDark mb-1">성과 (총 손익)</span>
                     <span class="text-2xl font-brand font-bold text-pancake-primary">₩ 2,300,000</span>
                 </div>
                 <div class="pc-card flex flex-col items-center justify-center py-6">
-                    <span class="text-sm font-bold text-pancake-textSub mb-1">기대 손익비</span>
+                    <span class="text-sm font-bold text-pancake-textSubDark mb-1">기대 손익비</span>
                     <span class="text-3xl font-brand font-bold text-pancake-warning">3.14</span>
                 </div>
                 <div class="pc-card flex flex-col items-center justify-center py-6">
-                    <span class="text-sm font-bold text-pancake-textSub mb-1">실제 손익비</span>
+                    <span class="text-sm font-bold text-pancake-textSubDark mb-1">실제 손익비</span>
                     <span class="text-3xl font-brand font-bold text-pancake-failure">2.09</span>
                 </div>
             </div>
 
-            <!-- 2. 트레이딩 분석 차트 -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- 선물계좌 현황 (막대) -->
                 <div class="pc-card">
                     <h3 class="font-bold flex items-center mb-4">📊 선물계좌 현황</h3>
-                    <div class="h-48 relative w-full">
-                        <canvas id="chart-trading-equity"></canvas>
-                    </div>
+                    <div class="h-48 relative w-full"><canvas id="chart-trading-equity"></canvas></div>
                 </div>
-                <!-- 태그별 승률 (스케치 반영) -->
                 <div class="pc-card">
                     <h3 class="font-bold flex items-center mb-4">🏷️ 태그별 승률 분석</h3>
                     <div class="h-48 relative w-full overflow-y-auto">
                         <ul class="space-y-3">
-                            <li class="flex justify-between items-center text-sm border-b border-gray-100 dark:border-gray-800 pb-2">
-                                <div><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">근거: 추세선 돌파</span></div>
-                                <div class="font-bold">60% <span class="text-gray-400 text-xs">(3/5)</span></div>
+                            <li class="flex justify-between items-center text-sm border-b border-pancake-borderDark pb-2">
+                                <div><span class="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded text-xs">근거: 추세선 돌파</span></div>
+                                <div class="font-bold">60% <span class="text-pancake-textSubDark text-xs">(3/5)</span></div>
                             </li>
-                            <li class="flex justify-between items-center text-sm border-b border-gray-100 dark:border-gray-800 pb-2">
-                                <div><span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs">심리: 뇌동매매</span></div>
-                                <div class="font-bold text-pancake-failure">0% <span class="text-gray-400 text-xs">(0/2)</span></div>
+                            <li class="flex justify-between items-center text-sm border-b border-pancake-borderDark pb-2">
+                                <div><span class="bg-red-900/50 text-red-300 px-2 py-0.5 rounded text-xs">심리: 뇌동매매</span></div>
+                                <div class="font-bold text-pancake-failure">0% <span class="text-pancake-textSubDark text-xs">(0/2)</span></div>
                             </li>
                             <li class="flex justify-between items-center text-sm pb-2">
-                                <div><span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs">근거: 지지/저항</span></div>
-                                <div class="font-bold">75% <span class="text-gray-400 text-xs">(6/8)</span></div>
+                                <div><span class="bg-green-900/50 text-green-300 px-2 py-0.5 rounded text-xs">근거: 지지/저항</span></div>
+                                <div class="font-bold">75% <span class="text-pancake-textSubDark text-xs">(6/8)</span></div>
                             </li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- 3. 매매일지 기록 폼 -->
             <div class="pc-card">
                 <h3 class="font-bold mb-4 flex items-center text-pancake-primary">✍️ 매매일지 기록</h3>
                 <form class="space-y-4" onsubmit="event.preventDefault(); addTrade();">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div><label class="text-xs font-bold text-pancake-textSubDark">종목</label><input type="text" class="pc-input text-sm" placeholder="예: NQ (나스닥)"></div>
                         <div>
-                            <label class="text-xs font-bold text-gray-500">종목</label>
-                            <input type="text" class="pc-input text-sm" placeholder="예: NQ (나스닥)">
+                            <label class="text-xs font-bold text-pancake-textSubDark">포지션</label>
+                            <select class="pc-input text-sm"><option>Long 🔴</option><option>Short 🔵</option></select>
                         </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-500">포지션</label>
-                            <select class="pc-input text-sm">
-                                <option>Long 🔴</option>
-                                <option>Short 🔵</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-500">손익 (실현)</label>
-                            <input type="number" class="pc-input text-sm font-bold" placeholder="금액 (+/-)">
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-500">수수료 (수수료 지출란)</label>
-                            <input type="number" class="pc-input text-sm text-pancake-failure" placeholder="0">
-                        </div>
+                        <div><label class="text-xs font-bold text-pancake-textSubDark">손익 (실현)</label><input type="number" class="pc-input text-sm font-bold" placeholder="금액 (+/-)"></div>
+                        <div><label class="text-xs font-bold text-pancake-textSubDark">수수료 지출란</label><input type="number" class="pc-input text-sm text-pancake-failure" placeholder="0"></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="text-xs font-bold text-gray-500">진입 근거 (태그)</label>
-                            <input type="text" class="pc-input text-sm" placeholder="예: 추세선, 15m 이평선">
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-500">심리 상태 (태그)</label>
-                            <input type="text" class="pc-input text-sm" placeholder="예: 차분함, 조급함">
-                        </div>
+                        <div><label class="text-xs font-bold text-pancake-textSubDark">진입 근거 (태그)</label><input type="text" class="pc-input text-sm" placeholder="예: 추세선, 15m 이평선"></div>
+                        <div><label class="text-xs font-bold text-pancake-textSubDark">심리 상태 (태그)</label><input type="text" class="pc-input text-sm" placeholder="예: 차분함, 조급함"></div>
                     </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-500">복기 메모</label>
-                        <textarea class="pc-input text-sm h-20 resize-none" placeholder="매매 복기 내용을 적어주세요."></textarea>
-                    </div>
+                    <div><label class="text-xs font-bold text-pancake-textSubDark">복기 메모</label><textarea class="pc-input text-sm h-20 resize-none" placeholder="매매 복기 내용을 적어주세요."></textarea></div>
                     <button type="submit" class="pc-btn pc-btn-primary w-full">매매일지 저장 및 통계 반영</button>
                 </form>
             </div>
@@ -417,60 +349,138 @@
 
     </main>
 
+    <!-- 태그(카테고리) 관리 모달 -->
+    <div id="category-modal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-[100]">
+        <div class="pc-card w-full max-w-sm m-4 border border-pancake-primary">
+            <h3 class="font-bold mb-4 text-white flex justify-between items-center">
+                <span>🏷️ 태그 관리</span>
+                <button onclick="closeCategoryModal()" class="text-pancake-textSubDark hover:text-white">✕</button>
+            </h3>
+            
+            <div class="flex gap-2 mb-4 bg-pancake-inputDark rounded-xl p-1" id="cat-modal-toggle">
+                <button type="button" class="pc-toggle-btn selected text-pancake-failure" data-type="expense">지출 태그</button>
+                <button type="button" class="pc-toggle-btn text-pancake-success" data-type="income">수입 태그</button>
+            </div>
+            
+            <ul id="modal-category-list" class="space-y-2 mb-4 max-h-48 overflow-y-auto">
+                <!-- 리스트 동적 렌더링 -->
+            </ul>
+            
+            <div class="flex gap-2">
+                <input type="text" id="new-category-input" class="pc-input text-sm" placeholder="새 태그 이름 (예: 데이트비)">
+                <button onclick="addCategory()" class="pc-btn pc-btn-primary px-4 py-2">+</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         lucide.createIcons();
+        Chart.defaults.font.family = '"Noto Sans KR", sans-serif';
+        Chart.defaults.color = '#9EA1AA'; // Dark mode text color
+        let chartInstances = {};
 
-        // --- UI Interactions ---
-
-        // Tab Switching
         function switchTab(tabId) {
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
             event.target.classList.add('active');
             document.getElementById(tabId).classList.add('active');
-            
-            // Re-render charts to fix sizing issues in hidden tabs
             if(tabId === 'tab1') initTab1Charts();
             if(tabId === 'tab2') initTab2Charts();
         }
 
-        // Dark Mode Toggle
-        const toggleBtn = document.getElementById('darkModeToggle');
-        toggleBtn.addEventListener('click', () => {
-            document.documentElement.classList.toggle('dark');
-            const isDark = document.documentElement.classList.contains('dark');
-            
-            // Update chart text colors based on theme
-            Chart.defaults.color = isDark ? '#9EA1AA' : '#7A6EAA';
-            initTab1Charts();
-            initTab2Charts();
-        });
-
-        // Ledger Toggle Logic
+        // --- Category (Tag) Management Logic ---
         let ledgerType = 'expense';
+        let modalLedgerType = 'expense';
+        let customCategories = {
+            expense: ['식비', '공과금', '여가', '교통비', '기타'],
+            income: ['선물 (트레이딩)', '주식 (ETF)', '노동소득', '기타']
+        };
+
         document.querySelectorAll('#ledger-type-toggle .pc-toggle-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('#ledger-type-toggle .pc-toggle-btn').forEach(b => b.classList.remove('selected'));
                 e.target.classList.add('selected');
                 ledgerType = e.target.dataset.type;
-                
-                // Update Categories
-                const catSelect = document.getElementById('ledger-category');
-                if(ledgerType === 'expense') {
-                    catSelect.innerHTML = '<option value="식비">식비</option><option value="공과금">공과금</option><option value="여가">여가</option><option value="교통비">교통비</option><option value="기타">기타</option>';
-                } else {
-                    catSelect.innerHTML = '<option value="선물">선물</option><option value="주식">주식</option><option value="노동소득">노동소득</option><option value="기타">기타</option>';
-                }
+                renderCategoryDropdown();
             });
         });
 
+        async function loadCategories() {
+            if(!db || !currentUser) return;
+            const doc = await db.collection("users").doc(currentUser.uid).collection("settings").doc("categories").get();
+            if(doc.exists) customCategories = doc.data();
+            renderCategoryDropdown();
+        }
 
-        // --- Chart.js Setup ---
-        Chart.defaults.font.family = '"Noto Sans KR", sans-serif';
-        Chart.defaults.color = '#7A6EAA'; // textSub color
-        let chartInstances = {};
+        async function saveCategories() {
+            if(!db || !currentUser) return;
+            await db.collection("users").doc(currentUser.uid).collection("settings").doc("categories").set(customCategories);
+        }
 
+        function renderCategoryDropdown() {
+            const select = document.getElementById('ledger-category');
+            select.innerHTML = '';
+            const list = customCategories[ledgerType] || [];
+            list.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat; opt.textContent = cat;
+                select.appendChild(opt);
+            });
+        }
+
+        function openCategoryModal() {
+            document.getElementById('category-modal').classList.remove('hidden');
+            renderModalCategoryList();
+        }
+        function closeCategoryModal() {
+            document.getElementById('category-modal').classList.add('hidden');
+            renderCategoryDropdown(); // 모달 닫을때 메인 폼 리렌더링
+            renderLedgerCharts(); // 기존 항목이 차트에 반영될 수 있도록
+        }
+
+        document.querySelectorAll('#cat-modal-toggle .pc-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('#cat-modal-toggle .pc-toggle-btn').forEach(b => b.classList.remove('selected'));
+                e.target.classList.add('selected');
+                modalLedgerType = e.target.dataset.type;
+                renderModalCategoryList();
+            });
+        });
+
+        function renderModalCategoryList() {
+            const listEl = document.getElementById('modal-category-list');
+            listEl.innerHTML = '';
+            const list = customCategories[modalLedgerType] || [];
+            list.forEach((cat, index) => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center bg-pancake-bgDark p-2 rounded-lg text-sm';
+                li.innerHTML = `
+                    <span>${cat}</span>
+                    <button onclick="removeCategory(${index})" class="text-pancake-failure hover:text-white font-bold px-2">✕</button>
+                `;
+                listEl.appendChild(li);
+            });
+        }
+
+        function addCategory() {
+            const input = document.getElementById('new-category-input');
+            const val = input.value.trim();
+            if(!val) return;
+            if(!customCategories[modalLedgerType].includes(val)) {
+                customCategories[modalLedgerType].push(val);
+                saveCategories();
+                renderModalCategoryList();
+            }
+            input.value = '';
+        }
+
+        function removeCategory(index) {
+            customCategories[modalLedgerType].splice(index, 1);
+            saveCategories();
+            renderModalCategoryList();
+        }
+
+        // --- Chart & Timeframe Filtering Logic ---
         function createOrUpdateChart(id, config) {
             const ctx = document.getElementById(id).getContext('2d');
             if (chartInstances[id]) chartInstances[id].destroy();
@@ -478,11 +488,11 @@
         }
 
         function initTab1Charts() {
-            // 1. 자산 점유율 (반원)
             const stock = Number(document.getElementById('input-stock-val').value) || 0;
             const bond = Number(document.getElementById('input-bond-val').value) || 0;
             const commodity = Number(document.getElementById('input-commodity-val').value) || 0;
             const cash = Number(document.getElementById('input-cash-val').value) || 0;
+            const currentTotal = stock + bond + commodity + cash;
 
             createOrUpdateChart('chart-asset-allocation', {
                 type: 'doughnut',
@@ -491,48 +501,50 @@
                     datasets: [{
                         data: [stock, bond, commodity, cash],
                         backgroundColor: ['#7645D9', '#1FC7D4', '#FFB237', '#EDF2F7'],
-                        borderWidth: 0,
-                        hoverOffset: 4
+                        borderWidth: 0, hoverOffset: 4
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    circumference: 180,
-                    rotation: -90,
+                    responsive: true, maintainAspectRatio: false, cutout: '70%', circumference: 180, rotation: -90,
                     plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } }
                 }
             });
 
-            // 2. 재산 성장 (막대 - 현재는 정적 데이터)
+            // 재산 성장 추이 (타임프레임 필터 반영 가상 데이터)
+            const growthTf = document.getElementById('growth-timeframe').value;
+            let gLabels = [], gData = [];
+            if(growthTf === 'month') {
+                gLabels = ['3주전', '2주전', '1주전', '현재'];
+                gData = [currentTotal*0.97, currentTotal*0.98, currentTotal*0.99, currentTotal];
+            } else if(growthTf === 'quarter') {
+                gLabels = ['3달전', '2달전', '1달전', '현재'];
+                gData = [currentTotal*0.9, currentTotal*0.93, currentTotal*0.96, currentTotal];
+            } else if(growthTf === 'halfYear') {
+                gLabels = ['6달전', '4달전', '2달전', '현재'];
+                gData = [currentTotal*0.8, currentTotal*0.88, currentTotal*0.95, currentTotal];
+            } else {
+                gLabels = ['1년전', '9달전', '6달전', '현재'];
+                gData = [currentTotal*0.7, currentTotal*0.8, currentTotal*0.9, currentTotal];
+            }
+
             createOrUpdateChart('chart-asset-growth', {
                 type: 'bar',
                 data: {
-                    labels: ['1월', '2월', '3월', '4월(현재)'],
-                    datasets: [{
-                        label: '자산',
-                        data: [19000000, 20500000, 21800000, stock+bond+commodity+cash], // 현재 합계 반영
-                        backgroundColor: '#1FC7D4',
-                        borderRadius: 4
-                    }]
+                    labels: gLabels,
+                    datasets: [{ label: '자산', data: gData, backgroundColor: '#1FC7D4', borderRadius: 4 }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { display: false } }
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }, scales: { y: { display: false } }
                 }
             });
 
-            // 3. 수입/지출 파이 차트 (로컬 변수 ledgerData 사용)
             renderLedgerCharts();
         }
 
-        // --- Data Logic (Firebase 연동 및 로컬 상태 관리) ---
+        // --- Data Logic ---
         let localLedgerData = [];
 
-        // 자산 데이터 불러오기
         async function loadAssets() {
             if(!db || !currentUser) return;
             const doc = await db.collection("users").doc(currentUser.uid).collection("settings").doc("assets").get();
@@ -546,11 +558,10 @@
                 document.getElementById('input-commodity-memo').value = d.commodityMemo || '';
                 document.getElementById('input-cash-val').value = d.cash || 0;
                 document.getElementById('input-cash-memo').value = d.cashMemo || '';
-                updateAssets(false); // UI 업데이트 (저장 안함)
+                updateAssets(false);
             }
         }
 
-        // 자산 업데이트 로직
         async function updateAssets(saveToDb = true) {
             const stock = Number(document.getElementById('input-stock-val').value) || 0;
             const bond = Number(document.getElementById('input-bond-val').value) || 0;
@@ -559,112 +570,103 @@
             
             const total = stock + bond + commodity + cash;
             document.getElementById('total-net-worth').innerText = `₩ ${total.toLocaleString()}`;
-            
             initTab1Charts();
             
             if(saveToDb && db && currentUser) {
                 const assetData = {
-                    stock: stock, stockMemo: document.getElementById('input-stock-memo').value,
-                    bond: bond, bondMemo: document.getElementById('input-bond-memo').value,
-                    commodity: commodity, commodityMemo: document.getElementById('input-commodity-memo').value,
-                    cash: cash, cashMemo: document.getElementById('input-cash-memo').value,
+                    stock, stockMemo: document.getElementById('input-stock-memo').value,
+                    bond, bondMemo: document.getElementById('input-bond-memo').value,
+                    commodity, commodityMemo: document.getElementById('input-commodity-memo').value,
+                    cash, cashMemo: document.getElementById('input-cash-memo').value,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 await db.collection("users").doc(currentUser.uid).collection("settings").doc("assets").set(assetData);
-                alert('자산 현황이 안전하게 저장되었습니다! 🥞');
-            } else if (saveToDb) {
-                 alert('자산 업데이트 (로컬 모드)');
+                alert('자산 현황 업데이트 완료 🥞');
             }
         }
 
-        // 가계부 내역 추가
         async function addLedger() {
             const amt = Number(document.getElementById('ledger-amount').value);
             const cat = document.getElementById('ledger-category').value;
             const memo = document.getElementById('ledger-memo').value;
             
-            if(!amt || amt <= 0) return alert("올바른 금액을 입력하세요.");
+            if(!amt || amt <= 0) return alert("금액을 입력하세요.");
 
-            const entry = {
-                type: ledgerType,
-                category: cat,
-                amount: amt,
-                memo: memo,
-                date: new Date().toISOString()
-            };
-
-            // 로컬 배열에 추가
+            const entry = { type: ledgerType, category: cat, amount: amt, memo: memo, date: new Date().toISOString() };
             localLedgerData.unshift(entry); 
             
-            // Firebase에 저장
             if(db && currentUser) {
                 entry.timestamp = firebase.firestore.FieldValue.serverTimestamp();
                 await db.collection("users").doc(currentUser.uid).collection("ledger").add(entry);
             }
-
-            // UI 초기화 및 업데이트
             document.getElementById('ledger-amount').value = '';
             document.getElementById('ledger-memo').value = '';
             updateLedgerUI();
         }
 
-        // 가계부 데이터 불러오기 (Firebase)
         async function loadLedger() {
             if(!db || !currentUser) return;
-            // 이번 달 데이터만 가져오는 쿼리가 이상적이나, 우선 최신 50개만 로드
+            // 타임프레임 필터링을 위해 데이터를 넉넉히 가져옵니다.
             const snapshot = await db.collection("users").doc(currentUser.uid).collection("ledger")
-                                     .orderBy("timestamp", "desc").limit(50).get();
+                                     .orderBy("timestamp", "desc").limit(500).get();
             localLedgerData = [];
-            snapshot.forEach(doc => {
-                localLedgerData.push({ id: doc.id, ...doc.data() });
-            });
+            snapshot.forEach(doc => { localLedgerData.push({ id: doc.id, ...doc.data() }); });
             updateLedgerUI();
         }
 
-        // 가계부 UI (리스트 및 파이 차트) 업데이트
         function updateLedgerUI() {
-            // 1. 리스트 업데이트 (최근 5개)
             const listEl = document.getElementById('ledger-list');
             listEl.innerHTML = '';
-            
             if(localLedgerData.length === 0) {
-                listEl.innerHTML = '<li class="text-xs text-center text-gray-400 py-2">아직 기록된 내역이 없습니다.</li>';
+                listEl.innerHTML = '<li class="text-xs text-center text-pancake-textSubDark py-2">기록된 내역이 없습니다.</li>';
             } else {
                 localLedgerData.slice(0, 5).forEach(item => {
                     const isInc = item.type === 'income';
                     const colorCls = isInc ? 'text-pancake-success' : 'text-pancake-failure';
                     const sign = isInc ? '+' : '-';
                     const li = document.createElement('li');
-                    li.className = 'flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-2 rounded-lg text-xs';
+                    li.className = 'flex justify-between items-center bg-black/20 p-2 rounded-lg text-xs';
                     li.innerHTML = `
                         <div class="flex flex-col">
-                            <span class="font-bold text-gray-700 dark:text-gray-300">${item.category}</span>
-                            <span class="text-[10px] text-gray-400">${item.memo || '-'}</span>
+                            <span class="font-bold text-gray-300">${item.category}</span>
+                            <span class="text-[10px] text-pancake-textSubDark">${item.memo || '-'}</span>
                         </div>
                         <span class="font-brand font-bold ${colorCls}">${sign}₩ ${item.amount.toLocaleString()}</span>
                     `;
                     listEl.appendChild(li);
                 });
             }
-
-            // 2. 파이 차트 업데이트 로직 호출
             renderLedgerCharts();
         }
 
-        // 가계부 파이 차트 렌더링
+        // 타임프레임 기반 데이터 필터링
+        function getFilteredLedgerData() {
+            const tf = document.getElementById('ledger-timeframe').value;
+            const now = new Date();
+            let cutoff = new Date();
+            
+            if(tf === 'week') cutoff.setDate(now.getDate() - 7);
+            else if(tf === 'month') cutoff.setMonth(now.getMonth() - 1);
+            else if(tf === 'quarter') cutoff.setMonth(now.getMonth() - 3);
+            else if(tf === 'halfYear') cutoff.setMonth(now.getMonth() - 6);
+            else if(tf === 'year') cutoff.setFullYear(now.getFullYear() - 1);
+
+            return localLedgerData.filter(item => {
+                // Firebase timestamp가 있으면 Date로 변환, 없으면 ISO string 사용
+                const itemDate = item.timestamp ? item.timestamp.toDate() : new Date(item.date);
+                return itemDate >= cutoff;
+            });
+        }
+
         function renderLedgerCharts() {
             let incSum = {}, expSum = {};
+            const filteredData = getFilteredLedgerData();
             
-            // 데이터 집계
-            localLedgerData.forEach(item => {
-                if(item.type === 'income') {
-                    incSum[item.category] = (incSum[item.category] || 0) + item.amount;
-                } else {
-                    expSum[item.category] = (expSum[item.category] || 0) + item.amount;
-                }
+            filteredData.forEach(item => {
+                if(item.type === 'income') incSum[item.category] = (incSum[item.category] || 0) + item.amount;
+                else expSum[item.category] = (expSum[item.category] || 0) + item.amount;
             });
 
-            // 수입 차트
             const incLabels = Object.keys(incSum);
             const incData = Object.values(incSum);
             createOrUpdateChart('chart-income-pie', {
@@ -673,14 +675,13 @@
                     labels: incLabels.length > 0 ? incLabels : ['데이터 없음'], 
                     datasets: [{ 
                         data: incData.length > 0 ? incData : [1], 
-                        backgroundColor: incData.length > 0 ? ['#31D0AA', '#1FC7D4', '#7645D9'] : ['#e2e8f0'], 
+                        backgroundColor: incData.length > 0 ? ['#31D0AA', '#1FC7D4', '#7645D9', '#FFB237', '#ED4B9E'] : ['#27262C'], 
                         borderWidth: 0 
                     }] 
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: {boxWidth: 8} } } }
             });
 
-            // 지출 차트
             const expLabels = Object.keys(expSum);
             const expData = Object.values(expSum);
             createOrUpdateChart('chart-expense-pie', {
@@ -689,7 +690,7 @@
                     labels: expLabels.length > 0 ? expLabels : ['데이터 없음'], 
                     datasets: [{ 
                         data: expData.length > 0 ? expData : [1], 
-                        backgroundColor: expData.length > 0 ? ['#ED4B9E', '#FFB237', '#7645D9', '#1FC7D4'] : ['#e2e8f0'], 
+                        backgroundColor: expData.length > 0 ? ['#ED4B9E', '#FFB237', '#7645D9', '#1FC7D4', '#31D0AA'] : ['#27262C'], 
                         borderWidth:0 
                     }] 
                 },
@@ -697,14 +698,18 @@
             });
         }
 
-        function addTrade() {
-            alert('매매일지가 기록되고 통계에 반영되었습니다!');
+        function initTab2Charts() {
+            createOrUpdateChart('chart-trading-equity', {
+                type: 'bar',
+                data: {
+                    labels: ['W1', 'W2', 'W3', 'W4'],
+                    datasets: [{ label: '주간 손익', data: [500000, -200000, 1500000, 500000], backgroundColor: (ctx) => ctx.raw > 0 ? '#31D0AA' : '#ED4B9E', borderRadius: 4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
         }
 
-        // Initialize on load
-        window.onload = () => {
-            initTab1Charts();
-        };
+        function addTrade() { alert('매매일지가 기록되고 통계에 반영되었습니다!'); }
 
     </script>
 </body>
