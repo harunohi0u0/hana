@@ -32,6 +32,7 @@
         
         let db, auth, currentUser;
         let globalExchangeRate = 1380; // 글로벌 환율 변수
+        let displayCurrency = 'KRW'; // 추가됨: 현재 표시 통화 (대시보드 뷰 모드)
 
         try {
             if (!firebase.apps.length && firebaseConfig.projectId) {
@@ -132,13 +133,30 @@
                 <button class="nav-tab active" onclick="switchMainTab('tab1')">Asset & Ledger</button>
                 <button class="nav-tab" onclick="switchMainTab('tab2')">Trading Desk</button>
             </div>
-            <!-- 환율 설정란 -->
-            <div class="flex items-center gap-2 bg-pancake-input px-3 py-1 rounded-xl border border-pancake-border">
-                <span class="text-[10px] font-bold text-gray-500">환율($1)</span>
-                <input type="text" id="global-exchange-rate" value="1,380" class="number-input bg-transparent border-none text-sm font-bold text-pancake-text w-16 text-right outline-none">
+            
+            <!-- 환율 설정란 및 통화 토글 (추가됨) -->
+            <div class="flex items-center gap-2">
+                <!-- 원화/달러 토글 -->
+                <div class="pc-toggle-group shadow-sm p-1">
+                    <button type="button" id="btn-curr-krw" class="pc-toggle-btn selected !px-2 !py-0.5 text-[10px] sm:text-xs" onclick="setDisplayCurrency('KRW')">KRW</button>
+                    <button type="button" id="btn-curr-usd" class="pc-toggle-btn !px-2 !py-0.5 text-[10px] sm:text-xs" onclick="setDisplayCurrency('USD')">USD</button>
+                </div>
+
+                <div class="flex items-center gap-2 bg-pancake-input px-3 py-1 rounded-xl border border-pancake-border hidden sm:flex">
+                    <span class="text-[10px] font-bold text-gray-500">환율($1)</span>
+                    <input type="text" id="global-exchange-rate" value="1,380" class="number-input bg-transparent border-none text-sm font-bold text-pancake-text w-16 text-right outline-none">
+                </div>
             </div>
         </div>
     </nav>
+
+    <!-- 모바일 전용 환율 인풋 (공간 확보용) -->
+    <div class="sm:hidden bg-white border-b border-gray-100 px-4 py-2 flex justify-end">
+        <div class="flex items-center gap-2 bg-pancake-input px-3 py-1 rounded-xl border border-pancake-border w-full justify-between">
+            <span class="text-xs font-bold text-gray-500">글로벌 환율 ($1 기준)</span>
+            <input type="text" id="global-exchange-rate-mobile" value="1,380" class="number-input bg-transparent border-none text-sm font-bold text-pancake-text w-20 text-right outline-none">
+        </div>
+    </div>
 
     <!-- Toast Notification -->
     <div id="toast" class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-pancake-success text-white px-8 py-4 rounded-2xl shadow-xl -translate-y-32 opacity-0 transition-all duration-300 font-bold z-[100] flex items-center pointer-events-none">
@@ -250,7 +268,6 @@
                             <div><label class="text-xs font-bold text-gray-500 block mb-1">메모</label><input type="text" id="ledger-memo" class="pc-input bg-white border-gray-200" placeholder="내용 입력..."></div>
                             
                             <div class="flex justify-end gap-3 pt-4">
-                                <!-- 버튼 가독성, UI 깨짐 완벽 복구 구역 -->
                                 <button type="button" onclick="resetLedgerForm()" class="pc-btn pc-btn-secondary text-sm px-6">초기화</button>
                                 <button type="submit" class="pc-btn pc-btn-purple text-base w-full sm:w-auto"><i data-lucide="save" class="w-5 h-5 mr-2"></i> 가계부 저장</button>
                             </div>
@@ -285,6 +302,7 @@
                                     <option value="bond">🏛️ 채권 (ETF)</option>
                                     <option value="commodity">🥇 원자재 (ETF)</option>
                                     <option value="cash">💵 기본 예금 입출금 (수동)</option>
+                                    <option value="usd_cash">💵 외화 예금 입출금 (수동)</option>
                                 </select>
                             </div>
                             <div id="holding-name-container">
@@ -306,7 +324,7 @@
                             </div>
 
                             <div id="holding-cash-container" class="hidden">
-                                <label class="text-xs font-bold text-gray-500 block mb-1">입출금 금액(₩)</label>
+                                <label id="holding-cash-label" class="text-xs font-bold text-gray-500 block mb-1">입출금 금액(₩)</label>
                                 <input type="text" id="holding-cash-amount" class="pc-input bg-white number-input font-bold text-right text-lg text-pancake-success border-gray-200" placeholder="예: 100,000">
                                 <p class="text-[10px] text-gray-400 mt-1">양수(+)는 예금 추가, 음수(-)는 차감.</p>
                             </div>
@@ -317,7 +335,6 @@
                             </div>
 
                             <div class="flex gap-3 pt-4 border-t border-gray-100">
-                                <!-- 버튼 UI 복구 구역 -->
                                 <button type="button" onclick="resetHoldingForm()" class="pc-btn pc-btn-secondary text-sm px-6">초기화</button>
                                 <button type="submit" class="pc-btn pc-btn-primary flex-1 text-base"><i data-lucide="check" class="w-5 h-5 mr-1"></i> 포트폴리오 등록</button>
                             </div>
@@ -467,16 +484,33 @@
             window.toastTimeout = setTimeout(() => t.classList.add('-translate-y-32', 'opacity-0'), 3000); 
         }
 
+        // ================= 통화 토글 (추가됨) =================
+        function setDisplayCurrency(curr) {
+            displayCurrency = curr;
+            document.getElementById('btn-curr-krw').classList.toggle('selected', curr === 'KRW');
+            document.getElementById('btn-curr-usd').classList.toggle('selected', curr === 'USD');
+            updateWalletDisplay();
+            initTab1Charts();
+        }
+
         // 환율 글로벌 연동
-        document.getElementById('global-exchange-rate').addEventListener('input', (e) => {
+        const syncExchangeRate = (e) => {
             const val = parseFloat(unformatNumber(e.target.value));
             if(!isNaN(val) && val > 0) {
                 globalExchangeRate = val;
+                
+                // 데스크탑/모바일 input 값 동기화
+                if(e.target.id === 'global-exchange-rate') document.getElementById('global-exchange-rate-mobile').value = e.target.value;
+                if(e.target.id === 'global-exchange-rate-mobile') document.getElementById('global-exchange-rate').value = e.target.value;
+
                 updateHoldingPreview();
                 renderHoldings();
+                updateWalletDisplay(); // 대시보드 통화 변경 시 즉시 반영
                 initTab1Charts();
             }
-        });
+        };
+        document.getElementById('global-exchange-rate').addEventListener('input', syncExchangeRate);
+        document.getElementById('global-exchange-rate-mobile').addEventListener('input', syncExchangeRate);
 
         // 기간 필터 기본값 셋팅
         function setDefaultDates() {
@@ -507,11 +541,22 @@
             if(!wallet) { wallet = { id: 'wallet_system', type: 'cash', name: '기본 예금', qty:0, price:0, total: 0 }; localHoldings.push(wallet); }
             return wallet;
         }
+
+        function getUsdWallet() {
+            let wallet = localHoldings.find(h => h.type === 'usd_cash' && h.name === '외화 예금');
+            if(!wallet) { wallet = { id: 'wallet_usd', type: 'usd_cash', name: '외화 예금', qty:0, price:1, currency: 'USD', totalKRW: 0 }; localHoldings.push(wallet); }
+            return wallet;
+        }
+        
+        // 추가됨: 통화 설정에 따른 예금 표시 업데이트
         function updateWalletDisplay() {
             const w = getSystemWallet();
-            document.getElementById('system-wallet-balance').textContent = `₩ ${formatNumber(w.total)}`;
+            const amt = displayCurrency === 'USD' ? (w.total / globalExchangeRate).toFixed(2) : w.total;
+            const prefix = displayCurrency === 'USD' ? '$' : '₩';
+            document.getElementById('system-wallet-balance').textContent = `${prefix} ${formatNumber(amt)}`;
         }
-        function initSystemWallet() { getSystemWallet(); updateWalletDisplay(); checkAutoFixedExpenses(); }
+        
+        function initSystemWallet() { getSystemWallet(); getUsdWallet(); updateWalletDisplay(); checkAutoFixedExpenses(); }
 
         async function initializeData() {
             setDefaultDates(); await loadLedgerCategories(); await loadAllData();
@@ -762,7 +807,8 @@
 
         // ================= ASSET PORTFOLIO =================
         function toggleHoldingInputs() {
-            const isCash = document.getElementById('holding-type').value === 'cash';
+            const type = document.getElementById('holding-type').value;
+            const isCash = type === 'cash' || type === 'usd_cash';
             document.getElementById('holding-name-container').classList.toggle('hidden', isCash);
             document.getElementById('holding-qty-price-container').classList.toggle('hidden', isCash);
             document.getElementById('holding-currency-container').classList.toggle('hidden', isCash);
@@ -772,6 +818,22 @@
             document.getElementById('holding-qty').required = !isCash;
             document.getElementById('holding-price').required = !isCash;
             document.getElementById('holding-cash-amount').required = isCash;
+
+            if (isCash) {
+                const label = document.getElementById('holding-cash-label');
+                const input = document.getElementById('holding-cash-amount');
+                if (type === 'usd_cash') {
+                    label.textContent = '입출금 금액($)';
+                    input.placeholder = "예: 1,000";
+                    input.classList.remove('text-pancake-success');
+                    input.classList.add('text-blue-500');
+                } else {
+                    label.textContent = '입출금 금액(₩)';
+                    input.placeholder = "예: 100,000";
+                    input.classList.add('text-pancake-success');
+                    input.classList.remove('text-blue-500');
+                }
+            }
         }
 
         document.querySelectorAll('[data-group="holding-currency"] button').forEach(btn => {
@@ -794,30 +856,49 @@
 
         ['holding-qty', 'holding-price'].forEach(id => document.getElementById(id).addEventListener('input', updateHoldingPreview));
 
-        window.resetHoldingForm = function() { document.getElementById('holding-form').reset(); document.getElementById('holding-id').value = ''; document.getElementById('holding-preview-total').textContent = `₩ 0`; toggleHoldingInputs(); }
+        window.resetHoldingForm = function() { 
+            document.getElementById('holding-form').reset(); 
+            document.getElementById('holding-id').value = ''; 
+            document.getElementById('holding-preview-total').textContent = `₩ 0`; 
+            document.getElementById('holding-cash-label').textContent = '입출금 금액(₩)';
+            document.getElementById('holding-cash-amount').classList.add('text-pancake-success');
+            document.getElementById('holding-cash-amount').classList.remove('text-blue-500');
+            toggleHoldingInputs(); 
+        }
 
         async function addHolding() {
             const id = document.getElementById('holding-id').value;
             const type = document.getElementById('holding-type').value;
             const wallet = getSystemWallet();
+            const usdWallet = getUsdWallet();
             
-            if(type === 'cash') {
+            if(type === 'cash' || type === 'usd_cash') {
                 const amtStr = document.getElementById('holding-cash-amount').value;
                 const amt = parseFloat(unformatNumber(amtStr));
                 if(isNaN(amt) || amt === 0) return alert("입출금 금액을 올바르게 입력하세요.");
                 
-                wallet.total += amt;
-                const entry = { type: amt > 0 ? 'income' : 'expense', category: '기본예금 수동조절', subCategory: '입출금', amount: Math.abs(amt), memo: '수동 잔액 변경', date: new Date().toISOString() };
+                let entry, targetWallet;
+
+                if (type === 'cash') {
+                    wallet.total += amt;
+                    targetWallet = wallet;
+                    entry = { type: amt > 0 ? 'income' : 'expense', category: '기본예금 수동조절', subCategory: '입출금', amount: Math.abs(amt), memo: '수동 잔액 변경', date: new Date().toISOString() };
+                } else {
+                    usdWallet.qty += amt; // 외화 예금은 qty에 달러 잔고를 저장합니다.
+                    usdWallet.totalKRW = usdWallet.qty * globalExchangeRate;
+                    targetWallet = usdWallet;
+                    entry = { type: amt > 0 ? 'income' : 'expense', category: '외화예금 수동조절', subCategory: '입출금(USD)', amount: Math.abs(amt * globalExchangeRate), memo: `수동 잔액 변경 (${amt>0?'+':''}$${formatNumber(Math.abs(amt))})`, date: new Date().toISOString() };
+                }
                 
                 if(db && currentUser) {
-                    await db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
+                    await db.collection("users").doc(currentUser.uid).collection("holdings").doc(targetWallet.id).set(targetWallet);
                     await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entry, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
                     await loadAllData();
                 } else {
-                    localLedgerEntries.push({ id: 'led_cash_'+Date.now(), ...entry });
+                    localLedgerEntries.push({ id: `led_${type}_`+Date.now(), ...entry });
                     updateWalletDisplay(); renderHoldings(); renderTimeline(); initTab1Charts();
                 }
-                resetHoldingForm(); showToast(`예금 잔액 조정 완료 (${amt>0?'+':''}₩${formatNumber(Math.abs(amt))})`);
+                resetHoldingForm(); showToast(`${type==='cash'?'예금':'외화 예금'} 잔액 조정 완료 (${amt>0?'+':''}${type==='cash'?'₩':'$'}${formatNumber(Math.abs(amt))})`);
                 return;
             }
 
@@ -948,7 +1029,7 @@
             });
 
             const container = document.getElementById('holdings-list-container'); container.innerHTML = '';
-            const cats = [{ type: 'stock', title: '📈 주식'}, { type: 'bond', title: '🏛️ 채권'}, { type: 'commodity', title: '🥇 원자재'}];
+            const cats = [{ type: 'stock', title: '📈 주식'}, { type: 'bond', title: '🏛️ 채권'}, { type: 'commodity', title: '🥇 원자재'}, { type: 'usd_cash', title: '💵 외화 예금 (USD)'}];
             let hasItems = false;
             cats.forEach(cat => {
                 const items = localHoldings.filter(h => h.type === cat.type && h.qty > 0);
@@ -962,12 +1043,12 @@
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 rounded-xl shadow-sm border border-gray-100 gap-2">
                         <div>
                             <div class="font-bold text-base text-pancake-text flex items-center">${item.name} ${item.currency==='USD'?'<span class="text-[10px] ml-2 bg-blue-100 text-blue-600 px-1.5 rounded">USD</span>':''}</div>
-                            <div class="text-xs text-gray-500 font-bold mt-1">${formatNumber(item.qty)}주 × ${priceStr}</div>
+                            <div class="text-xs text-gray-500 font-bold mt-1">${item.type === 'usd_cash' ? `잔액: $${formatNumber(item.qty)}` : `${formatNumber(item.qty)}주 × ${priceStr}`}</div>
                         </div>
                         <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
                             <div class="font-brand font-bold text-xl text-pancake-text">₩ ${formatNumber(item.totalKRW)}</div>
                             <div class="flex gap-1">
-                                <button onclick="openSellModal('${item.id}')" class="pc-btn pc-btn-success px-3 py-1.5 text-xs !rounded-lg !shadow-[0px_2px_0px_#1e7a63]">매도</button>
+                                ${item.type !== 'usd_cash' ? `<button onclick="openSellModal('${item.id}')" class="pc-btn pc-btn-success px-3 py-1.5 text-xs !rounded-lg !shadow-[0px_2px_0px_#1e7a63]">매도</button>` : ''}
                             </div>
                         </div>
                     </div>`;
@@ -1065,16 +1146,20 @@
             return change;
         }
 
+        // 추가됨: 통화 설정에 따른 차트 데이터 및 텍스트 업데이트
         function initTab1Charts() {
-            let sums = { stock: 0, bond: 0, commodity: 0 };
-            localHoldings.forEach(h => { if(h.type !== 'cash') sums[h.type] += (h.totalKRW || h.total); });
+            let sums = { stock: 0, bond: 0, commodity: 0, usd_cash: 0 };
+            localHoldings.forEach(h => { if(h.type !== 'cash') sums[h.type] = (sums[h.type] || 0) + (h.totalKRW || h.total); });
             const wallet = getSystemWallet();
-            const totalAsset = sums.stock + sums.bond + sums.commodity + wallet.total;
-            document.getElementById('total-net-worth').textContent = `₩ ${formatNumber(totalAsset)}`;
+            const totalAsset = sums.stock + sums.bond + sums.commodity + sums.usd_cash + wallet.total;
+            
+            const amt = displayCurrency === 'USD' ? (totalAsset / globalExchangeRate).toFixed(2) : totalAsset;
+            const prefix = displayCurrency === 'USD' ? '$' : '₩';
+            document.getElementById('total-net-worth').textContent = `${prefix} ${formatNumber(amt)}`;
 
             createOrUpdateChart('chart-asset-allocation', {
                 type: 'doughnut',
-                data: { labels: ['주식', '채권', '원자재', '기본 예금'], datasets: [{ data: [sums.stock, sums.bond, sums.commodity, wallet.total], backgroundColor: ['#7645D9', '#1FC7D4', '#FFB237', '#EDF2F7'], borderWidth: 0 }] },
+                data: { labels: ['주식', '채권', '원자재', '외화 예금', '기본 예금'], datasets: [{ data: [sums.stock, sums.bond, sums.commodity, sums.usd_cash, wallet.total], backgroundColor: ['#7645D9', '#1FC7D4', '#FFB237', '#3B82F6', '#EDF2F7'], borderWidth: 0 }] },
                 options: { 
                     responsive: true, maintainAspectRatio: false, cutout: '70%', circumference: 180, rotation: -90, 
                     plugins: { 
@@ -1084,7 +1169,8 @@
                                 label: function(ctx) {
                                     let val = ctx.raw || 0; let total = ctx.chart._metasets[ctx.datasetIndex].total;
                                     let pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
-                                    return `${ctx.label}: ₩${formatNumber(val)} (${pct}%)`;
+                                    let valDisplay = displayCurrency === 'USD' ? `$${formatNumber((val / globalExchangeRate).toFixed(2))}` : `₩${formatNumber(val)}`;
+                                    return `${ctx.label}: ${valDisplay} (${pct}%)`;
                                 }
                             }
                         }
@@ -1134,14 +1220,37 @@
 
             const diff = totalAsset - prevAsset;
             const diffPct = prevAsset > 0 ? ((diff / prevAsset) * 100).toFixed(1) : 0;
+            
+            const diffDisplay = displayCurrency === 'USD' ? (diff / globalExchangeRate).toFixed(2) : diff;
+            const currSymbol = displayCurrency === 'USD' ? '$' : '';
+            const currUnit = displayCurrency === 'USD' ? '' : '원';
+            
             const sumEl = document.getElementById('growth-summary-text');
-            sumEl.textContent = `이전 대비 ${diff > 0 ? '+':''}${formatNumber(diff)}원 (${diff > 0 ? '+':''}${diffPct}%)`;
+            sumEl.textContent = `이전 대비 ${diff > 0 ? '+':''}${currSymbol}${formatNumber(diffDisplay)}${currUnit} (${diff > 0 ? '+':''}${diffPct}%)`;
             sumEl.className = `text-[10px] font-bold mt-1 ml-7 ${diff >= 0 ? 'text-pancake-success' : 'text-pancake-failure'}`;
+
+            const chartData = displayCurrency === 'USD' ? gData.map(v => v / globalExchangeRate) : gData;
 
             createOrUpdateChart('chart-asset-growth', {
                 type: 'bar',
-                data: { labels: gLabels, datasets: [{ label: '자산 가치', data: gData, backgroundColor: '#1FC7D4', borderRadius: 6 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: {display: false} } } }
+                data: { labels: gLabels, datasets: [{ label: '자산 가치', data: chartData, backgroundColor: '#1FC7D4', borderRadius: 6 }] },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    let val = ctx.raw;
+                                    let prefix = displayCurrency === 'USD' ? '$' : '₩';
+                                    let displayVal = displayCurrency === 'USD' ? val.toFixed(2) : val;
+                                    return `자산 가치: ${prefix}${formatNumber(displayVal)}`;
+                                }
+                            }
+                        }
+                    }, 
+                    scales: { y: { display: false }, x: { grid: {display: false} } } 
+                }
             });
 
             renderLedgerCharts();
@@ -1166,10 +1275,27 @@
 
             const renderPie = (id, dataObj, colors) => {
                 const keys = Object.keys(dataObj), vals = Object.values(dataObj);
+                const chartData = displayCurrency === 'USD' ? vals.map(v => v / globalExchangeRate) : vals;
                 createOrUpdateChart(id, {
                     type: 'pie',
-                    data: { labels: keys.length?keys:['없음'], datasets: [{ data: vals.length?vals:[1], backgroundColor: vals.length?colors:['#F4F4F4'], borderWidth: 0 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                    data: { labels: keys.length?keys:['없음'], datasets: [{ data: chartData.length?chartData:[1], backgroundColor: vals.length?colors:['#F4F4F4'], borderWidth: 0 }] },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        if(keys.length === 0) return '데이터 없음';
+                                        let val = ctx.raw;
+                                        let prefix = displayCurrency === 'USD' ? '$' : '₩';
+                                        let displayVal = displayCurrency === 'USD' ? val.toFixed(2) : val;
+                                        return `${ctx.label}: ${prefix}${formatNumber(displayVal)}`;
+                                    }
+                                }
+                            }
+                        } 
+                    }
                 });
             };
             renderPie('chart-income-pie', incSum, ['#31D0AA', '#1FC7D4', '#7645D9']);
