@@ -19,7 +19,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // 1. 파이어베이스 연결 설정
         const firebaseConfig = {
           apiKey: "AIzaSyDZm5AazCafB0Sb2gd0llv9e3GAhE-nKBw",
           authDomain: "sakurazima-mai-0u0.firebaseapp.com",
@@ -31,8 +30,8 @@
         };
         
         let db, auth, currentUser, provider;
-        let globalExchangeRate = 1380; // 글로벌 환율 변수
-        let displayCurrency = 'KRW'; // 현재 표시 통화 (대시보드 뷰 모드)
+        let globalExchangeRate = 1380;
+        let displayCurrency = 'KRW';
 
         try {
             if (!firebase.apps.length && firebaseConfig.projectId) {
@@ -103,7 +102,6 @@
         .minor-category-btn { background-color: white; color: #1FC7D4; border: 2px solid #1FC7D4; font-weight: 700; border-radius: 8px; padding: 4px 10px; }
         .minor-category-btn.selected-minor { background-color: #1FC7D4 !important; color: white !important; box-shadow: 0 4px 6px -1px rgba(31, 199, 212, 0.3); }
 
-        /* Login Animations */
         @keyframes blob {
             0% { transform: translate(0px, 0px) scale(1); }
             33% { transform: translate(30px, -50px) scale(1.1); }
@@ -118,7 +116,6 @@
 </head>
 <body class="pb-20 selection:bg-pancake-cyan selection:text-white relative">
 
-    <!-- Background Blobs (Login Screen) -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden z-[-1]">
         <div class="absolute top-[-10%] left-[-10%] w-[30%] h-[30%] bg-pancake-cyan rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob"></div>
         <div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-pancake-purple rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob animation-delay-2000"></div>
@@ -157,12 +154,12 @@
                     </div>
                 </div>
                 <div class="flex">
-                    <button class="nav-tab active" onclick="switchMainTab('tab1')">Asset & Ledger</button>
-                    <button class="nav-tab" onclick="switchMainTab('tab2')">Trading Desk</button>
+                    <!-- [FIX-1] switchMainTab에 버튼 자신(this)을 직접 전달 → 글로벌 event 객체 의존 제거 -->
+                    <button class="nav-tab active" onclick="switchMainTab('tab1', this)">Asset & Ledger</button>
+                    <button class="nav-tab" onclick="switchMainTab('tab2', this)">Trading Desk</button>
                 </div>
                 
                 <div class="flex items-center gap-2">
-                    <!-- 원화/달러 토글 -->
                     <div class="pc-toggle-group shadow-sm p-1 hidden sm:inline-flex">
                         <button type="button" id="btn-curr-krw" class="pc-toggle-btn selected !px-2 !py-0.5 text-[10px] sm:text-xs" onclick="setDisplayCurrency('KRW')">KRW</button>
                         <button type="button" id="btn-curr-usd" class="pc-toggle-btn !px-2 !py-0.5 text-[10px] sm:text-xs" onclick="setDisplayCurrency('USD')">USD</button>
@@ -173,7 +170,6 @@
                         <input type="text" id="global-exchange-rate" value="1,380" class="number-input bg-transparent border-none text-sm font-bold text-pancake-text w-16 text-right outline-none">
                     </div>
 
-                    <!-- 로그아웃 버튼 -->
                     <button id="logout-btn" class="p-2 ml-1 rounded-full hover:bg-gray-100 transition text-pancake-failure" title="로그아웃">
                         <i data-lucide="log-out" class="w-5 h-5"></i>
                     </button>
@@ -181,7 +177,7 @@
             </div>
         </nav>
 
-        <!-- 모바일 전용 상단 컨트롤바 (공간 확보용) -->
+        <!-- 모바일 컨트롤바 -->
         <div class="sm:hidden bg-white border-b border-gray-100 px-4 py-2 flex justify-between items-center gap-2">
             <div class="pc-toggle-group shadow-sm p-1">
                 <button type="button" id="btn-curr-krw-mobile" class="pc-toggle-btn selected !px-3 !py-1 text-xs" onclick="setDisplayCurrency('KRW')">KRW</button>
@@ -206,7 +202,7 @@
                     </div>
                 </div>
 
-                <!-- 🟢 Sub-tab 1: Dashboard -->
+                <!-- Sub-tab 1: Dashboard -->
                 <div id="sub-dashboard" class="sub-tab-content active space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="pc-card text-center py-8 md:col-span-2 flex flex-col justify-center border-b-4 border-pancake-cyan">
@@ -329,7 +325,7 @@
                     </div>
                 </div>
 
-                <!-- 🟢 Sub-tab 2: Portfolio -->
+                <!-- Sub-tab 2: Portfolio -->
                 <div id="sub-portfolio" class="sub-tab-content hidden space-y-6">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="pc-card lg:col-span-1 h-fit sticky top-24">
@@ -396,7 +392,7 @@
                     </div>
                 </div>
 
-                <!-- 🟢 Sub-tab 3: Transaction Timeline -->
+                <!-- Sub-tab 3: Transaction Timeline -->
                 <div id="sub-timeline" class="sub-tab-content hidden space-y-6">
                     <div class="pc-card min-h-[500px]">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-gray-100 pb-4">
@@ -416,9 +412,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="border-l-2 border-pancake-border ml-4 pl-6 space-y-6 relative" id="timeline-container">
-                            <!-- JS 렌더링 -->
-                        </div>
+                        <div class="border-l-2 border-pancake-border ml-4 pl-6 space-y-6 relative" id="timeline-container"></div>
                     </div>
                 </div>
             </div>
@@ -483,38 +477,55 @@
         Chart.defaults.color = '#7A6EAA'; 
         let chartInstances = {};
 
-        // ================= AUTH (Google Login) =================
+        // ================= DOM 캐시 (자주 쓰는 엘리먼트 미리 캐싱) =================
+        // [OPT] 반복 getElementById 호출을 방지하기 위해 모듈 로드 시 한 번만 조회
+        const DOM = {};
+        document.addEventListener('DOMContentLoaded', () => {
+            DOM.totalNetWorth        = document.getElementById('total-net-worth');
+            DOM.systemWalletBalance  = document.getElementById('system-wallet-balance');
+            DOM.usdWalletBalance     = document.getElementById('usd-wallet-balance');
+            DOM.growthSummaryText    = document.getElementById('growth-summary-text');
+            DOM.chartIncomeTotal     = document.getElementById('chart-income-total');
+            DOM.chartExpenseTotal    = document.getElementById('chart-expense-total');
+            DOM.holdingPreviewTotal  = document.getElementById('holding-preview-total');
+            DOM.sellProceeds         = document.getElementById('sell-proceeds');
+            DOM.sellPnl              = document.getElementById('sell-pnl');
+            DOM.ledgerFilterStart    = document.getElementById('ledger-filter-start');
+            DOM.ledgerFilterEnd      = document.getElementById('ledger-filter-end');
+            DOM.timelineFilterStart  = document.getElementById('timeline-filter-start');
+            DOM.timelineFilterEnd    = document.getElementById('timeline-filter-end');
+            DOM.growthTimeframe      = document.getElementById('growth-timeframe');
+            DOM.holdingType          = document.getElementById('holding-type');
+            DOM.holdingCashLabel     = document.getElementById('holding-cash-label');
+            DOM.holdingCashAmount    = document.getElementById('holding-cash-amount');
+            DOM.authInfo             = document.getElementById('auth-info');
+            DOM.loginView            = document.getElementById('login-view');
+            DOM.appContainer         = document.getElementById('app-container');
+            DOM.timelineContainer    = document.getElementById('timeline-container');
+            DOM.fixedExpenseList     = document.getElementById('fixed-expense-list');
+            DOM.holdingsListContainer= document.getElementById('holdings-list-container');
+            DOM.sellAssetName        = document.getElementById('sell-asset-name');
+        });
+
+        // ================= AUTH =================
         window.onload = () => {
-            const loginView = document.getElementById('login-view');
-            const appContainer = document.getElementById('app-container');
-            const loginBtn = document.getElementById('login-btn');
+            const loginBtn  = document.getElementById('login-btn');
             const logoutBtn = document.getElementById('logout-btn');
 
-            if (loginBtn) {
-                loginBtn.addEventListener('click', () => {
-                    auth.signInWithPopup(provider).catch(e => showToast("로그인 실패: " + e.message));
-                });
-            }
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', () => auth.signOut());
-            }
+            if (loginBtn)  loginBtn.addEventListener('click',  () => auth.signInWithPopup(provider).catch(e => showToast("로그인 실패: " + e.message)));
+            if (logoutBtn) logoutBtn.addEventListener('click', () => auth.signOut());
 
-            // 로그인 상태 감지
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     currentUser = user;
-                    loginView.classList.add('hidden');
-                    appContainer.classList.remove('hidden');
-                    document.getElementById('auth-info').textContent = user.email; // 상단 이메일 표시
-                    
-                    // 데이터 초기화 및 로드 시작
+                    document.getElementById('login-view').classList.add('hidden');
+                    document.getElementById('app-container').classList.remove('hidden');
+                    document.getElementById('auth-info').textContent = user.email;
                     initializeData();
                 } else {
                     currentUser = null;
-                    loginView.classList.remove('hidden');
-                    appContainer.classList.add('hidden');
-                    
-                    // 로그아웃 시 로컬 데이터 비우기
+                    document.getElementById('login-view').classList.remove('hidden');
+                    document.getElementById('app-container').classList.add('hidden');
                     localHoldings = [];
                     localLedgerEntries = [];
                     localFixedExpenses = [];
@@ -523,78 +534,83 @@
             lucide.createIcons();
         };
 
-        // 탭 전환
-        function switchMainTab(id) { document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); event.target.classList.add('active'); document.getElementById(id).classList.add('active'); if(id==='tab1') initTab1Charts(); }
+        // ================= 탭 전환 =================
+        // [FIX-1] event.target 대신 클릭된 버튼을 직접 받아 크로스브라우저 안정성 확보
+        function switchMainTab(id, btnEl) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            btnEl.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if (id === 'tab1') initTab1Charts();
+        }
+
         function switchSubTab(id, btn) { 
-            document.querySelectorAll('.pc-toggle-group .pc-toggle-btn').forEach(t=>t.classList.remove('selected')); btn.classList.add('selected'); 
-            document.querySelectorAll('.sub-tab-content').forEach(c=>{c.classList.remove('active');c.classList.add('hidden');}); 
-            const target=document.getElementById(id); target.classList.remove('hidden'); target.classList.add('active'); 
-            if(id==='sub-dashboard') initTab1Charts(); 
-            if(id==='sub-timeline') {
+            document.querySelectorAll('.pc-toggle-group .pc-toggle-btn').forEach(t => t.classList.remove('selected'));
+            btn.classList.add('selected'); 
+            document.querySelectorAll('.sub-tab-content').forEach(c => { c.classList.remove('active'); c.classList.add('hidden'); }); 
+            const target = document.getElementById(id);
+            target.classList.remove('hidden');
+            target.classList.add('active'); 
+            if (id === 'sub-dashboard') initTab1Charts(); 
+            if (id === 'sub-timeline') {
                 const allBtn = document.querySelector('[data-group="timeline-filter"] button[data-value="all"]');
-                if(allBtn) allBtn.click();
+                if (allBtn) allBtn.click();
                 setAllTime('timeline');
             }
         }
+
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
 
         // ================= NUMBER FORMATTING =================
         const unformatNumber = v => v ? v.toString().replace(/,/g, '') : '0';
         const formatNumber = v => {
             if (v === null || v === undefined || v === '') return '';
-            let str = unformatNumber(v);
-            if (str === '0' && v.toString().trim() === '') return ''; 
+            const str = unformatNumber(v);
+            if (str === '') return '';
             const isNeg = str.startsWith('-');
-            str = str.replace(/[^\d.]/g, '');
-            if(str === '') return isNeg ? '-' : '';
-            const parts = str.split('.');
+            const cleaned = str.replace(/[^\d.]/g, '');
+            if (!cleaned) return isNeg ? '-' : '';
+            const parts = cleaned.split('.');
             parts[0] = parseInt(parts[0], 10).toLocaleString('en-US');
             return (isNeg ? '-' : '') + parts.join('.');
         };
-        
+
         document.addEventListener('input', e => { 
-            if(e.target.classList.contains('number-input')) {
+            if (e.target.classList.contains('number-input')) {
                 const val = unformatNumber(e.target.value);
                 e.target.value = formatNumber(val);
             } 
         });
 
-        // ================= TOAST ALARM =================
+        // ================= TOAST =================
         function showToast(msg) { 
             const t = document.getElementById('toast'); 
             document.getElementById('toast-message').textContent = msg; 
-            
             t.style.transition = 'none';
             t.classList.remove('-translate-y-32', 'opacity-0');
-            void t.offsetWidth; // trigger reflow
+            void t.offsetWidth;
             t.style.transition = 'all 0.3s ease';
-
-            if(window.toastTimeout) clearTimeout(window.toastTimeout);
+            if (window.toastTimeout) clearTimeout(window.toastTimeout);
             window.toastTimeout = setTimeout(() => t.classList.add('-translate-y-32', 'opacity-0'), 3000); 
         }
 
         // ================= 통화 토글 =================
         function setDisplayCurrency(curr) {
             displayCurrency = curr;
-            document.getElementById('btn-curr-krw').classList.toggle('selected', curr === 'KRW');
-            document.getElementById('btn-curr-usd').classList.toggle('selected', curr === 'USD');
-            document.getElementById('btn-curr-krw-mobile').classList.toggle('selected', curr === 'KRW');
-            document.getElementById('btn-curr-usd-mobile').classList.toggle('selected', curr === 'USD');
+            ['btn-curr-krw','btn-curr-krw-mobile'].forEach(id => document.getElementById(id).classList.toggle('selected', curr === 'KRW'));
+            ['btn-curr-usd','btn-curr-usd-mobile'].forEach(id => document.getElementById(id).classList.toggle('selected', curr === 'USD'));
             updateWalletDisplay();
             initTab1Charts();
         }
 
-        // 환율 글로벌 연동
+        // ================= 환율 동기화 =================
         const syncExchangeRate = (e) => {
             const val = parseFloat(unformatNumber(e.target.value));
-            if(!isNaN(val) && val > 0) {
+            if (!isNaN(val) && val > 0) {
                 globalExchangeRate = val;
-                
-                // 데스크탑/모바일 input 값 동기화
-                if(e.target.id === 'global-exchange-rate') document.getElementById('global-exchange-rate-mobile').value = e.target.value;
-                if(e.target.id === 'global-exchange-rate-mobile') document.getElementById('global-exchange-rate').value = e.target.value;
-
+                const otherId = e.target.id === 'global-exchange-rate' ? 'global-exchange-rate-mobile' : 'global-exchange-rate';
+                document.getElementById(otherId).value = e.target.value;
                 updateHoldingPreview();
                 renderHoldings();
                 updateWalletDisplay();
@@ -604,18 +620,15 @@
         document.getElementById('global-exchange-rate').addEventListener('input', syncExchangeRate);
         document.getElementById('global-exchange-rate-mobile').addEventListener('input', syncExchangeRate);
 
-        // 기간 필터 기본값 셋팅
+        // ================= 기간 필터 기본값 =================
         function setDefaultDates() {
-            const today = new Date();
+            const today    = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
-            
-            document.getElementById('ledger-filter-start').value = firstDay;
-            document.getElementById('ledger-filter-end').value = lastDay;
+            const lastDay  = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+            document.getElementById('ledger-filter-start').value   = firstDay;
+            document.getElementById('ledger-filter-end').value     = lastDay;
             document.getElementById('timeline-filter-start').value = firstDay;
-            document.getElementById('timeline-filter-end').value = lastDay;
-
-            // 등록 날짜 오늘로 초기화
+            document.getElementById('timeline-filter-end').value   = lastDay;
             const localTodayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
             const holdingDateEl = document.getElementById('holding-date');
             if (holdingDateEl) holdingDateEl.value = localTodayStr;
@@ -623,9 +636,9 @@
 
         function setAllTime(type) {
             document.getElementById(`${type}-filter-start`).value = '2000-01-01';
-            document.getElementById(`${type}-filter-end`).value = '2099-12-31';
-            if(type === 'ledger') renderLedgerCharts();
-            if(type === 'timeline') renderTimeline();
+            document.getElementById(`${type}-filter-end`).value   = '2099-12-31';
+            if (type === 'ledger')   renderLedgerCharts();
+            if (type === 'timeline') renderTimeline();
         }
 
         // ================= GLOBAL DATA & WALLET =================
@@ -635,27 +648,27 @@
 
         function getSystemWallet() {
             let wallet = localHoldings.find(h => h.type === 'cash' && h.name === '기본 예금');
-            if(!wallet) { wallet = { id: 'wallet_system', type: 'cash', name: '기본 예금', qty:0, price:0, total: 0 }; localHoldings.push(wallet); }
+            if (!wallet) { wallet = { id: 'wallet_system', type: 'cash', name: '기본 예금', qty: 0, price: 0, total: 0 }; localHoldings.push(wallet); }
             return wallet;
         }
 
         function getUsdWallet() {
             let wallet = localHoldings.find(h => h.type === 'usd_cash' && h.name === '외화 예금');
-            if(!wallet) { wallet = { id: 'wallet_usd', type: 'usd_cash', name: '외화 예금', qty:0, price:1, currency: 'USD', totalKRW: 0 }; localHoldings.push(wallet); }
+            if (!wallet) { wallet = { id: 'wallet_usd', type: 'usd_cash', name: '외화 예금', qty: 0, price: 1, currency: 'USD', totalKRW: 0 }; localHoldings.push(wallet); }
             return wallet;
         }
         
         function updateWalletDisplay() {
-            const w = getSystemWallet();
+            const w   = getSystemWallet();
             const usd = getUsdWallet();
             
             if (displayCurrency === 'USD') {
                 const wConverted = (w.total / globalExchangeRate).toFixed(2);
                 document.getElementById('system-wallet-balance').innerHTML = `<span class="text-xs font-bold text-gray-400 mr-2">KRW</span><span class="text-pancake-text">$ ${formatNumber(wConverted)}</span>`;
-                document.getElementById('usd-wallet-balance').innerHTML = `<span class="text-xs font-bold text-gray-400 mr-2">USD</span><span class="text-blue-500">$ ${formatNumber(usd.qty.toFixed(2))}</span>`;
+                document.getElementById('usd-wallet-balance').innerHTML    = `<span class="text-xs font-bold text-gray-400 mr-2">USD</span><span class="text-blue-500">$ ${formatNumber(usd.qty.toFixed(2))}</span>`;
             } else {
                 document.getElementById('system-wallet-balance').innerHTML = `<span class="text-xs font-bold text-gray-400 mr-2">KRW</span><span class="text-pancake-text">₩ ${formatNumber(w.total)}</span>`;
-                document.getElementById('usd-wallet-balance').innerHTML = `<span class="text-xs font-bold text-gray-400 mr-2">USD</span><span class="text-blue-500">$ ${formatNumber(usd.qty.toFixed(2))}</span>`;
+                document.getElementById('usd-wallet-balance').innerHTML    = `<span class="text-xs font-bold text-gray-400 mr-2">USD</span><span class="text-blue-500">$ ${formatNumber(usd.qty.toFixed(2))}</span>`;
             }
         }
         
@@ -668,32 +681,39 @@
         }
 
         async function loadAllData() {
-            if(!db || !currentUser) return;
+            if (!db || !currentUser) return;
             try {
                 const uid = currentUser.uid;
-                const hSnap = await db.collection("users").doc(uid).collection("holdings").get();
-                localHoldings = hSnap.docs.map(d=>({id:d.id, ...d.data()}));
-                const lSnap = await db.collection("users").doc(uid).collection("ledgerEntries").orderBy("date", "desc").get();
-                localLedgerEntries = lSnap.docs.map(d=>({id:d.id, ...d.data()}));
-                const fSnap = await db.collection("users").doc(uid).collection("fixedExpenses").get();
-                localFixedExpenses = fSnap.docs.map(d=>({id:d.id, ...d.data()}));
+
+                // [OPT] Promise.all로 Firestore 쿼리 3개 병렬 실행 → 초기 로딩 속도 향상
+                const [hSnap, lSnap, fSnap] = await Promise.all([
+                    db.collection("users").doc(uid).collection("holdings").get(),
+                    db.collection("users").doc(uid).collection("ledgerEntries").orderBy("date", "desc").get(),
+                    db.collection("users").doc(uid).collection("fixedExpenses").get()
+                ]);
+
+                localHoldings      = hSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                localLedgerEntries = lSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                localFixedExpenses = fSnap.docs.map(d => ({ id: d.id, ...d.data() }));
                 
                 initSystemWallet(); renderHoldings(); renderFixedExpenses(); initTab1Charts(); renderTimeline();
             } catch(error) {
                 console.error("데이터 로드 중 에러:", error);
                 showToast("데이터를 불러오지 못했습니다.");
+                // [FIX-3] 에러 시에도 지갑 초기화 및 빈 UI 표시
+                initSystemWallet();
             }
         }
 
-        // ================= LEDGER (가계부) LOGIC =================
+        // ================= LEDGER (가계부) =================
         let localLedgerCategories = { expense: {'식비':['외식'], '교통비':['택시']}, income: {'월급':[]} }; 
         let selectedMajorCategory = null;
 
         async function loadLedgerCategories() {
-             if(!db || !currentUser) { renderLedgerMajorCategories('expense'); return; }
-             const doc = await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").get();
-             if(doc.exists) localLedgerCategories = doc.data();
-             renderLedgerMajorCategories('expense');
+            if (!db || !currentUser) { renderLedgerMajorCategories('expense'); return; }
+            const doc = await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").get();
+            if (doc.exists) localLedgerCategories = doc.data();
+            renderLedgerMajorCategories('expense');
         }
 
         document.querySelectorAll('[data-group="ledger-type"] button').forEach(btn => {
@@ -707,102 +727,163 @@
         });
 
         function renderLedgerMajorCategories(type) {
-            const container = document.getElementById('ledger-major-container'); container.innerHTML = '';
-            const cats = Object.keys(localLedgerCategories[type]||{}).sort();
+            const container = document.getElementById('ledger-major-container');
+            container.innerHTML = '';
+            const cats = Object.keys(localLedgerCategories[type] || {}).sort();
             cats.forEach(c => {
-                const btn = document.createElement('button'); btn.type = 'button';
-                btn.className = `px-4 py-2 text-sm transition flex items-center gap-1 category-btn ${selectedMajorCategory===c ? 'selected-cat' : ''}`;
-                btn.innerHTML = `<span>${c}</span> <span class="ml-2 font-bold opacity-50 hover:opacity-100 hover:text-red-500 text-lg leading-none" onclick="event.stopPropagation(); deleteCat('${type}','${c}')">×</span>`;
-                btn.onclick = () => { selectedMajorCategory = selectedMajorCategory===c ? null : c; renderLedgerMajorCategories(type); if(selectedMajorCategory) renderLedgerMinorCategories(type, c); else document.getElementById('ledger-minor-wrapper').classList.add('hidden'); };
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `px-4 py-2 text-sm transition flex items-center gap-1 category-btn ${selectedMajorCategory === c ? 'selected-cat' : ''}`;
+                btn.innerHTML = `<span>${c}</span> <span class="ml-2 font-bold opacity-50 hover:opacity-100 hover:text-red-500 text-lg leading-none" data-del-major="${c}" data-del-type="${type}">×</span>`;
+                btn.onclick = () => { 
+                    selectedMajorCategory = selectedMajorCategory === c ? null : c;
+                    renderLedgerMajorCategories(type);
+                    if (selectedMajorCategory) renderLedgerMinorCategories(type, c);
+                    else document.getElementById('ledger-minor-wrapper').classList.add('hidden');
+                };
                 container.appendChild(btn);
-            }); 
-        }
-        function renderLedgerMinorCategories(type, major) {
-             document.getElementById('ledger-minor-wrapper').classList.remove('hidden');
-             document.getElementById('selected-major-name').textContent = major;
-             const container = document.getElementById('ledger-minor-container'); container.innerHTML = '';
-             (localLedgerCategories[type][major]||[]).forEach(sub => {
-                 const btn = document.createElement('button'); btn.type = 'button';
-                 btn.className = `px-3 py-1.5 text-xs transition flex items-center gap-1 minor-category-btn`;
-                 btn.innerHTML = `<span>${sub}</span> <span class="ml-1 font-bold opacity-50 hover:opacity-100 hover:text-red-500 text-base leading-none" onclick="event.stopPropagation(); deleteCat('${type}','${major}','${sub}')">×</span>`;
-                 btn.onclick = () => { document.querySelectorAll('.minor-category-btn').forEach(b=>b.classList.remove('selected-minor')); btn.classList.add('selected-minor'); };
-                 container.appendChild(btn);
-             }); 
+            });
         }
 
-        window.deleteCat = async (type, major, minor) => {
-            if(!confirm("해당 카테고리를 삭제하시겠습니까?")) return;
-            if(minor) localLedgerCategories[type][major] = localLedgerCategories[type][major].filter(x=>x!==minor);
-            else { delete localLedgerCategories[type][major]; if(selectedMajorCategory===major) selectedMajorCategory=null; }
-            if(db && currentUser) await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(localLedgerCategories);
-            renderLedgerMajorCategories(type); if(selectedMajorCategory) renderLedgerMinorCategories(type, selectedMajorCategory);
+        function renderLedgerMinorCategories(type, major) {
+            document.getElementById('ledger-minor-wrapper').classList.remove('hidden');
+            document.getElementById('selected-major-name').textContent = major;
+            const container = document.getElementById('ledger-minor-container');
+            container.innerHTML = '';
+            (localLedgerCategories[type][major] || []).forEach(sub => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'px-3 py-1.5 text-xs transition flex items-center gap-1 minor-category-btn';
+                btn.innerHTML = `<span>${sub}</span> <span class="ml-1 font-bold opacity-50 hover:opacity-100 hover:text-red-500 text-base leading-none" data-del-minor="${sub}" data-del-major="${major}" data-del-type="${type}">×</span>`;
+                btn.onclick = () => {
+                    document.querySelectorAll('.minor-category-btn').forEach(b => b.classList.remove('selected-minor'));
+                    btn.classList.add('selected-minor');
+                };
+                container.appendChild(btn);
+            });
         }
-        document.getElementById('add-ledger-major-btn').onclick=async ()=>{const t=document.querySelector('[data-group="ledger-type"] .selected').dataset.value; const v=document.getElementById('new-ledger-major').value.trim(); if(v && !localLedgerCategories[t][v]){localLedgerCategories[t][v]=[]; if(db && currentUser) await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(localLedgerCategories); document.getElementById('new-ledger-major').value=''; renderLedgerMajorCategories(t);}};
-        document.getElementById('add-ledger-minor-btn').onclick=async ()=>{const t=document.querySelector('[data-group="ledger-type"] .selected').dataset.value; const v=document.getElementById('new-ledger-minor').value.trim(); if(v && selectedMajorCategory){localLedgerCategories[t][selectedMajorCategory].push(v); if(db && currentUser) await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(localLedgerCategories); document.getElementById('new-ledger-minor').value=''; renderLedgerMinorCategories(t,selectedMajorCategory);}};
+
+        // [OPT] 카테고리 삭제: 인라인 onclick 대신 이벤트 위임으로 처리
+        document.getElementById('ledger-major-container').addEventListener('click', async (e) => {
+            const delSpan = e.target.closest('[data-del-major]');
+            if (!delSpan || !delSpan.dataset.delType) return;
+            // minor span과 major span 구분: minor는 data-del-minor 있음
+            if (delSpan.dataset.delMinor !== undefined) return; // minor 삭제는 별도 위임
+            e.stopPropagation();
+            await deleteCat(delSpan.dataset.delType, delSpan.dataset.delMajor);
+        });
+
+        document.getElementById('ledger-minor-container').addEventListener('click', async (e) => {
+            const delSpan = e.target.closest('[data-del-minor]');
+            if (!delSpan) return;
+            e.stopPropagation();
+            await deleteCat(delSpan.dataset.delType, delSpan.dataset.delMajor, delSpan.dataset.delMinor);
+        });
+
+        async function deleteCat(type, major, minor) {
+            if (!confirm("해당 카테고리를 삭제하시겠습니까?")) return;
+            if (minor) {
+                localLedgerCategories[type][major] = localLedgerCategories[type][major].filter(x => x !== minor);
+            } else {
+                delete localLedgerCategories[type][major];
+                if (selectedMajorCategory === major) selectedMajorCategory = null;
+            }
+            if (db && currentUser) await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(localLedgerCategories);
+            renderLedgerMajorCategories(type);
+            if (selectedMajorCategory) renderLedgerMinorCategories(type, selectedMajorCategory);
+        }
+        // window.deleteCat은 이벤트 위임으로 대체했으나 외부 참조 호환용으로 유지
+        window.deleteCat = deleteCat;
+
+        document.getElementById('add-ledger-major-btn').onclick = async () => {
+            const t = document.querySelector('[data-group="ledger-type"] .selected').dataset.value;
+            const v = document.getElementById('new-ledger-major').value.trim();
+            if (v && !localLedgerCategories[t][v]) {
+                localLedgerCategories[t][v] = [];
+                if (db && currentUser) await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(localLedgerCategories);
+                document.getElementById('new-ledger-major').value = '';
+                renderLedgerMajorCategories(t);
+            }
+        };
+
+        document.getElementById('add-ledger-minor-btn').onclick = async () => {
+            const t = document.querySelector('[data-group="ledger-type"] .selected').dataset.value;
+            const v = document.getElementById('new-ledger-minor').value.trim();
+            if (v && selectedMajorCategory) {
+                localLedgerCategories[t][selectedMajorCategory].push(v);
+                if (db && currentUser) await db.collection("users").doc(currentUser.uid).collection("ledgerData").doc("categories").set(localLedgerCategories);
+                document.getElementById('new-ledger-minor').value = '';
+                renderLedgerMinorCategories(t, selectedMajorCategory);
+            }
+        };
 
         document.getElementById('ledger-date').value = new Date().toISOString().split('T')[0];
 
         window.resetLedgerForm = function() {
-            document.getElementById('ledger-id').value = ''; document.getElementById('ledger-amount').value = ''; document.getElementById('ledger-memo').value = '';
+            document.getElementById('ledger-id').value = '';
+            document.getElementById('ledger-amount').value = '';
+            document.getElementById('ledger-memo').value = '';
             document.getElementById('ledger-date').value = new Date().toISOString().split('T')[0];
-            selectedMajorCategory = null; document.querySelectorAll('#ledger-minor-container .selected-minor').forEach(b => b.classList.remove('selected-minor'));
+            selectedMajorCategory = null;
+            document.querySelectorAll('#ledger-minor-container .selected-minor').forEach(b => b.classList.remove('selected-minor'));
             renderLedgerMajorCategories(document.querySelector('[data-group="ledger-type"] .selected').dataset.value);
             document.getElementById('ledger-minor-wrapper').classList.add('hidden');
-        }
+        };
 
         async function addLedger() {
-            const id = document.getElementById('ledger-id').value;
+            const id     = document.getElementById('ledger-id').value;
             const amtStr = document.getElementById('ledger-amount').value;
-            const amt = parseFloat(unformatNumber(amtStr));
-            const type = document.querySelector('[data-group="ledger-type"] .selected').dataset.value;
-            const sub = document.querySelector('#ledger-minor-container .selected-minor')?.textContent || '';
+            const amt    = parseFloat(unformatNumber(amtStr));
+            const type   = document.querySelector('[data-group="ledger-type"] .selected').dataset.value;
+            const sub    = document.querySelector('#ledger-minor-container .selected-minor')?.textContent || '';
             const dateStr = document.getElementById('ledger-date').value;
             
-            if(isNaN(amt) || amt <= 0) return alert("올바른 금액을 입력하세요.");
-            if(!selectedMajorCategory) return alert("대분류 카테고리를 선택하세요.");
+            if (isNaN(amt) || amt <= 0) return alert("올바른 금액을 입력하세요.");
+            if (!selectedMajorCategory)  return alert("대분류 카테고리를 선택하세요.");
 
             const wallet = getSystemWallet();
             
-            if(id) {
+            if (id) {
                 const oldEntry = localLedgerEntries.find(e => e.id === id);
-                if(oldEntry) { if(oldEntry.type === 'expense') wallet.total += oldEntry.amount; else wallet.total -= oldEntry.amount; }
+                if (oldEntry) { if (oldEntry.type === 'expense') wallet.total += oldEntry.amount; else wallet.total -= oldEntry.amount; }
             }
-            if(type === 'expense') wallet.total -= amt; else wallet.total += amt;
+            if (type === 'expense') wallet.total -= amt; else wallet.total += amt;
 
             const entry = { type, category: selectedMajorCategory, subCategory: sub, amount: amt, memo: document.getElementById('ledger-memo').value, date: new Date(dateStr).toISOString() };
 
-            if(db && currentUser) {
-                if(id) await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").doc(id).update(entry);
+            if (db && currentUser) {
+                if (id) await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").doc(id).update(entry);
                 else { entry.timestamp = firebase.firestore.FieldValue.serverTimestamp(); await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add(entry); }
                 await db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
                 await loadAllData();
             } else {
-                if(id) { const idx = localLedgerEntries.findIndex(e => e.id === id); if(idx > -1) localLedgerEntries[idx] = { id, ...entry }; }
-                else localLedgerEntries.push({ id: 'led_'+Date.now(), ...entry });
+                if (id) { const idx = localLedgerEntries.findIndex(e => e.id === id); if (idx > -1) localLedgerEntries[idx] = { id, ...entry }; }
+                else localLedgerEntries.push({ id: 'led_' + Date.now(), ...entry });
                 updateWalletDisplay(); renderTimeline(); initTab1Charts();
             }
             resetLedgerForm(); showToast("가계부가 안전하게 저장되었습니다.");
         }
 
         window.editLedgerEntry = function(id) {
-            const entry = localLedgerEntries.find(e => e.id === id); if(!entry) return;
+            const entry = localLedgerEntries.find(e => e.id === id); if (!entry) return;
             document.querySelector('[onclick*="sub-dashboard"]').click(); 
             document.getElementById('ledger-write-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-            document.getElementById('ledger-id').value = entry.id;
-            document.getElementById('ledger-date').value = entry.date.split('T')[0];
+            document.getElementById('ledger-id').value     = entry.id;
+            document.getElementById('ledger-date').value   = entry.date.split('T')[0];
             document.getElementById('ledger-amount').value = formatNumber(entry.amount);
-            document.getElementById('ledger-memo').value = entry.memo || '';
+            document.getElementById('ledger-memo').value   = entry.memo || '';
             
-            const typeBtn = document.querySelector(`[data-group="ledger-type"] button[data-value="${entry.type}"]`); if(typeBtn) typeBtn.click();
+            const typeBtn = document.querySelector(`[data-group="ledger-type"] button[data-value="${entry.type}"]`);
+            if (typeBtn) typeBtn.click();
             
             setTimeout(() => {
                 const majorBtn = Array.from(document.querySelectorAll('#ledger-major-container button')).find(b => b.querySelector('span').textContent === entry.category);
-                if(majorBtn) majorBtn.click();
+                if (majorBtn) majorBtn.click();
                 setTimeout(() => {
-                    if(entry.subCategory) {
+                    if (entry.subCategory) {
                         const minorBtn = Array.from(document.querySelectorAll('#ledger-minor-container button')).find(b => b.querySelector('span').textContent === entry.subCategory);
-                        if(minorBtn) minorBtn.click();
+                        if (minorBtn) minorBtn.click();
                     }
                 }, 50);
             }, 50);
@@ -810,43 +891,37 @@
         };
 
         window.deleteLedgerEntry = async function(id) {
-            if(!confirm("정말 삭제하시겠습니까? (자산 수량 및 현금 잔액이 과거로 롤백됩니다)")) return;
-            const entry = localLedgerEntries.find(e => e.id === id); if(!entry) return;
+            if (!confirm("정말 삭제하시겠습니까? (자산 수량 및 현금 잔액이 과거로 롤백됩니다)")) return;
+            const entry = localLedgerEntries.find(e => e.id === id); if (!entry) return;
             
             const wallet = getSystemWallet();
             
-            if(entry.type === 'expense') wallet.total += entry.amount;
-            else if(entry.type === 'income') wallet.total -= entry.amount;
-            else if(entry.type === 'deposit') {
-                if (entry.assetId === 'wallet_usd') {
-                    let usd = getUsdWallet(); usd.qty -= (entry.assetQty || 0); usd.totalKRW = usd.qty * globalExchangeRate;
-                } else wallet.total -= entry.amount;
+            if (entry.type === 'expense')    wallet.total += entry.amount;
+            else if (entry.type === 'income') wallet.total -= entry.amount;
+            else if (entry.type === 'deposit') {
+                if (entry.assetId === 'wallet_usd') { let usd = getUsdWallet(); usd.qty -= (entry.assetQty || 0); usd.totalKRW = usd.qty * globalExchangeRate; }
+                else wallet.total -= entry.amount;
             }
-            else if(entry.type === 'withdrawal') {
-                if (entry.assetId === 'wallet_usd') {
-                    let usd = getUsdWallet(); usd.qty += (entry.assetQty || 0); usd.totalKRW = usd.qty * globalExchangeRate;
-                } else wallet.total += entry.amount;
+            else if (entry.type === 'withdrawal') {
+                if (entry.assetId === 'wallet_usd') { let usd = getUsdWallet(); usd.qty += (entry.assetQty || 0); usd.totalKRW = usd.qty * globalExchangeRate; }
+                else wallet.total += entry.amount;
             }
-            else if(entry.type === 'buy') {
+            else if (entry.type === 'buy') {
                 wallet.total += entry.amount; 
-                if(entry.assetId) {
+                if (entry.assetId) {
                     const asset = localHoldings.find(h => h.id === entry.assetId);
-                    if(asset) {
-                        asset.qty -= (entry.assetQty || 0); asset.totalKRW = asset.qty * asset.price * (asset.currency==='USD'?globalExchangeRate:1);
-                    }
+                    if (asset) { asset.qty -= (entry.assetQty || 0); asset.totalKRW = asset.qty * asset.price * (asset.currency === 'USD' ? globalExchangeRate : 1); }
                 }
-            } else if(entry.type === 'sell') {
+            } else if (entry.type === 'sell') {
                 wallet.total -= entry.amount; 
-                if(entry.assetId) {
+                if (entry.assetId) {
                     let asset = localHoldings.find(h => h.id === entry.assetId);
-                    if(asset) { 
-                        asset.qty += (entry.assetQty || 0); 
-                        asset.totalKRW = asset.qty * asset.price * (asset.currency==='USD'?globalExchangeRate:1); 
-                    } else { alert("자산이 완전히 삭제되어 수량을 복구할 수 없습니다."); }
+                    if (asset) { asset.qty += (entry.assetQty || 0); asset.totalKRW = asset.qty * asset.price * (asset.currency === 'USD' ? globalExchangeRate : 1); }
+                    else { alert("자산이 완전히 삭제되어 수량을 복구할 수 없습니다."); }
                 }
             }
 
-            if(db && currentUser) {
+            if (db && currentUser) {
                 await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").doc(id).delete();
                 await db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
                 await db.collection("users").doc(currentUser.uid).collection("holdings").doc(getUsdWallet().id).set(getUsdWallet());
@@ -858,53 +933,57 @@
             showToast("기록 삭제 및 롤백 완료");
         };
 
-        // ================= FIXED EXPENSES (고정비) =================
+        // ================= FIXED EXPENSES =================
         const daySel = document.getElementById('fx-day');
-        for(let i=1;i<=31;i++) daySel.add(new Option(`매월 ${i}일`, i));
+        for (let i = 1; i <= 31; i++) daySel.add(new Option(`매월 ${i}일`, i));
 
         async function saveFixedExpense(e) {
             e.preventDefault();
             const data = { name: document.getElementById('fx-name').value, day: parseInt(document.getElementById('fx-day').value), amount: parseFloat(unformatNumber(document.getElementById('fx-amount').value)), lastPaidMonth: '' };
-            if(db && currentUser) { await db.collection("users").doc(currentUser.uid).collection("fixedExpenses").add(data); await loadAllData(); }
-            else { localFixedExpenses.push({id: 'fx_'+Date.now(), ...data}); renderFixedExpenses(); }
+            if (db && currentUser) { await db.collection("users").doc(currentUser.uid).collection("fixedExpenses").add(data); await loadAllData(); }
+            else { localFixedExpenses.push({ id: 'fx_' + Date.now(), ...data }); renderFixedExpenses(); }
             closeModal('fixed-modal'); showToast("고정 지출 등록됨"); checkAutoFixedExpenses();
         }
 
         function checkAutoFixedExpenses() {
-            const today = new Date(); const currentMonthStr = `${today.getFullYear()}-${today.getMonth() + 1}`; const currentDay = today.getDate();
+            const today = new Date();
+            const currentMonthStr = `${today.getFullYear()}-${today.getMonth() + 1}`;
+            const currentDay = today.getDate();
             let autoPaidCount = 0;
+
             localFixedExpenses.forEach(fx => {
-                if(fx.lastPaidMonth !== currentMonthStr && currentDay >= fx.day) {
-                    const wallet = getSystemWallet(); wallet.total -= fx.amount; 
-                    const entry = { type:'expense', category: '고정지출(자동)', subCategory: fx.name, amount: fx.amount, memo: '자동 납부', date: new Date().toISOString() };
+                if (fx.lastPaidMonth !== currentMonthStr && currentDay >= fx.day) {
+                    const wallet = getSystemWallet(); wallet.total -= fx.amount;
+                    const entry = { type: 'expense', category: '고정지출(자동)', subCategory: fx.name, amount: fx.amount, memo: '자동 납부', date: new Date().toISOString() };
                     
-                    if(db && currentUser) {
-                        db.collection("users").doc(currentUser.uid).collection("fixedExpenses").doc(fx.id).update({lastPaidMonth: currentMonthStr});
-                        db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entry, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
+                    if (db && currentUser) {
+                        db.collection("users").doc(currentUser.uid).collection("fixedExpenses").doc(fx.id).update({ lastPaidMonth: currentMonthStr });
+                        db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({ ...entry, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
                         db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
                     } else {
-                        localLedgerEntries.push({ id: 'led_auto_'+Date.now()+Math.random(), ...entry });
+                        localLedgerEntries.push({ id: 'led_auto_' + Date.now() + Math.random(), ...entry });
                     }
-                    fx.lastPaidMonth = currentMonthStr; autoPaidCount++;
+                    fx.lastPaidMonth = currentMonthStr;
+                    autoPaidCount++;
                 }
             });
-            if(autoPaidCount > 0) { updateWalletDisplay(); renderTimeline(); initTab1Charts(); renderFixedExpenses(); showToast(`${autoPaidCount}건의 고정비 자동 결제!`); }
+            if (autoPaidCount > 0) { updateWalletDisplay(); renderTimeline(); initTab1Charts(); renderFixedExpenses(); showToast(`${autoPaidCount}건의 고정비 자동 결제!`); }
         }
 
         async function payFixedExpense(id) {
-            const fx = localFixedExpenses.find(x=>x.id===id); if(!fx) return;
+            const fx = localFixedExpenses.find(x => x.id === id); if (!fx) return;
             const currentMonthStr = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
-            if(fx.lastPaidMonth === currentMonthStr) return alert("이미 납부되었습니다.");
+            if (fx.lastPaidMonth === currentMonthStr) return alert("이미 납부되었습니다.");
             const wallet = getSystemWallet(); wallet.total -= fx.amount;
-            const entry = { type:'expense', category: '고정지출(수동)', subCategory: fx.name, amount: fx.amount, memo: '수동 납부', date: new Date().toISOString() };
+            const entry = { type: 'expense', category: '고정지출(수동)', subCategory: fx.name, amount: fx.amount, memo: '수동 납부', date: new Date().toISOString() };
 
-            if(db && currentUser) {
-                await db.collection("users").doc(currentUser.uid).collection("fixedExpenses").doc(id).update({lastPaidMonth: currentMonthStr});
-                await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entry, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
+            if (db && currentUser) {
+                await db.collection("users").doc(currentUser.uid).collection("fixedExpenses").doc(id).update({ lastPaidMonth: currentMonthStr });
+                await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({ ...entry, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
                 await db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
                 await loadAllData();
             } else {
-                localLedgerEntries.push({ id: 'led_man_'+Date.now(), ...entry });
+                localLedgerEntries.push({ id: 'led_man_' + Date.now(), ...entry });
                 fx.lastPaidMonth = currentMonthStr;
                 updateWalletDisplay(); renderTimeline(); initTab1Charts(); renderFixedExpenses();
             }
@@ -912,41 +991,58 @@
         }
         
         window.deleteFixedExpense = async function(id) { 
-            if(!confirm("삭제할까요?")) return; 
-            if(db && currentUser) { await db.collection("users").doc(currentUser.uid).collection("fixedExpenses").doc(id).delete(); await loadAllData(); }
-            else { localFixedExpenses = localFixedExpenses.filter(x=>x.id!==id); renderFixedExpenses(); }
+            if (!confirm("삭제할까요?")) return; 
+            if (db && currentUser) { await db.collection("users").doc(currentUser.uid).collection("fixedExpenses").doc(id).delete(); await loadAllData(); }
+            else { localFixedExpenses = localFixedExpenses.filter(x => x.id !== id); renderFixedExpenses(); }
         };
 
         function renderFixedExpenses() {
-            const container = document.getElementById('fixed-expense-list'); container.innerHTML = '';
-            if(localFixedExpenses.length === 0) return container.innerHTML = '<div class="text-xs text-gray-400 text-center py-6 font-bold">등록된 구독료/고정비가 없습니다.</div>';
+            const container = document.getElementById('fixed-expense-list');
+            container.innerHTML = '';
+            if (localFixedExpenses.length === 0) {
+                container.innerHTML = '<div class="text-xs text-gray-400 text-center py-6 font-bold">등록된 구독료/고정비가 없습니다.</div>';
+                return;
+            }
             const currentMonthStr = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
-            localFixedExpenses.sort((a,b)=>a.day-b.day).forEach(fx => {
+            const frag = document.createDocumentFragment(); // [OPT] DocumentFragment로 배치 리플로우 최소화
+
+            localFixedExpenses.sort((a, b) => a.day - b.day).forEach(fx => {
                 const isPaid = fx.lastPaidMonth === currentMonthStr;
-                const el = document.createElement('div'); el.className = `flex justify-between items-center border p-3 rounded-xl ${isPaid ? 'bg-gray-50 border-gray-100 opacity-60' : 'bg-white border-pancake-border shadow-sm'}`;
+                const el = document.createElement('div');
+                el.className = `flex justify-between items-center border p-3 rounded-xl ${isPaid ? 'bg-gray-50 border-gray-100 opacity-60' : 'bg-white border-pancake-border shadow-sm'}`;
                 el.innerHTML = `
-                    <div><div class="font-bold text-sm text-pancake-text flex items-center">${fx.name} ${isPaid?'<i data-lucide="check-circle" class="w-4 h-4 text-pancake-success ml-1"></i>':''}</div><div class="text-xs text-gray-500 font-bold mt-1">매월 ${fx.day}일 · ₩${formatNumber(fx.amount)}</div></div>
+                    <div><div class="font-bold text-sm text-pancake-text flex items-center">${fx.name} ${isPaid ? '<i data-lucide="check-circle" class="w-4 h-4 text-pancake-success ml-1"></i>' : ''}</div><div class="text-xs text-gray-500 font-bold mt-1">매월 ${fx.day}일 · ₩${formatNumber(fx.amount)}</div></div>
                     <div class="flex gap-2">
-                        ${!isPaid ? `<button onclick="payFixedExpense('${fx.id}')" class="pc-btn pc-btn-primary px-3 py-1.5 text-xs !rounded-lg !shadow-[0px_2px_0px_#139ea8]">납부</button>` : `<span class="text-xs font-bold text-pancake-success px-2">완료</span>`}
-                        <button onclick="deleteFixedExpense('${fx.id}')" class="text-gray-400 hover:text-pancake-failure p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        ${!isPaid ? `<button data-pay-id="${fx.id}" class="pc-btn pc-btn-primary px-3 py-1.5 text-xs !rounded-lg !shadow-[0px_2px_0px_#139ea8]">납부</button>` : '<span class="text-xs font-bold text-pancake-success px-2">완료</span>'}
+                        <button data-del-id="${fx.id}" class="text-gray-400 hover:text-pancake-failure p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>`;
-                container.appendChild(el);
-            }); lucide.createIcons();
+                frag.appendChild(el);
+            });
+            container.appendChild(frag);
+            // [OPT] 컨테이너 노드만 대상으로 lucide 아이콘 생성 (전체 DOM 스캔 방지)
+            lucide.createIcons({ nodes: [container] });
         }
+
+        // [OPT] 고정비 목록 이벤트 위임 처리
+        document.getElementById('fixed-expense-list').addEventListener('click', (e) => {
+            const payBtn = e.target.closest('[data-pay-id]');
+            const delBtn = e.target.closest('[data-del-id]');
+            if (payBtn) payFixedExpense(payBtn.dataset.payId);
+            if (delBtn) deleteFixedExpense(delBtn.dataset.delId);
+        });
 
         // ================= ASSET PORTFOLIO =================
         function toggleHoldingInputs() {
-            const type = document.getElementById('holding-type').value;
+            const type   = document.getElementById('holding-type').value;
             const isCash = type === 'cash' || type === 'usd_cash';
             document.getElementById('holding-name-container').classList.toggle('hidden', isCash);
             document.getElementById('holding-qty-price-container').classList.toggle('hidden', isCash);
             document.getElementById('holding-currency-container').classList.toggle('hidden', isCash);
             document.getElementById('holding-cash-container').classList.toggle('hidden', !isCash);
             document.getElementById('holding-preview-container').classList.toggle('hidden', isCash);
-            
-            document.getElementById('holding-qty').required = !isCash;
-            document.getElementById('holding-price').required = !isCash;
-            document.getElementById('holding-cash-amount').required = isCash;
+            document.getElementById('holding-qty').required          = !isCash;
+            document.getElementById('holding-price').required        = !isCash;
+            document.getElementById('holding-cash-amount').required  = isCash;
 
             if (isCash) {
                 const label = document.getElementById('holding-cash-label');
@@ -974,104 +1070,101 @@
         });
 
         function updateHoldingPreview() {
-            const q = parseFloat(unformatNumber(document.getElementById('holding-qty').value)) || 0;
-            const p = parseFloat(unformatNumber(document.getElementById('holding-price').value)) || 0;
-            const isUsd = document.querySelector('[data-group="holding-currency"] .selected').dataset.value === 'usd';
-            
-            const rate = isUsd ? globalExchangeRate : 1;
-            const totalKRW = q * p * rate;
+            const q      = parseFloat(unformatNumber(document.getElementById('holding-qty').value)) || 0;
+            const p      = parseFloat(unformatNumber(document.getElementById('holding-price').value)) || 0;
+            const isUsd  = document.querySelector('[data-group="holding-currency"] .selected').dataset.value === 'usd';
+            const totalKRW = q * p * (isUsd ? globalExchangeRate : 1);
             document.getElementById('holding-preview-total').textContent = `₩ ${formatNumber(totalKRW)}`;
         }
 
         ['holding-qty', 'holding-price'].forEach(id => document.getElementById(id).addEventListener('input', updateHoldingPreview));
 
         window.resetHoldingForm = function() { 
-            document.getElementById('holding-form').reset(); 
-            document.getElementById('holding-id').value = ''; 
+            document.getElementById('holding-form').reset();
+            document.getElementById('holding-id').value = '';
             const localTodayStr = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
             document.getElementById('holding-date').value = localTodayStr;
-            document.getElementById('holding-preview-total').textContent = `₩ 0`; 
+            document.getElementById('holding-preview-total').textContent = '₩ 0';
             document.getElementById('holding-cash-label').textContent = '입출금 금액(₩)';
             document.getElementById('holding-cash-amount').classList.add('text-pancake-success');
             document.getElementById('holding-cash-amount').classList.remove('text-blue-500');
-            toggleHoldingInputs(); 
-        }
+            toggleHoldingInputs();
+        };
 
         async function addHolding() {
-            const id = document.getElementById('holding-id').value;
-            const type = document.getElementById('holding-type').value;
+            const id      = document.getElementById('holding-id').value;
+            const type    = document.getElementById('holding-type').value;
             const dateStr = document.getElementById('holding-date').value;
             const entryDate = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
-            const wallet = getSystemWallet();
+            const wallet    = getSystemWallet();
             const usdWallet = getUsdWallet();
             
-            if(type === 'cash' || type === 'usd_cash') {
-                const amtStr = document.getElementById('holding-cash-amount').value;
-                const amt = parseFloat(unformatNumber(amtStr));
-                if(isNaN(amt) || amt === 0) return alert("입출금 금액을 올바르게 입력하세요.");
+            if (type === 'cash' || type === 'usd_cash') {
+                const amt = parseFloat(unformatNumber(document.getElementById('holding-cash-amount').value));
+                if (isNaN(amt) || amt === 0) return alert("입출금 금액을 올바르게 입력하세요.");
                 
                 let entry, targetWallet;
-
                 if (type === 'cash') {
                     wallet.total += amt;
                     targetWallet = wallet;
                     entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: wallet.id, assetQty: Math.abs(amt), category: '기본예금 수동조절', subCategory: '입출금', amount: Math.abs(amt), memo: '수동 잔액 변경', date: entryDate };
                 } else {
-                    usdWallet.qty += amt; // 외화 예금은 qty에 달러 잔고를 저장합니다.
+                    usdWallet.qty += amt;
                     usdWallet.totalKRW = usdWallet.qty * globalExchangeRate;
                     targetWallet = usdWallet;
-                    entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: usdWallet.id, assetQty: Math.abs(amt), category: '외화예금 수동조절', subCategory: '입출금(USD)', amount: Math.abs(amt * globalExchangeRate), memo: `수동 잔액 변경 (${amt>0?'+':''}$${formatNumber(Math.abs(amt))})`, date: entryDate };
+                    entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: usdWallet.id, assetQty: Math.abs(amt), category: '외화예금 수동조절', subCategory: '입출금(USD)', amount: Math.abs(amt * globalExchangeRate), memo: `수동 잔액 변경 (${amt > 0 ? '+' : ''}$${formatNumber(Math.abs(amt))})`, date: entryDate };
                 }
                 
-                if(db && currentUser) {
+                if (db && currentUser) {
                     await db.collection("users").doc(currentUser.uid).collection("holdings").doc(targetWallet.id).set(targetWallet);
-                    await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entry, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
+                    await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({ ...entry, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
                     await loadAllData();
                 } else {
-                    localLedgerEntries.push({ id: `led_${type}_`+Date.now(), ...entry });
+                    localLedgerEntries.push({ id: `led_${type}_` + Date.now(), ...entry });
                     updateWalletDisplay(); renderHoldings(); renderTimeline(); initTab1Charts();
                 }
-                resetHoldingForm(); showToast(`${type==='cash'?'예금':'외화 예금'} 잔액 조정 완료 (${amt>0?'+':''}${type==='cash'?'₩':'$'}${formatNumber(Math.abs(amt))})`);
+                resetHoldingForm();
+                showToast(`${type === 'cash' ? '예금' : '외화 예금'} 잔액 조정 완료 (${amt > 0 ? '+' : ''}${type === 'cash' ? '₩' : '$'}${formatNumber(Math.abs(amt))})`);
                 return;
             }
 
-            const name = document.getElementById('holding-name').value;
-            const qty = parseFloat(unformatNumber(document.getElementById('holding-qty').value)) || 0;
-            const price = parseFloat(unformatNumber(document.getElementById('holding-price').value)) || 0;
-            const isUsd = document.querySelector('[data-group="holding-currency"] .selected').dataset.value === 'usd';
-            const rate = isUsd ? globalExchangeRate : 1;
+            const name   = document.getElementById('holding-name').value;
+            const qty    = parseFloat(unformatNumber(document.getElementById('holding-qty').value)) || 0;
+            const price  = parseFloat(unformatNumber(document.getElementById('holding-price').value)) || 0;
+            const isUsd  = document.querySelector('[data-group="holding-currency"] .selected').dataset.value === 'usd';
+            const rate   = isUsd ? globalExchangeRate : 1;
             const totalKRW = qty * price * rate;
             
-            if(totalKRW <= 0 || isNaN(totalKRW)) return alert("수량과 단가를 올바르게 입력하세요.");
+            if (totalKRW <= 0 || isNaN(totalKRW)) return alert("수량과 단가를 올바르게 입력하세요.");
             
-            let holdingIdToUse = id || 'ast_'+Date.now().toString();
+            const holdingIdToUse = id || 'ast_' + Date.now().toString();
 
-            if(id) {
-                 const oldAsset = localHoldings.find(h => h.id === id);
-                 if(oldAsset) wallet.total -= (totalKRW - oldAsset.totalKRW); 
+            if (id) {
+                const oldAsset = localHoldings.find(h => h.id === id);
+                if (oldAsset) wallet.total -= (totalKRW - oldAsset.totalKRW); 
             } else {
-                 wallet.total -= totalKRW; 
+                wallet.total -= totalKRW; 
             }
 
-            const holdingData = { type, name, qty, price, currency: isUsd?'USD':'KRW', exchangeRate: rate, totalKRW };
-            const entryData = { type: 'buy', assetId: holdingIdToUse, assetQty: qty, category: '자산매수', subCategory: name, amount: totalKRW, memo: `${formatNumber(qty)}주 매수${isUsd?'(USD)':''}`, date: entryDate };
+            const holdingData = { type, name, qty, price, currency: isUsd ? 'USD' : 'KRW', exchangeRate: rate, totalKRW };
+            const entryData   = { type: 'buy', assetId: holdingIdToUse, assetQty: qty, category: '자산매수', subCategory: name, amount: totalKRW, memo: `${formatNumber(qty)}주 매수${isUsd ? '(USD)' : ''}`, date: entryDate };
 
-            if(db && currentUser) {
-                if(id) await db.collection("users").doc(currentUser.uid).collection("holdings").doc(id).update(holdingData);
+            if (db && currentUser) {
+                if (id) await db.collection("users").doc(currentUser.uid).collection("holdings").doc(id).update(holdingData);
                 else {
-                     const ref = await db.collection("users").doc(currentUser.uid).collection("holdings").add(holdingData);
-                     entryData.assetId = ref.id;
-                     await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entryData, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
+                    const ref = await db.collection("users").doc(currentUser.uid).collection("holdings").add(holdingData);
+                    entryData.assetId = ref.id;
+                    await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({ ...entryData, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
                 }
                 await db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
                 await loadAllData();
             } else {
-                if(!id) {
-                    localLedgerEntries.push({ id: 'led_buy_'+Date.now(), ...entryData }); 
-                    localHoldings.push({id: holdingIdToUse, ...holdingData});
+                if (!id) {
+                    localLedgerEntries.push({ id: 'led_buy_' + Date.now(), ...entryData });
+                    localHoldings.push({ id: holdingIdToUse, ...holdingData });
                 } else {
                     const idx = localHoldings.findIndex(h => h.id === id);
-                    if(idx > -1) localHoldings[idx] = { ...localHoldings[idx], ...holdingData };
+                    if (idx > -1) localHoldings[idx] = { ...localHoldings[idx], ...holdingData };
                 }
                 updateWalletDisplay(); renderHoldings(); renderTimeline(); initTab1Charts();
             }
@@ -1079,336 +1172,356 @@
         }
 
         window.editHolding = function(id) {
-            const h = localHoldings.find(x => x.id === id); if(!h) return;
-            document.getElementById('holding-id').value = h.id;
-            document.getElementById('holding-type').value = h.type;
+            const h = localHoldings.find(x => x.id === id); if (!h) return;
+            document.getElementById('holding-id').value    = h.id;
+            document.getElementById('holding-type').value  = h.type;
             const localTodayStr = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-            document.getElementById('holding-date').value = localTodayStr;
-            document.getElementById('holding-name').value = h.name;
-            document.getElementById('holding-qty').value = formatNumber(h.qty);
+            document.getElementById('holding-date').value  = localTodayStr;
+            document.getElementById('holding-name').value  = h.name;
+            document.getElementById('holding-qty').value   = formatNumber(h.qty);
             document.getElementById('holding-price').value = formatNumber(h.price);
-            
-            const btn = document.querySelector(`[data-group="holding-currency"] button[data-value="${h.currency==='USD'?'usd':'krw'}"]`);
-            if(btn) btn.click();
+            const btn = document.querySelector(`[data-group="holding-currency"] button[data-value="${h.currency === 'USD' ? 'usd' : 'krw'}"]`);
+            if (btn) btn.click();
             updateHoldingPreview();
         };
 
         function openSellModal(id) {
-            const h = localHoldings.find(x => x.id === id); if(!h) return;
-            document.getElementById('sell-asset-id').value = h.id; 
+            const h = localHoldings.find(x => x.id === id); if (!h) return;
+            document.getElementById('sell-asset-id').value  = h.id;
             document.getElementById('sell-avg-price').value = h.price;
-            document.getElementById('sell-currency').value = h.currency || 'KRW';
-            
-            const curLabel = h.currency === 'USD' ? '달러($)' : '원화(₩)';
+            document.getElementById('sell-currency').value  = h.currency || 'KRW';
             document.getElementById('sell-asset-name').textContent = `${h.name} (보유: ${formatNumber(h.qty)}주)`;
-            document.getElementById('sell-price-label').textContent = `매도 단가 (${curLabel})`;
+            document.getElementById('sell-price-label').textContent = `매도 단가 (${h.currency === 'USD' ? '달러($)' : '원화(₩)'})`;
             const localTodayStr = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-            document.getElementById('sell-date').value = localTodayStr;
-            document.getElementById('sell-qty').value = formatNumber(h.qty); 
+            document.getElementById('sell-date').value  = localTodayStr;
+            document.getElementById('sell-qty').value   = formatNumber(h.qty);
             document.getElementById('sell-price').value = formatNumber(h.price);
             calculateSell(); openModal('sell-modal');
         }
+        window.openSellModal = openSellModal;
+
         ['sell-qty', 'sell-price'].forEach(id => document.getElementById(id).addEventListener('input', calculateSell));
         
         function calculateSell() {
-            const q = parseFloat(unformatNumber(document.getElementById('sell-qty').value)) || 0; 
-            const p = parseFloat(unformatNumber(document.getElementById('sell-price').value)) || 0; 
-            const avg = parseFloat(document.getElementById('sell-avg-price').value) || 0;
+            const q        = parseFloat(unformatNumber(document.getElementById('sell-qty').value)) || 0;
+            const p        = parseFloat(unformatNumber(document.getElementById('sell-price').value)) || 0;
+            const avg      = parseFloat(document.getElementById('sell-avg-price').value) || 0;
             const currency = document.getElementById('sell-currency').value;
-            
-            const rate = currency === 'USD' ? globalExchangeRate : 1;
+            const rate     = currency === 'USD' ? globalExchangeRate : 1;
             const proceedsKRW = q * p * rate;
-            const pnlKRW = ((p - avg) * q) * rate;
+            const pnlKRW      = ((p - avg) * q) * rate;
 
             document.getElementById('sell-proceeds').textContent = `₩ ${formatNumber(proceedsKRW)}`;
-            const pel = document.getElementById('sell-pnl'); pel.textContent = `₩ ${formatNumber(pnlKRW)}`; pel.className = pnlKRW>0 ? 'font-bold text-pancake-success text-base' : (pnlKRW<0 ? 'font-bold text-pancake-failure text-base' : 'font-bold text-gray-500 text-base');
+            const pel = document.getElementById('sell-pnl');
+            pel.textContent = `₩ ${formatNumber(pnlKRW)}`;
+            pel.className = pnlKRW > 0 ? 'font-bold text-pancake-success text-base' : (pnlKRW < 0 ? 'font-bold text-pancake-failure text-base' : 'font-bold text-gray-500 text-base');
         }
 
         async function processSell(e) {
             e.preventDefault();
-            const id = document.getElementById('sell-asset-id').value;
+            const id      = document.getElementById('sell-asset-id').value;
             const dateStr = document.getElementById('sell-date').value;
             const entryDate = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
-            const q = parseFloat(unformatNumber(document.getElementById('sell-qty').value)); 
+            const q = parseFloat(unformatNumber(document.getElementById('sell-qty').value));
             const p = parseFloat(unformatNumber(document.getElementById('sell-price').value));
             if (isNaN(q) || isNaN(p) || q <= 0 || p <= 0) return alert("올바른 숫자를 입력하세요.");
             
             const asset = localHoldings.find(h => h.id === id);
-            if(q > asset.qty) return alert("보유 수량을 초과합니다.");
+            if (q > asset.qty) return alert("보유 수량을 초과합니다.");
 
-            const rate = asset.currency === 'USD' ? globalExchangeRate : 1;
+            const rate        = asset.currency === 'USD' ? globalExchangeRate : 1;
             const proceedsKRW = q * p * rate;
-            const pnlKRW = ((p - asset.price) * q) * rate;
+            const pnlKRW      = ((p - asset.price) * q) * rate;
+            const wallet      = getSystemWallet();
 
-            const wallet = getSystemWallet();
-            asset.qty -= q; 
-            asset.totalKRW = asset.qty * asset.price * (asset.currency==='USD'?globalExchangeRate:1);
-            wallet.total += proceedsKRW; 
+            asset.qty    -= q;
+            asset.totalKRW = asset.qty * asset.price * (asset.currency === 'USD' ? globalExchangeRate : 1);
+            wallet.total += proceedsKRW;
 
             const entryData = { type: 'sell', assetId: asset.id, assetQty: q, category: '자산매도', subCategory: asset.name, amount: proceedsKRW, memo: `${formatNumber(q)}주 매도`, pnl: pnlKRW, date: entryDate };
 
-            if(db && currentUser) {
-                if(asset.qty <= 0.0001) await db.collection("users").doc(currentUser.uid).collection("holdings").doc(id).delete();
-                else await db.collection("users").doc(currentUser.uid).collection("holdings").doc(id).update({qty: asset.qty, totalKRW: asset.totalKRW});
+            if (db && currentUser) {
+                if (asset.qty <= 0.0001) await db.collection("users").doc(currentUser.uid).collection("holdings").doc(id).delete();
+                else await db.collection("users").doc(currentUser.uid).collection("holdings").doc(id).update({ qty: asset.qty, totalKRW: asset.totalKRW });
                 await db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
-                await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entryData, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
+                await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({ ...entryData, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
                 await loadAllData();
             } else {
-                localLedgerEntries.push({ id: 'led_sell_'+Date.now(), ...entryData });
-                if(asset.qty <= 0.0001) localHoldings = localHoldings.filter(h=>h.id!==id); 
-                updateWalletDisplay(); renderHoldings(); renderTimeline(); initTab1Charts(); 
+                localLedgerEntries.push({ id: 'led_sell_' + Date.now(), ...entryData });
+                if (asset.qty <= 0.0001) localHoldings = localHoldings.filter(h => h.id !== id);
+                updateWalletDisplay(); renderHoldings(); renderTimeline(); initTab1Charts();
             }
             closeModal('sell-modal'); showToast("수익 실현! 예금 입금됨");
         }
 
         function renderHoldings() {
             localHoldings.forEach(h => {
-                if(h.type !== 'cash' && h.currency === 'USD') h.totalKRW = h.qty * h.price * globalExchangeRate;
-                else if(h.type !== 'cash') h.totalKRW = h.qty * h.price; 
+                if (h.type !== 'cash' && h.currency === 'USD') h.totalKRW = h.qty * h.price * globalExchangeRate;
+                else if (h.type !== 'cash') h.totalKRW = h.qty * h.price;
             });
 
-            const container = document.getElementById('holdings-list-container'); container.innerHTML = '';
-            // 외화 예금(usd_cash)을 포트폴리오 목록에서 제외하여 매매기록과 상단 대시보드에만 남김
-            const cats = [{ type: 'stock', title: '📈 주식'}, { type: 'bond', title: '🏛️ 채권'}, { type: 'commodity', title: '🥇 원자재'}];
+            const container = document.getElementById('holdings-list-container');
+            container.innerHTML = '';
+            const cats = [{ type: 'stock', title: '📈 주식' }, { type: 'bond', title: '🏛️ 채권' }, { type: 'commodity', title: '🥇 원자재' }];
             let hasItems = false;
+
+            const frag = document.createDocumentFragment(); // [OPT] 배치 렌더링
+
             cats.forEach(cat => {
                 const items = localHoldings.filter(h => h.type === cat.type && h.qty > 0);
-                if(items.length === 0) return;
+                if (items.length === 0) return;
                 hasItems = true;
-                const section = document.createElement('div'); section.className = 'bg-[#F9F8FA] rounded-xl p-4 border border-gray-200';
+                const section = document.createElement('div');
+                section.className = 'bg-[#F9F8FA] rounded-xl p-4 border border-gray-200';
                 let html = `<h4 class="font-bold text-sm mb-3 text-pancake-textSub">${cat.title}</h4><div class="space-y-3">`;
                 items.forEach(item => {
                     const priceStr = item.currency === 'USD' ? `$${formatNumber(item.price)}` : `₩${formatNumber(item.price)}`;
                     html += `
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 rounded-xl shadow-sm border border-gray-100 gap-2">
                         <div>
-                            <div class="font-bold text-base text-pancake-text flex items-center">${item.name} ${item.currency==='USD'?'<span class="text-[10px] ml-2 bg-blue-100 text-blue-600 px-1.5 rounded">USD</span>':''}</div>
+                            <div class="font-bold text-base text-pancake-text flex items-center">${item.name} ${item.currency === 'USD' ? '<span class="text-[10px] ml-2 bg-blue-100 text-blue-600 px-1.5 rounded">USD</span>' : ''}</div>
                             <div class="text-xs text-gray-500 font-bold mt-1">${item.type === 'usd_cash' ? `잔액: $${formatNumber(item.qty)}` : `${formatNumber(item.qty)}주 × ${priceStr}`}</div>
                         </div>
                         <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
                             <div class="font-brand font-bold text-xl text-pancake-text">₩ ${formatNumber(item.totalKRW)}</div>
                             <div class="flex gap-1">
-                                ${item.type !== 'usd_cash' ? `<button onclick="openSellModal('${item.id}')" class="pc-btn pc-btn-success px-3 py-1.5 text-xs !rounded-lg !shadow-[0px_2px_0px_#1e7a63]">매도</button>` : ''}
+                                ${item.type !== 'usd_cash' ? `<button data-sell-id="${item.id}" class="pc-btn pc-btn-success px-3 py-1.5 text-xs !rounded-lg !shadow-[0px_2px_0px_#1e7a63]">매도</button>` : ''}
                             </div>
                         </div>
                     </div>`;
                 });
-                html += '</div>'; section.innerHTML = html; container.appendChild(section);
+                html += '</div>';
+                section.innerHTML = html;
+                frag.appendChild(section);
             });
-            if(!hasItems) container.innerHTML = '<div class="text-center text-sm text-gray-400 py-10 font-bold border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">등록된 자산이 없습니다.</div>';
-            lucide.createIcons();
+
+            if (!hasItems) {
+                const empty = document.createElement('div');
+                empty.className = 'text-center text-sm text-gray-400 py-10 font-bold border-2 border-dashed border-gray-200 rounded-xl bg-gray-50';
+                empty.textContent = '등록된 자산이 없습니다.';
+                frag.appendChild(empty);
+            }
+            container.appendChild(frag);
         }
 
-        // ================= TIMELINE (통합 내역) =================
+        // [OPT] 포트폴리오 매도 버튼 이벤트 위임
+        document.getElementById('holdings-list-container').addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-sell-id]');
+            if (btn) openSellModal(btn.dataset.sellId);
+        });
+
+        // ================= TIMELINE =================
         document.querySelectorAll('[data-group="timeline-filter"] button').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('[data-group="timeline-filter"] button').forEach(b => b.classList.remove('selected'));
-                e.target.classList.add('selected'); renderTimeline();
+                e.target.classList.add('selected');
+                renderTimeline();
             });
         });
 
         function renderTimeline() {
-            const container = document.getElementById('timeline-container'); container.innerHTML = '';
-            
+            const container  = document.getElementById('timeline-container');
+            container.innerHTML = '';
             const typeFilter = document.querySelector('[data-group="timeline-filter"] .selected').dataset.value;
+
             let filtered = localLedgerEntries.filter(e => {
-                if(typeFilter === 'ledger') return e.type === 'income' || e.type === 'expense';
-                if(typeFilter === 'trade') return e.type === 'buy' || e.type === 'sell' || e.type === 'deposit' || e.type === 'withdrawal';
+                if (typeFilter === 'ledger') return e.type === 'income' || e.type === 'expense';
+                if (typeFilter === 'trade')  return e.type === 'buy' || e.type === 'sell' || e.type === 'deposit' || e.type === 'withdrawal';
                 return true;
             });
 
             const startVal = document.getElementById('timeline-filter-start').value;
-            const endVal = document.getElementById('timeline-filter-end').value;
-            if(startVal && endVal) {
-                const start = new Date(startVal); start.setHours(0,0,0,0);
-                const end = new Date(endVal); end.setHours(23,59,59,999);
+            const endVal   = document.getElementById('timeline-filter-end').value;
+            if (startVal && endVal) {
+                const start = new Date(startVal); start.setHours(0, 0, 0, 0);
+                const end   = new Date(endVal);   end.setHours(23, 59, 59, 999);
                 filtered = filtered.filter(e => new Date(e.date) >= start && new Date(e.date) <= end);
             }
 
-            const sorted = filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
-            if(sorted.length === 0) return container.innerHTML = '<div class="text-gray-400 font-bold text-sm bg-gray-50 p-6 rounded-xl border border-dashed text-center">기록된 내역이 없습니다.</div>';
+            const sorted = filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (sorted.length === 0) {
+                container.innerHTML = '<div class="text-gray-400 font-bold text-sm bg-gray-50 p-6 rounded-xl border border-dashed text-center">기록된 내역이 없습니다.</div>';
+                return;
+            }
 
+            const frag = document.createDocumentFragment(); // [OPT] 배치 렌더링
             let lastDate = '';
+
             sorted.forEach(e => {
                 const dStr = new Date(e.date).toLocaleDateString();
-                if(dStr !== lastDate) {
-                    container.innerHTML += `<div class="relative -left-[30px] bg-white border border-gray-200 px-3 py-1 rounded-full text-[10px] font-bold text-gray-500 inline-block mt-6 mb-2 shadow-sm">${dStr}</div>`;
+                if (dStr !== lastDate) {
+                    const dateLabel = document.createElement('div');
+                    dateLabel.className = 'relative -left-[30px] bg-white border border-gray-200 px-3 py-1 rounded-full text-[10px] font-bold text-gray-500 inline-block mt-6 mb-2 shadow-sm';
+                    dateLabel.textContent = dStr;
+                    frag.appendChild(dateLabel);
                     lastDate = dStr;
                 }
-                
-                let icon='', color='', sign='';
-                if(e.type==='income') { icon='💰'; color='bg-white border-pancake-success text-pancake-success'; sign='+'; }
-                else if(e.type==='expense') { icon='💸'; color='bg-white border-pancake-failure text-pancake-failure'; sign='-'; }
-                else if(e.type==='deposit') { icon='📥'; color='bg-blue-50 border-blue-200 text-blue-600'; sign='+'; }
-                else if(e.type==='withdrawal') { icon='📤'; color='bg-red-50 border-red-200 text-red-600'; sign='-'; }
-                else if(e.type==='buy') { icon='🛒'; color='bg-gray-50 border-gray-300 text-gray-700'; sign='-'; } 
-                else if(e.type==='sell') { icon='📈'; color='bg-[#F0FDFA] border-pancake-primary text-pancake-primary'; sign='+'; }
 
-                container.innerHTML += `
-                    <div class="relative flex items-center gap-4 mb-4 group">
-                        <div class="absolute -left-[33px] w-3 h-3 bg-pancake-primary rounded-full z-10 ring-4 ring-white"></div>
-                        <div class="w-full flex justify-between items-center p-3 rounded-xl border shadow-sm ${color} transition transform hover:-translate-y-0.5 bg-white">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">${icon}</span>
-                                <div>
-                                    <div class="font-bold text-sm text-pancake-text">${e.category} <span class="text-[10px] text-gray-500 font-normal ml-1 bg-gray-100 px-1.5 py-0.5 rounded">${e.subCategory||''}</span></div>
-                                    <div class="text-[10px] text-gray-500 font-medium mt-1">${e.memo||''}</div>
-                                </div>
+                let icon = '', color = '', sign = '';
+                if (e.type === 'income')     { icon = '💰'; color = 'bg-white border-pancake-success text-pancake-success'; sign = '+'; }
+                else if (e.type === 'expense')    { icon = '💸'; color = 'bg-white border-pancake-failure text-pancake-failure'; sign = '-'; }
+                else if (e.type === 'deposit')    { icon = '📥'; color = 'bg-blue-50 border-blue-200 text-blue-600'; sign = '+'; }
+                else if (e.type === 'withdrawal') { icon = '📤'; color = 'bg-red-50 border-red-200 text-red-600'; sign = '-'; }
+                else if (e.type === 'buy')        { icon = '🛒'; color = 'bg-gray-50 border-gray-300 text-gray-700'; sign = '-'; }
+                else if (e.type === 'sell')       { icon = '📈'; color = 'bg-[#F0FDFA] border-pancake-primary text-pancake-primary'; sign = '+'; }
+
+                const row = document.createElement('div');
+                row.className = 'relative flex items-center gap-4 mb-4 group';
+                row.innerHTML = `
+                    <div class="absolute -left-[33px] w-3 h-3 bg-pancake-primary rounded-full z-10 ring-4 ring-white"></div>
+                    <div class="w-full flex justify-between items-center p-3 rounded-xl border shadow-sm ${color} transition transform hover:-translate-y-0.5 bg-white">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${icon}</span>
+                            <div>
+                                <div class="font-bold text-sm text-pancake-text">${e.category} <span class="text-[10px] text-gray-500 font-normal ml-1 bg-gray-100 px-1.5 py-0.5 rounded">${e.subCategory || ''}</span></div>
+                                <div class="text-[10px] text-gray-500 font-medium mt-1">${e.memo || ''}</div>
                             </div>
-                            <div class="text-right">
-                                <div class="font-brand font-bold text-lg">${sign} ₩${formatNumber(e.amount)}</div>
-                                ${e.pnl ? `<div class="text-[10px] ${e.pnl>0?'text-pancake-success':'text-pancake-failure'} font-bold">손익: ${e.pnl>0?'+':''}₩${formatNumber(e.pnl)}</div>` : ''}
-                                
-                                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition bg-white/90 backdrop-blur-sm rounded-lg p-1 flex gap-1 shadow-sm border border-gray-100">
-                                    ${(e.type==='income' || e.type==='expense') ? `<button onclick="editLedgerEntry('${e.id}')" class="p-1 hover:bg-gray-100 rounded text-gray-500"><i data-lucide="edit-2" class="w-3 h-3"></i></button>`:''}
-                                    <button onclick="deleteLedgerEntry('${e.id}')" class="p-1 hover:bg-red-50 rounded text-pancake-failure"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
-                                </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-brand font-bold text-lg">${sign} ₩${formatNumber(e.amount)}</div>
+                            ${e.pnl ? `<div class="text-[10px] ${e.pnl > 0 ? 'text-pancake-success' : 'text-pancake-failure'} font-bold">손익: ${e.pnl > 0 ? '+' : ''}₩${formatNumber(e.pnl)}</div>` : ''}
+                            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition bg-white/90 backdrop-blur-sm rounded-lg p-1 flex gap-1 shadow-sm border border-gray-100">
+                                ${(e.type === 'income' || e.type === 'expense') ? `<button data-edit-ledger="${e.id}" class="p-1 hover:bg-gray-100 rounded text-gray-500"><i data-lucide="edit-2" class="w-3 h-3"></i></button>` : ''}
+                                <button data-del-ledger="${e.id}" class="p-1 hover:bg-red-50 rounded text-pancake-failure"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
                             </div>
                         </div>
                     </div>`;
+                frag.appendChild(row);
             });
-            lucide.createIcons();
+
+            container.appendChild(frag);
+            // [OPT] 타임라인 컨테이너만 대상으로 lucide 아이콘 생성
+            lucide.createIcons({ nodes: [container] });
         }
 
-        // ================= DASHBOARD CHARTS =================
+        // [OPT] 타임라인 수정/삭제 이벤트 위임 처리
+        document.getElementById('timeline-container').addEventListener('click', (e) => {
+            const editBtn = e.target.closest('[data-edit-ledger]');
+            const delBtn  = e.target.closest('[data-del-ledger]');
+            if (editBtn) editLedgerEntry(editBtn.dataset.editLedger);
+            if (delBtn)  deleteLedgerEntry(delBtn.dataset.delLedger);
+        });
+
+        // ================= CHARTS =================
         function createOrUpdateChart(id, config) {
-            const ctx = document.getElementById(id).getContext('2d');
+            const canvas = document.getElementById(id);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
             if (chartInstances[id]) chartInstances[id].destroy();
             chartInstances[id] = new Chart(ctx, config);
         }
 
         function getNetChange(start, end) {
-            const entries = localLedgerEntries.filter(e => { let d = new Date(e.date); return d >= start && d < end; });
+            const entries = localLedgerEntries.filter(e => { const d = new Date(e.date); return d >= start && d < end; });
             let change = 0;
             entries.forEach(e => {
-                if (e.type === 'income' || e.type === 'deposit') change += (parseFloat(e.amount) || 0);
+                if (e.type === 'income' || e.type === 'deposit')    change += (parseFloat(e.amount) || 0);
                 if (e.type === 'expense' || e.type === 'withdrawal') change -= (parseFloat(e.amount) || 0);
-                if (e.type === 'sell' && e.pnl) change += (parseFloat(e.pnl) || 0); 
+                if (e.type === 'sell' && e.pnl) change += (parseFloat(e.pnl) || 0);
             });
             return change;
         }
 
         function initTab1Charts() {
-            // 외화 예금이 NaN 등 오류를 발생시켜 전체 렌더링이 멈추는 것을 방지하기 위해 매우 안전한 방식으로 합산을 재구축했습니다.
             let sums = { stock: 0, bond: 0, commodity: 0, usd_cash: 0 };
-            
-            localHoldings.forEach(h => { 
-                if(h.type && h.type !== 'cash') {
-                    // h.type에 맞는 속성이 없다면 0을 더하도록 보장
+            localHoldings.forEach(h => {
+                if (h.type && h.type !== 'cash') {
                     sums[h.type] = (sums[h.type] || 0) + (parseFloat(h.totalKRW) || parseFloat(h.total) || 0);
                 }
             });
-            
-            const wallet = getSystemWallet();
+
+            const wallet         = getSystemWallet();
             const safeWalletTotal = parseFloat(wallet.total) || 0;
-            
-            // 모든 자산의 합 (이제 달러와 원화가 누락 없이 완벽히 합산됩니다)
-            const totalAsset = (sums.stock || 0) + (sums.bond || 0) + (sums.commodity || 0) + (sums.usd_cash || 0) + safeWalletTotal;
-            
-            const amt = displayCurrency === 'USD' ? (totalAsset / globalExchangeRate).toFixed(2) : totalAsset;
+            const totalAsset     = (sums.stock || 0) + (sums.bond || 0) + (sums.commodity || 0) + (sums.usd_cash || 0) + safeWalletTotal;
+            const amt    = displayCurrency === 'USD' ? (totalAsset / globalExchangeRate).toFixed(2) : totalAsset;
             const prefix = displayCurrency === 'USD' ? '$' : '₩';
             document.getElementById('total-net-worth').textContent = `${prefix} ${formatNumber(amt)}`;
 
             createOrUpdateChart('chart-asset-allocation', {
                 type: 'doughnut',
-                data: { 
-                    labels: ['주식', '채권', '원자재', '외화 예금', '기본 예금'], 
-                    datasets: [{ 
-                        data: [sums.stock || 0, sums.bond || 0, sums.commodity || 0, sums.usd_cash || 0, safeWalletTotal], 
-                        backgroundColor: ['#7645D9', '#1FC7D4', '#FFB237', '#3B82F6', '#EDF2F7'], 
-                        borderWidth: 0 
-                    }] 
+                data: {
+                    labels: ['주식', '채권', '원자재', '외화 예금', '기본 예금'],
+                    datasets: [{
+                        data: [sums.stock || 0, sums.bond || 0, sums.commodity || 0, sums.usd_cash || 0, safeWalletTotal],
+                        backgroundColor: ['#7645D9', '#1FC7D4', '#FFB237', '#3B82F6', '#EDF2F7'],
+                        borderWidth: 0
+                    }]
                 },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, cutout: '70%', circumference: 180, rotation: -90, 
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font:{weight:'bold'} } },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '70%', circumference: 180, rotation: -90,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { weight: 'bold' } } },
                         tooltip: {
                             callbacks: {
                                 label: function(ctx) {
-                                    let val = ctx.raw || 0; let total = ctx.chart._metasets[ctx.datasetIndex].total;
-                                    let pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
-                                    let valDisplay = displayCurrency === 'USD' ? `$${formatNumber((val / globalExchangeRate).toFixed(2))}` : `₩${formatNumber(val)}`;
+                                    const val   = ctx.raw || 0;
+                                    const total = ctx.chart._metasets[ctx.datasetIndex].total;
+                                    const pct   = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                                    const valDisplay = displayCurrency === 'USD' ? `$${formatNumber((val / globalExchangeRate).toFixed(2))}` : `₩${formatNumber(val)}`;
                                     return `${ctx.label}: ${valDisplay} (${pct}%)`;
                                 }
                             }
                         }
-                    } 
+                    }
                 }
             });
 
             const gTf = document.getElementById('growth-timeframe').value;
-            let gLabels=[], gData=[];
+            let gLabels = [], gData = [];
             const now = new Date();
-            let prevAsset = 0;
 
-            if(gTf === 'month') {
+            if (gTf === 'month') {
                 let currWorth = totalAsset;
-                for(let i=0; i<6; i++) {
-                    let targetStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                    let targetEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+                for (let i = 0; i < 6; i++) {
+                    const targetStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    const targetEnd   = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
                     gLabels.unshift(`${targetStart.getMonth() + 1}월`);
-                    
-                    if(i===0) gData.unshift(currWorth);
-                    else {
-                        let change = getNetChange(targetStart, targetEnd);
-                        currWorth = currWorth - change;
-                        gData.unshift(currWorth);
-                    }
+                    if (i === 0) gData.unshift(currWorth);
+                    else { currWorth -= getNetChange(targetStart, targetEnd); gData.unshift(currWorth); }
                 }
-                prevAsset = gData[gData.length - 2] || totalAsset;
-            } else { 
+            } else {
                 let currWorth = totalAsset;
-                let currQ = Math.floor(now.getMonth() / 3); let currY = now.getFullYear();
-                for(let i=0; i<4; i++) {
-                    let qStartMonth = currQ * 3;
-                    let targetStart = new Date(currY, qStartMonth, 1);
-                    let targetEnd = new Date(currY, qStartMonth + 3, 1);
-                    gLabels.unshift(`${currY.toString().slice(2)}년 ${currQ+1}Q`);
-                    
-                    if(i===0) gData.unshift(currWorth);
-                    else {
-                        let change = getNetChange(targetStart, targetEnd);
-                        currWorth = currWorth - change;
-                        gData.unshift(currWorth);
-                    }
-                    currQ--; if(currQ < 0) { currQ = 3; currY--; }
+                let currQ = Math.floor(now.getMonth() / 3), currY = now.getFullYear();
+                for (let i = 0; i < 4; i++) {
+                    const qStartMonth = currQ * 3;
+                    const targetStart = new Date(currY, qStartMonth, 1);
+                    const targetEnd   = new Date(currY, qStartMonth + 3, 1);
+                    gLabels.unshift(`${currY.toString().slice(2)}년 ${currQ + 1}Q`);
+                    if (i === 0) gData.unshift(currWorth);
+                    else { currWorth -= getNetChange(targetStart, targetEnd); gData.unshift(currWorth); }
+                    currQ--; if (currQ < 0) { currQ = 3; currY--; }
                 }
-                prevAsset = gData[gData.length - 2] || totalAsset;
             }
 
-            const diff = totalAsset - prevAsset;
-            const diffPct = prevAsset > 0 ? ((diff / prevAsset) * 100).toFixed(1) : 0;
-            
+            const prevAsset  = gData[gData.length - 2] || totalAsset;
+            const diff       = totalAsset - prevAsset;
+            const diffPct    = prevAsset > 0 ? ((diff / prevAsset) * 100).toFixed(1) : 0;
             const diffDisplay = displayCurrency === 'USD' ? (diff / globalExchangeRate).toFixed(2) : diff;
-            const currSymbol = displayCurrency === 'USD' ? '$' : '';
-            const currUnit = displayCurrency === 'USD' ? '' : '원';
-            
+            const currSymbol  = displayCurrency === 'USD' ? '$' : '';
+            const currUnit    = displayCurrency === 'USD' ? '' : '원';
             const sumEl = document.getElementById('growth-summary-text');
-            sumEl.textContent = `이전 대비 ${diff > 0 ? '+':''}${currSymbol}${formatNumber(diffDisplay)}${currUnit} (${diff > 0 ? '+':''}${diffPct}%)`;
-            sumEl.className = `text-[10px] font-bold mt-1 ml-7 ${diff >= 0 ? 'text-pancake-success' : 'text-pancake-failure'}`;
+            sumEl.textContent = `이전 대비 ${diff > 0 ? '+' : ''}${currSymbol}${formatNumber(diffDisplay)}${currUnit} (${diff > 0 ? '+' : ''}${diffPct}%)`;
+            sumEl.className   = `text-[10px] font-bold mt-1 ml-7 ${diff >= 0 ? 'text-pancake-success' : 'text-pancake-failure'}`;
 
             const chartData = displayCurrency === 'USD' ? gData.map(v => v / globalExchangeRate) : gData;
-
             createOrUpdateChart('chart-asset-growth', {
                 type: 'bar',
                 data: { labels: gLabels, datasets: [{ label: '자산 가치', data: chartData, backgroundColor: '#1FC7D4', borderRadius: 6 }] },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, 
-                    plugins: { 
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
                                 label: function(ctx) {
-                                    let val = ctx.raw;
-                                    let prefix = displayCurrency === 'USD' ? '$' : '₩';
-                                    let displayVal = displayCurrency === 'USD' ? val.toFixed(2) : val;
-                                    return `자산 가치: ${prefix}${formatNumber(displayVal)}`;
+                                    const prefix = displayCurrency === 'USD' ? '$' : '₩';
+                                    const val    = displayCurrency === 'USD' ? ctx.raw.toFixed(2) : ctx.raw;
+                                    return `자산 가치: ${prefix}${formatNumber(val)}`;
                                 }
                             }
                         }
-                    }, 
-                    scales: { y: { display: false }, x: { grid: {display: false} } } 
+                    },
+                    scales: { y: { display: false }, x: { grid: { display: false } } }
                 }
             });
 
@@ -1417,64 +1530,55 @@
 
         function renderLedgerCharts() {
             const startVal = document.getElementById('ledger-filter-start').value;
-            const endVal = document.getElementById('ledger-filter-end').value;
+            const endVal   = document.getElementById('ledger-filter-end').value;
             let filteredData = localLedgerEntries;
-            
-            if(startVal && endVal) {
-                const start = new Date(startVal); start.setHours(0,0,0,0);
-                const end = new Date(endVal); end.setHours(23,59,59,999);
+
+            if (startVal && endVal) {
+                const start = new Date(startVal); start.setHours(0, 0, 0, 0);
+                const end   = new Date(endVal);   end.setHours(23, 59, 59, 999);
                 filteredData = localLedgerEntries.filter(e => { const d = new Date(e.date); return d >= start && d <= end; });
             }
 
             let incSum = {}, expSum = {};
-            let totalInc = 0, totalExp = 0; 
+            let totalInc = 0, totalExp = 0;
 
             filteredData.forEach(e => {
-                if(e.category === '기본예금 수동조절' || e.category === '외화예금 수동조절') return;
-
-                if(e.type === 'income') {
-                    incSum[e.category] = (incSum[e.category] || 0) + e.amount;
-                    totalInc += e.amount;
-                }
-                else if(e.type === 'expense') {
-                    expSum[e.category] = (expSum[e.category] || 0) + e.amount;
-                    totalExp += e.amount;
-                }
+                if (e.category === '기본예금 수동조절' || e.category === '외화예금 수동조절') return;
+                if (e.type === 'income') { incSum[e.category] = (incSum[e.category] || 0) + e.amount; totalInc += e.amount; }
+                else if (e.type === 'expense') { expSum[e.category] = (expSum[e.category] || 0) + e.amount; totalExp += e.amount; }
             });
 
-            const prefix = displayCurrency === 'USD' ? '$' : '₩';
+            const pfx        = displayCurrency === 'USD' ? '$' : '₩';
             const displayInc = displayCurrency === 'USD' ? (totalInc / globalExchangeRate).toFixed(2) : totalInc;
             const displayExp = displayCurrency === 'USD' ? (totalExp / globalExchangeRate).toFixed(2) : totalExp;
-            
-            document.getElementById('chart-income-total').textContent = `${prefix} ${formatNumber(displayInc)}`;
-            document.getElementById('chart-expense-total').textContent = `${prefix} ${formatNumber(displayExp)}`;
+            document.getElementById('chart-income-total').textContent  = `${pfx} ${formatNumber(displayInc)}`;
+            document.getElementById('chart-expense-total').textContent = `${pfx} ${formatNumber(displayExp)}`;
 
             const renderPie = (id, dataObj, colors) => {
                 const keys = Object.keys(dataObj), vals = Object.values(dataObj);
                 const chartData = displayCurrency === 'USD' ? vals.map(v => v / globalExchangeRate) : vals;
                 createOrUpdateChart(id, {
                     type: 'pie',
-                    data: { labels: keys.length?keys:['없음'], datasets: [{ data: chartData.length?chartData:[1], backgroundColor: vals.length?colors:['#F4F4F4'], borderWidth: 0 }] },
-                    options: { 
-                        responsive: true, maintainAspectRatio: false, 
-                        plugins: { 
+                    data: { labels: keys.length ? keys : ['없음'], datasets: [{ data: chartData.length ? chartData : [1], backgroundColor: vals.length ? colors : ['#F4F4F4'], borderWidth: 0 }] },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
                             legend: { display: false },
                             tooltip: {
                                 callbacks: {
                                     label: function(ctx) {
-                                        if(keys.length === 0) return '데이터 없음';
-                                        let val = ctx.raw;
-                                        let prefix = displayCurrency === 'USD' ? '$' : '₩';
-                                        let displayVal = displayCurrency === 'USD' ? val.toFixed(2) : val;
-                                        return `${ctx.label}: ${prefix}${formatNumber(displayVal)}`;
+                                        if (!keys.length) return '데이터 없음';
+                                        const pfx = displayCurrency === 'USD' ? '$' : '₩';
+                                        const val = displayCurrency === 'USD' ? ctx.raw.toFixed(2) : ctx.raw;
+                                        return `${ctx.label}: ${pfx}${formatNumber(val)}`;
                                     }
                                 }
                             }
-                        } 
+                        }
                     }
                 });
             };
-            renderPie('chart-income-pie', incSum, ['#31D0AA', '#1FC7D4', '#7645D9']);
+            renderPie('chart-income-pie',  incSum, ['#31D0AA', '#1FC7D4', '#7645D9']);
             renderPie('chart-expense-pie', expSum, ['#ED4B9E', '#FFB237', '#7645D9', '#1FC7D4']);
         }
     </script>
