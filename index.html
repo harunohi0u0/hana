@@ -337,6 +337,10 @@
                             <form id="holding-form" class="space-y-5" onsubmit="event.preventDefault(); addHolding();">
                                 <input type="hidden" id="holding-id">
                                 <div>
+                                    <label class="text-xs font-bold text-gray-500 block mb-1">거래 날짜</label>
+                                    <input type="date" id="holding-date" class="pc-input bg-white border-gray-200" required>
+                                </div>
+                                <div>
                                     <label class="text-xs font-bold text-gray-500 block mb-1">자산 분류</label>
                                     <select id="holding-type" class="pc-input bg-white cursor-pointer border-gray-200" onchange="toggleHoldingInputs()">
                                         <option value="stock">📈 주식</option>
@@ -454,6 +458,10 @@
                 <input type="hidden" id="sell-asset-id">
                 <input type="hidden" id="sell-avg-price">
                 <input type="hidden" id="sell-currency">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 mb-1 block">매도 날짜</label>
+                    <input type="date" id="sell-date" class="pc-input bg-white border-gray-200" required>
+                </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="text-xs font-bold text-gray-500 mb-1 block">매도 수량</label><input type="text" id="sell-qty" class="pc-input bg-white number-input text-right border-gray-200" required></div>
                     <div><label id="sell-price-label" class="text-xs font-bold text-gray-500 mb-1 block">매도 단가</label><input type="text" id="sell-price" class="pc-input bg-white number-input text-right border-gray-200" required></div>
@@ -606,6 +614,11 @@
             document.getElementById('ledger-filter-end').value = lastDay;
             document.getElementById('timeline-filter-start').value = firstDay;
             document.getElementById('timeline-filter-end').value = lastDay;
+
+            // 등록 날짜 오늘로 초기화
+            const localTodayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            const holdingDateEl = document.getElementById('holding-date');
+            if (holdingDateEl) holdingDateEl.value = localTodayStr;
         }
 
         function setAllTime(type) {
@@ -975,6 +988,8 @@
         window.resetHoldingForm = function() { 
             document.getElementById('holding-form').reset(); 
             document.getElementById('holding-id').value = ''; 
+            const localTodayStr = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            document.getElementById('holding-date').value = localTodayStr;
             document.getElementById('holding-preview-total').textContent = `₩ 0`; 
             document.getElementById('holding-cash-label').textContent = '입출금 금액(₩)';
             document.getElementById('holding-cash-amount').classList.add('text-pancake-success');
@@ -985,6 +1000,8 @@
         async function addHolding() {
             const id = document.getElementById('holding-id').value;
             const type = document.getElementById('holding-type').value;
+            const dateStr = document.getElementById('holding-date').value;
+            const entryDate = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
             const wallet = getSystemWallet();
             const usdWallet = getUsdWallet();
             
@@ -998,12 +1015,12 @@
                 if (type === 'cash') {
                     wallet.total += amt;
                     targetWallet = wallet;
-                    entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: wallet.id, assetQty: Math.abs(amt), category: '기본예금 수동조절', subCategory: '입출금', amount: Math.abs(amt), memo: '수동 잔액 변경', date: new Date().toISOString() };
+                    entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: wallet.id, assetQty: Math.abs(amt), category: '기본예금 수동조절', subCategory: '입출금', amount: Math.abs(amt), memo: '수동 잔액 변경', date: entryDate };
                 } else {
                     usdWallet.qty += amt; // 외화 예금은 qty에 달러 잔고를 저장합니다.
                     usdWallet.totalKRW = usdWallet.qty * globalExchangeRate;
                     targetWallet = usdWallet;
-                    entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: usdWallet.id, assetQty: Math.abs(amt), category: '외화예금 수동조절', subCategory: '입출금(USD)', amount: Math.abs(amt * globalExchangeRate), memo: `수동 잔액 변경 (${amt>0?'+':''}$${formatNumber(Math.abs(amt))})`, date: new Date().toISOString() };
+                    entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: usdWallet.id, assetQty: Math.abs(amt), category: '외화예금 수동조절', subCategory: '입출금(USD)', amount: Math.abs(amt * globalExchangeRate), memo: `수동 잔액 변경 (${amt>0?'+':''}$${formatNumber(Math.abs(amt))})`, date: entryDate };
                 }
                 
                 if(db && currentUser) {
@@ -1037,7 +1054,7 @@
             }
 
             const holdingData = { type, name, qty, price, currency: isUsd?'USD':'KRW', exchangeRate: rate, totalKRW };
-            const entryData = { type: 'buy', assetId: holdingIdToUse, assetQty: qty, category: '자산매수', subCategory: name, amount: totalKRW, memo: `${formatNumber(qty)}주 매수${isUsd?'(USD)':''}`, date: new Date().toISOString() };
+            const entryData = { type: 'buy', assetId: holdingIdToUse, assetQty: qty, category: '자산매수', subCategory: name, amount: totalKRW, memo: `${formatNumber(qty)}주 매수${isUsd?'(USD)':''}`, date: entryDate };
 
             if(db && currentUser) {
                 if(id) await db.collection("users").doc(currentUser.uid).collection("holdings").doc(id).update(holdingData);
@@ -1065,6 +1082,8 @@
             const h = localHoldings.find(x => x.id === id); if(!h) return;
             document.getElementById('holding-id').value = h.id;
             document.getElementById('holding-type').value = h.type;
+            const localTodayStr = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            document.getElementById('holding-date').value = localTodayStr;
             document.getElementById('holding-name').value = h.name;
             document.getElementById('holding-qty').value = formatNumber(h.qty);
             document.getElementById('holding-price').value = formatNumber(h.price);
@@ -1083,6 +1102,8 @@
             const curLabel = h.currency === 'USD' ? '달러($)' : '원화(₩)';
             document.getElementById('sell-asset-name').textContent = `${h.name} (보유: ${formatNumber(h.qty)}주)`;
             document.getElementById('sell-price-label').textContent = `매도 단가 (${curLabel})`;
+            const localTodayStr = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            document.getElementById('sell-date').value = localTodayStr;
             document.getElementById('sell-qty').value = formatNumber(h.qty); 
             document.getElementById('sell-price').value = formatNumber(h.price);
             calculateSell(); openModal('sell-modal');
@@ -1106,6 +1127,8 @@
         async function processSell(e) {
             e.preventDefault();
             const id = document.getElementById('sell-asset-id').value;
+            const dateStr = document.getElementById('sell-date').value;
+            const entryDate = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
             const q = parseFloat(unformatNumber(document.getElementById('sell-qty').value)); 
             const p = parseFloat(unformatNumber(document.getElementById('sell-price').value));
             if (isNaN(q) || isNaN(p) || q <= 0 || p <= 0) return alert("올바른 숫자를 입력하세요.");
@@ -1122,7 +1145,7 @@
             asset.totalKRW = asset.qty * asset.price * (asset.currency==='USD'?globalExchangeRate:1);
             wallet.total += proceedsKRW; 
 
-            const entryData = { type: 'sell', assetId: asset.id, assetQty: q, category: '자산매도', subCategory: asset.name, amount: proceedsKRW, memo: `${formatNumber(q)}주 매도`, pnl: pnlKRW, date: new Date().toISOString() };
+            const entryData = { type: 'sell', assetId: asset.id, assetQty: q, category: '자산매도', subCategory: asset.name, amount: proceedsKRW, memo: `${formatNumber(q)}주 매도`, pnl: pnlKRW, date: entryDate };
 
             if(db && currentUser) {
                 if(asset.qty <= 0.0001) await db.collection("users").doc(currentUser.uid).collection("holdings").doc(id).delete();
