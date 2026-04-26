@@ -181,7 +181,7 @@
             </div>
         </nav>
 
-        <!-- 모바일 전용 상단 컨트롤바 (공간 확보용) -->
+        <!-- 모바일 전용 상단 컨트롤바 -->
         <div class="sm:hidden bg-white border-b border-gray-100 px-4 py-2 flex justify-between items-center gap-2">
             <div class="pc-toggle-group shadow-sm p-1">
                 <button type="button" id="btn-curr-krw-mobile" class="pc-toggle-btn selected !px-3 !py-1 text-xs" onclick="setDisplayCurrency('KRW')">KRW</button>
@@ -423,18 +423,105 @@
                 </div>
             </div>
 
-            <!-- ================= [TAB 2] 트레이딩 데스크 ================= -->
+            <!-- ================= [TAB 2] 트레이딩 데스크 (매매일지) ================= -->
             <div id="tab2" class="tab-content space-y-6">
-                <div class="pc-card text-center py-20 bg-[#F9F8FA]">
-                    <span class="text-6xl mb-4 block">🚧</span>
-                    <h2 class="text-2xl font-bold text-pancake-text mb-2">트레이딩 데스크 세팅중</h2>
-                    <p class="text-gray-500 font-bold">1번 탭의 모든 구조와 버튼 렌더링 문제가 지시하신 원본대로 복원되었습니다.</p>
+                <!-- 통계 대시보드 -->
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                    <div class="pc-card text-center py-6 flex flex-col justify-center border-b-4 border-pancake-cyan">
+                        <h2 class="text-pancake-textSub font-bold text-sm mb-1">📊 총 거래 횟수</h2>
+                        <p id="stat-total-trades" class="text-3xl font-brand font-bold text-pancake-text">0건</p>
+                    </div>
+                    <div class="pc-card text-center py-6 flex flex-col justify-center border-b-4 border-pancake-secondary">
+                        <h2 class="text-pancake-textSub font-bold text-sm mb-1">🎯 청산 승률</h2>
+                        <p id="stat-win-rate" class="text-3xl font-brand font-bold text-pancake-secondary">0%</p>
+                    </div>
+                    <div class="pc-card text-center py-6 flex flex-col justify-center border-b-4 border-pancake-success col-span-2 md:col-span-1">
+                        <h2 class="text-pancake-textSub font-bold text-sm mb-1">💵 누적 실현 손익</h2>
+                        <p id="stat-total-pnl" class="text-2xl lg:text-3xl font-brand font-bold text-pancake-success">₩ 0</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- 일지 작성 폼 -->
+                    <div class="pc-card lg:col-span-1 h-fit sticky top-24 relative z-10">
+                        <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-100">
+                            <h3 class="font-bold text-pancake-text flex items-center text-lg"><i data-lucide="edit" class="w-5 h-5 mr-2 text-pancake-primary"></i> 매매일지 작성</h3>
+                            <button type="button" onclick="openModal('tag-manager-modal')" class="text-[10px] font-bold text-pancake-secondary bg-pancake-input px-2 py-1 rounded-lg flex items-center hover:bg-gray-200 transition"><i data-lucide="settings" class="w-3 h-3 mr-1"></i> 태그 관리</button>
+                        </div>
+                        
+                        <form id="journal-form" class="space-y-5" onsubmit="addJournal(event)">
+                            <input type="hidden" id="journal-id">
+                            
+                            <div class="pc-toggle-group w-full shadow-sm" data-group="journal-type">
+                                <button type="button" data-value="buy" class="pc-toggle-btn selected w-1/2 !text-pancake-failure" onclick="toggleJournalFormType()">🔴 진입 (Buy/Long)</button>
+                                <button type="button" data-value="sell" class="pc-toggle-btn w-1/2 !text-pancake-success" onclick="toggleJournalFormType()">🔵 청산 (Sell/Short)</button>
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 block mb-1">종목명 / 티커</label>
+                                <input type="text" id="journal-asset-name" class="pc-input bg-white border-gray-200" placeholder="예: BTC/USDT" required>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div><label class="text-xs font-bold text-gray-500 block mb-1">날짜</label><input type="date" id="journal-date" class="pc-input bg-white border-gray-200" required></div>
+                                <div><label class="text-xs font-bold text-gray-500 block mb-1">시간</label><input type="time" id="journal-time" class="pc-input bg-white border-gray-200" required></div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                                <div><label class="text-xs font-bold text-gray-500 block mb-1">수량</label><input type="text" id="journal-qty" class="pc-input bg-white number-input text-right border-gray-200" required></div>
+                                <div><label class="text-xs font-bold text-gray-500 block mb-1">단가</label><input type="text" id="journal-price" class="pc-input bg-white number-input text-right border-gray-200" required></div>
+                            </div>
+
+                            <div id="journal-pnl-container" class="hidden bg-[#F0FDFA] p-3 rounded-xl border border-pancake-primary/30">
+                                <label class="text-xs font-bold text-pancake-text block mb-1">실현 손익 (PnL)</label>
+                                <input type="text" id="journal-pnl" class="pc-input bg-white number-input font-bold text-right text-lg border-gray-200" placeholder="0">
+                                <p class="text-[10px] text-gray-500 mt-1">이익이면 양수, 손실이면 음수(-) 입력</p>
+                            </div>
+
+                            <!-- 태그 섹션 -->
+                            <div class="space-y-3 pt-3 border-t border-gray-100">
+                                <div>
+                                    <label class="text-xs font-bold text-gray-500 block mb-2 flex items-center"><i data-lucide="globe" class="w-3 h-3 mr-1 text-green-500"></i> 시장/환경 태그</label>
+                                    <div id="journal-tags-environment" class="flex flex-wrap gap-2"></div>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-bold text-gray-500 block mb-2 flex items-center"><i data-lucide="trending-up" class="w-3 h-3 mr-1 text-blue-500"></i> 진입/차트 태그</label>
+                                    <div id="journal-tags-entry" class="flex flex-wrap gap-2"></div>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-bold text-gray-500 block mb-2 flex items-center"><i data-lucide="brain" class="w-3 h-3 mr-1 text-purple-500"></i> 심리 태그</label>
+                                    <div id="journal-tags-psychology" class="flex flex-wrap gap-2"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 block mb-1">메모 / 복기</label>
+                                <textarea id="journal-memo" rows="3" class="pc-input bg-white border-gray-200 resize-none" placeholder="매매 이유, 감정 상태, 반성할 점 등을 자유롭게 적어보세요..."></textarea>
+                            </div>
+                            
+                            <div class="flex gap-3 pt-2">
+                                <button type="button" onclick="resetJournalForm()" class="pc-btn pc-btn-secondary text-sm px-6">초기화</button>
+                                <button type="submit" class="pc-btn pc-btn-primary flex-1 text-base"><i data-lucide="save" class="w-5 h-5 mr-1"></i> 일지 저장</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 피드 영역 -->
+                    <div class="pc-card lg:col-span-2 flex flex-col h-full bg-gray-50/50">
+                        <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-200">
+                            <h3 class="font-bold text-pancake-text flex items-center text-lg"><i data-lucide="book-open" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 매매 기록 (Feed)</h3>
+                            <span class="text-xs font-bold text-gray-500 bg-white border border-gray-200 px-3 py-1 rounded-full shadow-sm">최신순 정렬</span>
+                        </div>
+                        <div id="journal-feed-container" class="space-y-4 flex-grow overflow-y-auto custom-scrollbar pr-2 min-h-[500px]">
+                            <!-- JS 렌더링 -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modals -->
+    <!-- Modals (가계부용) -->
     <div id="fixed-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
         <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
             <button onclick="closeModal('fixed-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
@@ -474,6 +561,19 @@
                 </div>
                 <button type="submit" class="pc-btn pc-btn-success w-full py-3 mt-2 text-base">원화(예금)로 현금화</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Modals (트레이딩 데스크용) -->
+    <div id="tag-manager-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+        <div class="pc-card w-full max-w-md m-4 shadow-2xl relative bg-white max-h-[90vh] flex flex-col">
+            <button onclick="closeModal('tag-manager-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+            <h2 class="text-lg font-bold mb-4 flex items-center text-pancake-text"><i data-lucide="settings" class="w-5 h-5 mr-2 text-gray-500"></i> 커스텀 태그 관리</h2>
+            <p class="text-xs text-gray-500 mb-4 font-bold border-b border-gray-100 pb-2">클릭하여 삭제하거나, 새로운 태그를 추가하세요.</p>
+            
+            <div class="overflow-y-auto custom-scrollbar pr-2 flex-1 space-y-6" id="tag-manager-content">
+                <!-- JS 렌더링 -->
+            </div>
         </div>
     </div>
 
@@ -518,13 +618,14 @@
                     localHoldings = [];
                     localLedgerEntries = [];
                     localFixedExpenses = [];
+                    localJournals = [];
                 }
             });
             lucide.createIcons();
         };
 
         // 탭 전환
-        function switchMainTab(id) { document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); event.target.classList.add('active'); document.getElementById(id).classList.add('active'); if(id==='tab1') initTab1Charts(); }
+        function switchMainTab(id) { document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); event.target.classList.add('active'); document.getElementById(id).classList.add('active'); if(id==='tab1') initTab1Charts(); if(id==='tab2') renderJournals(); }
         function switchSubTab(id, btn) { 
             document.querySelectorAll('.pc-toggle-group .pc-toggle-btn').forEach(t=>t.classList.remove('selected')); btn.classList.add('selected'); 
             document.querySelectorAll('.sub-tab-content').forEach(c=>{c.classList.remove('active');c.classList.add('hidden');}); 
@@ -537,7 +638,10 @@
             }
         }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function openModal(id) { 
+            document.getElementById(id).classList.remove('hidden'); 
+            if(id === 'tag-manager-modal') renderTagManager();
+        }
 
         // ================= NUMBER FORMATTING =================
         const unformatNumber = v => v ? v.toString().replace(/,/g, '') : '0';
@@ -632,6 +736,10 @@
         let localHoldings = [];
         let localLedgerEntries = []; 
         let localFixedExpenses = [];
+        // [TAB 2 용 추가 데이터]
+        let localJournals = [];
+        let localCustomTags = { environment: ['횡보장', '상승장', '하락장'], entry: ['돌파', '눌림목', '이평선 지지'], psychology: ['FOMO', '원칙 준수', '뇌동매매'] };
+        let journalSelectedTags = { environment: [], entry: [], psychology: [] };
 
         function getSystemWallet() {
             let wallet = localHoldings.find(h => h.type === 'cash' && h.name === '기본 예금');
@@ -671,19 +779,22 @@
             if(!db || !currentUser) return;
             try {
                 const uid = currentUser.uid;
-
-                // ✅ Promise.all로 병렬 쿼리 (기존 순차 쿼리 대비 로딩 속도 향상)
-                const [hSnap, lSnap, fSnap] = await Promise.all([
-                    db.collection("users").doc(uid).collection("holdings").get(),
-                    db.collection("users").doc(uid).collection("ledgerEntries").orderBy("date", "desc").get(),
-                    db.collection("users").doc(uid).collection("fixedExpenses").get()
-                ]);
-
+                const hSnap = await db.collection("users").doc(uid).collection("holdings").get();
                 localHoldings = hSnap.docs.map(d=>({id:d.id, ...d.data()}));
+                const lSnap = await db.collection("users").doc(uid).collection("ledgerEntries").orderBy("date", "desc").get();
                 localLedgerEntries = lSnap.docs.map(d=>({id:d.id, ...d.data()}));
+                const fSnap = await db.collection("users").doc(uid).collection("fixedExpenses").get();
                 localFixedExpenses = fSnap.docs.map(d=>({id:d.id, ...d.data()}));
                 
+                // [TAB 2] 데이터 로드
+                const jSnap = await db.collection("users").doc(uid).collection("journals").orderBy("date", "desc").get();
+                localJournals = jSnap.docs.map(d=>({id:d.id, ...d.data()}));
+                const tSnap = await db.collection("users").doc(uid).collection("tradingData").doc("tags").get();
+                if(tSnap.exists) localCustomTags = tSnap.data();
+
                 initSystemWallet(); renderHoldings(); renderFixedExpenses(); initTab1Charts(); renderTimeline();
+                // [TAB 2] 렌더링
+                resetJournalForm(); renderJournals();
             } catch(error) {
                 console.error("데이터 로드 중 에러:", error);
                 showToast("데이터를 불러오지 못했습니다.");
@@ -1022,7 +1133,7 @@
                     targetWallet = wallet;
                     entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: wallet.id, assetQty: Math.abs(amt), category: '기본예금 수동조절', subCategory: '입출금', amount: Math.abs(amt), memo: '수동 잔액 변경', date: entryDate };
                 } else {
-                    usdWallet.qty += amt; // 외화 예금은 qty에 달러 잔고를 저장합니다.
+                    usdWallet.qty += amt; 
                     usdWallet.totalKRW = usdWallet.qty * globalExchangeRate;
                     targetWallet = usdWallet;
                     entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: usdWallet.id, assetQty: Math.abs(amt), category: '외화예금 수동조절', subCategory: '입출금(USD)', amount: Math.abs(amt * globalExchangeRate), memo: `수동 잔액 변경 (${amt>0?'+':''}$${formatNumber(Math.abs(amt))})`, date: entryDate };
@@ -1173,7 +1284,6 @@
             });
 
             const container = document.getElementById('holdings-list-container'); container.innerHTML = '';
-            // 외화 예금(usd_cash)을 포트폴리오 목록에서 제외하여 매매기록과 상단 대시보드에만 남김
             const cats = [{ type: 'stock', title: '📈 주식'}, { type: 'bond', title: '🏛️ 채권'}, { type: 'commodity', title: '🥇 원자재'}];
             let hasItems = false;
             cats.forEach(cat => {
@@ -1479,6 +1589,281 @@
             renderPie('chart-income-pie', incSum, ['#31D0AA', '#1FC7D4', '#7645D9']);
             renderPie('chart-expense-pie', expSum, ['#ED4B9E', '#FFB237', '#7645D9', '#1FC7D4']);
         }
+
+        // ================= [TAB 2] TRADING DESK LOGIC =================
+
+        // 진입/청산 토글에 따른 UI 변경
+        function toggleJournalFormType() {
+            const isSell = document.querySelector('[data-group="journal-type"] .selected').dataset.value === 'sell';
+            document.getElementById('journal-pnl-container').classList.toggle('hidden', !isSell);
+            if(!isSell) document.getElementById('journal-pnl').value = '';
+        }
+
+        // 일지 작성 폼 초기화
+        window.resetJournalForm = function() {
+            document.getElementById('journal-form').reset();
+            document.getElementById('journal-id').value = '';
+            
+            const today = new Date();
+            const localTodayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            const localTimeStr = today.toTimeString().split(':')[0] + ':' + today.toTimeString().split(':')[1];
+            
+            document.getElementById('journal-date').value = localTodayStr;
+            document.getElementById('journal-time').value = localTimeStr;
+            
+            const buyBtn = document.querySelector('[data-group="journal-type"] button[data-value="buy"]');
+            if(buyBtn) {
+                document.querySelectorAll('[data-group="journal-type"] button').forEach(b => b.classList.remove('selected'));
+                buyBtn.classList.add('selected');
+            }
+            toggleJournalFormType();
+            
+            journalSelectedTags = { environment: [], entry: [], psychology: [] };
+            renderJournalTags();
+        }
+
+        document.querySelectorAll('[data-group="journal-type"] button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('[data-group="journal-type"] button').forEach(b => b.classList.remove('selected'));
+                e.target.classList.add('selected');
+            });
+        });
+
+        // 폼 내 태그 렌더링
+        function renderJournalTags() {
+            const types = [
+                { id: 'environment', color: 'green' },
+                { id: 'entry', color: 'blue' },
+                { id: 'psychology', color: 'purple' }
+            ];
+
+            types.forEach(t => {
+                const container = document.getElementById(`journal-tags-${t.id}`);
+                if(!container) return;
+                container.innerHTML = '';
+                
+                (localCustomTags[t.id] || []).forEach(tag => {
+                    const isSelected = journalSelectedTags[t.id].includes(tag);
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    
+                    if(isSelected) {
+                        btn.className = `px-3 py-1.5 text-xs font-bold rounded-xl border bg-${t.color}-100 text-${t.color}-700 border-${t.color}-300 transition shadow-sm scale-105`;
+                    } else {
+                        btn.className = `px-3 py-1.5 text-xs font-bold rounded-xl border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 transition`;
+                    }
+                    
+                    btn.textContent = tag;
+                    btn.onclick = () => {
+                        if(isSelected) journalSelectedTags[t.id] = journalSelectedTags[t.id].filter(item => item !== tag);
+                        else journalSelectedTags[t.id].push(tag);
+                        renderJournalTags();
+                    };
+                    container.appendChild(btn);
+                });
+            });
+        }
+
+        // 매매일지 추가/수정
+        window.addJournal = async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('journal-id').value;
+            const type = document.querySelector('[data-group="journal-type"] .selected').dataset.value;
+            const assetName = document.getElementById('journal-asset-name').value;
+            const dateStr = document.getElementById('journal-date').value;
+            const timeStr = document.getElementById('journal-time').value;
+            const qty = parseFloat(unformatNumber(document.getElementById('journal-qty').value)) || 0;
+            const price = parseFloat(unformatNumber(document.getElementById('journal-price').value)) || 0;
+            const pnl = type === 'sell' ? (parseFloat(unformatNumber(document.getElementById('journal-pnl').value)) || 0) : null;
+            const memo = document.getElementById('journal-memo').value;
+
+            if(!assetName || qty <= 0 || price <= 0) return alert("필수 항목을 정확히 입력하세요.");
+
+            const fullDateTime = new Date(`${dateStr}T${timeStr}:00`).toISOString();
+
+            const entry = {
+                type, assetName, date: fullDateTime, qty, price, pnl, memo,
+                tags: { ...journalSelectedTags }
+            };
+
+            if(db && currentUser) {
+                if(id) await db.collection("users").doc(currentUser.uid).collection("journals").doc(id).update(entry);
+                else await db.collection("users").doc(currentUser.uid).collection("journals").add({...entry, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
+                await loadAllData(); // 전체 데이터 다시 불러오기
+            } else {
+                if(id) { const idx = localJournals.findIndex(x => x.id === id); if(idx > -1) localJournals[idx] = { id, ...entry }; }
+                else localJournals.push({ id: 'jou_'+Date.now(), ...entry });
+                renderJournals();
+            }
+            
+            resetJournalForm();
+            showToast("매매일지가 저장되었습니다.");
+        };
+
+        // 매매일지 렌더링 (대시보드 통계 + 피드)
+        window.renderJournals = function() {
+            const container = document.getElementById('journal-feed-container');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            // 1. 대시보드 통계 계산
+            let wins = 0; 
+            let totalClosed = 0; 
+            let totalPnl = 0;
+            
+            localJournals.forEach(j => {
+                if(j.type === 'sell') {
+                    totalClosed++;
+                    if(j.pnl > 0) wins++;
+                    totalPnl += (parseFloat(j.pnl) || 0);
+                }
+            });
+            
+            const winRate = totalClosed > 0 ? ((wins/totalClosed)*100).toFixed(1) : 0;
+            document.getElementById('stat-total-trades').textContent = `${localJournals.length}건`;
+            document.getElementById('stat-win-rate').textContent = `${winRate}%`;
+            document.getElementById('stat-total-pnl').textContent = `₩ ${formatNumber(totalPnl)}`;
+            document.getElementById('stat-total-pnl').className = `text-2xl lg:text-3xl font-brand font-bold ${totalPnl > 0 ? 'text-pancake-success' : (totalPnl < 0 ? 'text-pancake-failure' : 'text-gray-500')}`;
+
+            // 2. 피드 카드 렌더링
+            const sorted = [...localJournals].sort((a,b) => new Date(b.date) - new Date(a.date));
+            
+            if(sorted.length === 0) {
+                container.innerHTML = '<div class="text-center text-sm text-gray-400 py-10 font-bold border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">작성된 매매일지가 없습니다. 첫 일지를 기록해보세요!</div>';
+                return;
+            }
+
+            sorted.forEach(j => {
+                const d = new Date(j.date);
+                const dateStr = `${d.getFullYear().toString().slice(2)}.${(d.getMonth()+1).toString().padStart(2,'0')}.${d.getDate().toString().padStart(2,'0')} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+                
+                const typeColor = j.type === 'buy' ? 'text-pancake-failure' : 'text-pancake-success';
+                const typeText = j.type === 'buy' ? '진입' : '청산';
+                const typeBg = j.type === 'buy' ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100';
+
+                // 태그 뱃지 생성 함수
+                const makeTags = (tags, color) => (tags || []).map(t => `<span class="bg-${color}-50 text-${color}-600 border border-${color}-200 px-2 py-0.5 rounded-lg text-[10px] font-bold shadow-sm">${t}</span>`).join('');
+
+                const el = document.createElement('div');
+                el.className = 'border border-gray-200 p-4 rounded-2xl shadow-sm bg-white hover:shadow-md transition relative group';
+                el.innerHTML = `
+                    <div class="flex justify-between items-start mb-2 border-b border-gray-100 pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold ${typeColor} ${typeBg} px-2 py-1 rounded-lg">${typeText}</span>
+                            <h4 class="font-bold text-base text-pancake-text">${j.assetName}</h4>
+                        </div>
+                        <div class="text-xs font-bold text-gray-400">${dateStr}</div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2 text-xs font-bold text-gray-600 mb-3">
+                        <div class="bg-gray-50 p-2 rounded-xl border border-gray-100">수량 <span class="float-right text-pancake-text">${formatNumber(j.qty)}</span></div>
+                        <div class="bg-gray-50 p-2 rounded-xl border border-gray-100">단가 <span class="float-right text-pancake-text">${formatNumber(j.price)}</span></div>
+                        ${j.type === 'sell' ? `<div class="col-span-2 bg-[#F0FDFA] p-2 rounded-xl border border-pancake-primary/30 flex justify-between">
+                            <span class="text-pancake-text">실현 손익</span>
+                            <span class="${j.pnl > 0 ? 'text-pancake-success' : 'text-pancake-failure'} font-brand text-sm">${j.pnl > 0 ? '+' : ''}₩${formatNumber(j.pnl)}</span>
+                        </div>` : ''}
+                    </div>
+
+                    ${(j.tags.environment.length || j.tags.entry.length || j.tags.psychology.length) ? `
+                    <div class="flex flex-wrap gap-1 mb-3">
+                        ${makeTags(j.tags.environment, 'green')}
+                        ${makeTags(j.tags.entry, 'blue')}
+                        ${makeTags(j.tags.psychology, 'purple')}
+                    </div>` : ''}
+
+                    ${j.memo ? `<div class="text-xs text-gray-500 bg-gray-50 p-3 rounded-xl border border-gray-100 leading-relaxed font-medium">"${j.memo}"</div>` : ''}
+                    
+                    <!-- 호버 시 나타나는 수정/삭제 버튼 -->
+                    <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition bg-white/90 backdrop-blur-sm rounded-lg p-1 flex gap-1 shadow-sm border border-gray-100">
+                        <button onclick="deleteJournal('${j.id}')" class="p-1 hover:bg-red-50 rounded text-pancake-failure"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+            lucide.createIcons();
+        };
+
+        window.deleteJournal = async function(id) {
+            if(!confirm("이 매매일지를 삭제하시겠습니까?")) return;
+            if(db && currentUser) {
+                await db.collection("users").doc(currentUser.uid).collection("journals").doc(id).delete();
+                await loadAllData();
+            } else {
+                localJournals = localJournals.filter(x => x.id !== id);
+                renderJournals();
+            }
+            showToast("일지가 삭제되었습니다.");
+        };
+
+        // ================= TAG MANAGER (모달) =================
+        function renderTagManager() {
+            const container = document.getElementById('tag-manager-content');
+            container.innerHTML = '';
+            
+            const sections = [
+                { id: 'environment', title: '시장/환경 태그', icon: 'globe', color: 'green' },
+                { id: 'entry', title: '진입/차트 태그', icon: 'trending-up', color: 'blue' },
+                { id: 'psychology', title: '심리 태그', icon: 'brain', color: 'purple' }
+            ];
+
+            sections.forEach(sec => {
+                const wrap = document.createElement('div');
+                wrap.className = 'bg-gray-50 border border-gray-200 rounded-2xl p-4';
+                
+                let tagsHtml = (localCustomTags[sec.id] || []).map(t => 
+                    `<button class="group relative px-3 py-1.5 text-xs font-bold rounded-xl border bg-white text-gray-600 border-gray-200 hover:border-red-300 hover:bg-red-50 transition flex items-center pr-6 overflow-hidden" onclick="deleteCustomTag('${sec.id}', '${t}')">
+                        ${t}
+                        <span class="absolute right-0 top-0 bottom-0 w-6 flex items-center justify-center bg-red-100 text-red-500 opacity-0 group-hover:opacity-100 transition"><i data-lucide="x" class="w-3 h-3"></i></span>
+                    </button>`
+                ).join('');
+
+                wrap.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-bold text-gray-500 flex items-center"><i data-lucide="${sec.icon}" class="w-3 h-3 mr-1 text-${sec.color}-500"></i> ${sec.title}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        ${tagsHtml || '<span class="text-xs text-gray-400">등록된 태그가 없습니다.</span>'}
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="new-tag-${sec.id}" class="pc-input !py-1.5 !px-3 text-xs bg-white border-gray-200 w-full" placeholder="새 태그 입력...">
+                        <button onclick="addCustomTag('${sec.id}')" class="pc-btn pc-btn-primary !px-3 !py-1 !text-xs whitespace-nowrap"><i data-lucide="plus" class="w-3 h-3"></i></button>
+                    </div>
+                `;
+                container.appendChild(wrap);
+            });
+            lucide.createIcons();
+        }
+
+        window.addCustomTag = async function(type) {
+            const input = document.getElementById(`new-tag-${type}`);
+            const val = input.value.trim();
+            if(!val) return;
+            if(localCustomTags[type].includes(val)) return alert("이미 존재하는 태그입니다.");
+            
+            localCustomTags[type].push(val);
+            
+            if(db && currentUser) await db.collection("users").doc(currentUser.uid).collection("tradingData").doc("tags").set(localCustomTags);
+            
+            renderTagManager();
+            renderJournalTags(); // 일지 작성 폼 태그 갱신
+        };
+
+        window.deleteCustomTag = async function(type, val) {
+            if(!confirm(`'${val}' 태그를 삭제하시겠습니까?`)) return;
+            
+            localCustomTags[type] = localCustomTags[type].filter(t => t !== val);
+            
+            // 작성 중인 폼의 선택된 태그에서도 제거
+            if(journalSelectedTags[type].includes(val)) {
+                journalSelectedTags[type] = journalSelectedTags[type].filter(t => t !== val);
+            }
+            
+            if(db && currentUser) await db.collection("users").doc(currentUser.uid).collection("tradingData").doc("tags").set(localCustomTags);
+            
+            renderTagManager();
+            renderJournalTags();
+        };
+
     </script>
 </body>
 </html>
