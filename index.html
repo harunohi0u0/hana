@@ -1281,18 +1281,29 @@
             const entries = localLedgerEntries.filter(e => { let d = new Date(e.date); return d >= start && d < end; });
             let change = 0;
             entries.forEach(e => {
-                if (e.type === 'income' || e.type === 'deposit') change += e.amount;
-                if (e.type === 'expense' || e.type === 'withdrawal') change -= e.amount;
-                if (e.type === 'sell' && e.pnl) change += e.pnl; 
+                if (e.type === 'income' || e.type === 'deposit') change += (parseFloat(e.amount) || 0);
+                if (e.type === 'expense' || e.type === 'withdrawal') change -= (parseFloat(e.amount) || 0);
+                if (e.type === 'sell' && e.pnl) change += (parseFloat(e.pnl) || 0); 
             });
             return change;
         }
 
         function initTab1Charts() {
+            // 외화 예금이 NaN 등 오류를 발생시켜 전체 렌더링이 멈추는 것을 방지하기 위해 매우 안전한 방식으로 합산을 재구축했습니다.
             let sums = { stock: 0, bond: 0, commodity: 0, usd_cash: 0 };
-            localHoldings.forEach(h => { if(h.type !== 'cash') sums[h.type] = (sums[h.type] || 0) + (h.totalKRW || h.total); });
+            
+            localHoldings.forEach(h => { 
+                if(h.type && h.type !== 'cash') {
+                    // h.type에 맞는 속성이 없다면 0을 더하도록 보장
+                    sums[h.type] = (sums[h.type] || 0) + (parseFloat(h.totalKRW) || parseFloat(h.total) || 0);
+                }
+            });
+            
             const wallet = getSystemWallet();
-            const totalAsset = sums.stock + sums.bond + sums.commodity + sums.usd_cash + wallet.total;
+            const safeWalletTotal = parseFloat(wallet.total) || 0;
+            
+            // 모든 자산의 합 (이제 달러와 원화가 누락 없이 완벽히 합산됩니다)
+            const totalAsset = (sums.stock || 0) + (sums.bond || 0) + (sums.commodity || 0) + (sums.usd_cash || 0) + safeWalletTotal;
             
             const amt = displayCurrency === 'USD' ? (totalAsset / globalExchangeRate).toFixed(2) : totalAsset;
             const prefix = displayCurrency === 'USD' ? '$' : '₩';
@@ -1300,7 +1311,14 @@
 
             createOrUpdateChart('chart-asset-allocation', {
                 type: 'doughnut',
-                data: { labels: ['주식', '채권', '원자재', '외화 예금', '기본 예금'], datasets: [{ data: [sums.stock, sums.bond, sums.commodity, sums.usd_cash, wallet.total], backgroundColor: ['#7645D9', '#1FC7D4', '#FFB237', '#3B82F6', '#EDF2F7'], borderWidth: 0 }] },
+                data: { 
+                    labels: ['주식', '채권', '원자재', '외화 예금', '기본 예금'], 
+                    datasets: [{ 
+                        data: [sums.stock || 0, sums.bond || 0, sums.commodity || 0, sums.usd_cash || 0, safeWalletTotal], 
+                        backgroundColor: ['#7645D9', '#1FC7D4', '#FFB237', '#3B82F6', '#EDF2F7'], 
+                        borderWidth: 0 
+                    }] 
+                },
                 options: { 
                     responsive: true, maintainAspectRatio: false, cutout: '70%', circumference: 180, rotation: -90, 
                     plugins: { 
