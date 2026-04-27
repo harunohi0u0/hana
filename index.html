@@ -433,7 +433,7 @@
                     </div>
                 </div>
 
-                <!-- 기간 필터 & 대시보드 통계 (수정됨: 6그리드 + RR통계) -->
+                <!-- 기간 필터 & 대시보드 통계 -->
                 <div class="pc-card">
                     <div class="flex flex-col sm:flex-row justify-between items-center mb-6 border-b border-gray-100 pb-4 gap-4">
                         <h3 class="font-bold text-base text-pancake-text flex items-center"><i data-lucide="bar-chart-2" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 기간별 트레이딩 성과</h3>
@@ -448,11 +448,11 @@
                     
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                         <div class="bg-gray-50 p-4 rounded-2xl text-center border border-gray-100">
-                            <p class="text-[10px] font-bold text-gray-500 mb-1">총 거래 횟수 (청산기준)</p>
+                            <p class="text-[10px] font-bold text-gray-500 mb-1">총 거래 횟수 (게임 기준)</p>
                             <p id="stat-total-trades" class="text-xl font-brand font-bold text-pancake-text">0건</p>
                         </div>
                         <div class="bg-gray-50 p-4 rounded-2xl text-center border border-gray-100">
-                            <p class="text-[10px] font-bold text-gray-500 mb-1">승률</p>
+                            <p class="text-[10px] font-bold text-gray-500 mb-1">게임 승률</p>
                             <p id="stat-win-rate" class="text-xl font-brand font-bold text-pancake-secondary">0%</p>
                         </div>
                         <div class="bg-gray-50 p-4 rounded-2xl text-center border border-gray-100">
@@ -463,7 +463,6 @@
                             <p class="text-[10px] font-bold text-gray-500 mb-1">총 지불 수수료</p>
                             <p id="stat-total-commission" class="text-xl font-brand font-bold text-pancake-failure">$ 0.00</p>
                         </div>
-                        <!-- 추가된 손익비 통계 -->
                         <div class="bg-gray-50 p-4 rounded-2xl text-center border border-gray-100">
                             <p class="text-[10px] font-bold text-gray-500 mb-1">평균 기대 R배수</p>
                             <p id="stat-avg-exp-rr" class="text-xl font-brand font-bold text-gray-400">0.00 R</p>
@@ -574,7 +573,7 @@
 
     <!-- Modals (가계부용 모달 등 생략 없이 기존 그대로 유지) -->
     
-    <!-- 0. 고정비 추가 모달 (기존 코드 유지) -->
+    <!-- 0. 고정비 추가 모달 -->
     <div id="fixed-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
         <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
             <button onclick="closeModal('fixed-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
@@ -588,7 +587,7 @@
         </div>
     </div>
 
-    <!-- 0. 자산 매도 모달 (기존 코드 유지) -->
+    <!-- 0. 자산 매도 모달 -->
     <div id="sell-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
         <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
             <button onclick="closeModal('sell-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
@@ -667,7 +666,7 @@
         </div>
     </div>
 
-    <!-- 4. 피드에서 호출되는 [청산하기] 모달 (분할매도 추가됨) -->
+    <!-- 4. 피드에서 호출되는 [청산하기] 모달 -->
     <div id="journal-close-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
         <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
             <button onclick="closeModal('journal-close-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
@@ -677,12 +676,12 @@
             <form id="journal-close-form" class="space-y-4" onsubmit="processCloseJournal(event)">
                 <input type="hidden" id="jc-id">
                 <input type="hidden" id="jc-entry">
-                <input type="hidden" id="jc-max-qty"> <!-- 검증용 최대 수량 보관 -->
+                <input type="hidden" id="jc-max-qty">
                 
-                <!-- 추가된 분할 청산 수량 입력부 -->
+                <!-- oninput 이벤트 변경: 수량 조절 시 수수료도 비례 계산되도록 변경 -->
                 <div>
                     <label class="text-[10px] font-bold text-pancake-text block mb-1">청산 수량 <span class="text-gray-400 font-normal">(수정하여 분할 매도 가능)</span></label>
-                    <input type="text" id="jc-qty" class="pc-input bg-white border-gray-200 number-input" oninput="calcClosePnL()" onblur="calcClosePnL()" required>
+                    <input type="text" id="jc-qty" class="pc-input bg-white border-gray-200 number-input" oninput="updateCloseQty()" onblur="calcClosePnL()" required>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -937,10 +936,14 @@
                 localHoldings = hSnap.docs.map(d=>({id:d.id, ...d.data()}));
                 localLedgerEntries = lSnap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b) => new Date(b.date) - new Date(a.date));
                 localFixedExpenses = fSnap.docs.map(d=>({id:d.id, ...d.data()}));
+                
+                // 데이터 로드 시 매매일지에 groupId가 없으면 자신의 id로 초기화
                 localJournals = jSnap.docs.map(d => {
                     let data = d.data();
                     if (!data.tags) data.tags = { entry: data.entryTags || [], psychology: data.psychologyTags || [] };
                     if (!data.position) data.position = data.type === 'buy' ? 'long' : 'short';
+                    if (!data.groupId) data.groupId = d.id; // 그룹 ID 추가
+                    
                     if (!data.status) {
                         data.status = data.type === 'sell' ? 'closed' : 'open';
                         if(data.type === 'sell') { data.closePrice = data.price || 0; data.closeDate = data.date; } 
@@ -969,6 +972,7 @@
         }
 
         // ================= LEDGER (가계부) =================
+        // ... (가계부 코드는 기존 유지) ...
         let localLedgerCategories = { expense: {'식비':['외식'], '교통비':['택시']}, income: {'월급':[]} };
         let selectedMajorCategory = null;
 
@@ -1939,7 +1943,26 @@
             openModal('journal-close-modal');
         };
 
-        // 청산 모달 PnL 실시간 계산 (수량 변경 반영)
+        // 청산 수량 변경 시 수수료 자동 비례 계산 (새로 추가된 로직)
+        window.updateCloseQty = function() {
+            const id = document.getElementById('jc-id')?.value;
+            if(!id) return;
+            const j = localJournals.find(x => x.id === id);
+            if(!j) return;
+            
+            const closeQty = parseFloat(unformatNumber(document.getElementById('jc-qty').value)) || 0;
+            const spec = localFuturesSpecs.find(s => s.ticker === j.assetName);
+            
+            if (spec && spec.commission && closeQty > 0) {
+                document.getElementById('jc-commission').value = formatNumber(spec.commission * closeQty);
+            } else if (closeQty === 0) {
+                document.getElementById('jc-commission').value = 0;
+            }
+            
+            calcClosePnL();
+        };
+
+        // 청산 모달 PnL 실시간 계산
         window.calcClosePnL = function() {
             const id = document.getElementById('jc-id')?.value;
             if(!id) return;
@@ -1971,7 +1994,7 @@
             pnlInput.className = `pc-input bg-white number-input font-bold text-right border-gray-200 !py-1.5 ${pnl>0?'text-pancake-success':'text-pancake-failure'}`;
         };
 
-        // 청산 폼 제출 및 계좌 반영 (분할 매도 로직 핵심)
+        // 청산 폼 제출 및 계좌 반영 (그룹 ID 부여)
         window.processCloseJournal = async function(e) {
             e.preventDefault();
             const id = document.getElementById('jc-id').value;
@@ -1989,6 +2012,7 @@
             const closeDateTime = new Date(`${closeDate}T${closeTime}:00`).toISOString();
             
             const j = localJournals.find(x => x.id === id);
+            const originalGroupId = j.groupId || j.id; // 기존 그룹 ID 보존 (또는 최초 분할 시 생성)
             
             // 전체 청산이거나 이미 청산된 일지 수정 시
             if (closeQty === maxQty || j.status === 'closed') {
@@ -1999,6 +2023,7 @@
                 
                 localFuturesAccount += accountDiff;
                 const updateData = {
+                    groupId: originalGroupId,
                     status: 'closed', qty: closeQty,
                     closePrice, commission: comm, pnl, closeDate: closeDateTime
                 };
@@ -2018,9 +2043,11 @@
                 // 분할 청산 로직 (일부 수량만 청산)
                 localFuturesAccount += pnl;
 
-                // 1. 청산된 부분의 새로운 일지 객체 생성
+                // 1. 청산된 부분의 새로운 일지 객체 생성 (같은 게임으로 묶기 위해 groupId 동일하게 부여)
                 const closedEntry = {
-                    ...j, status: 'closed', qty: closeQty,
+                    ...j, 
+                    groupId: originalGroupId, 
+                    status: 'closed', qty: closeQty,
                     closePrice, commission: comm, pnl, closeDate: closeDateTime
                 };
                 delete closedEntry.id; // DB 저장을 위해 id 제거
@@ -2028,10 +2055,11 @@
                 // 2. 기존 일지는 잔여 수량만 차감하고 open 유지
                 const remainQty = maxQty - closeQty;
                 j.qty = remainQty;
+                j.groupId = originalGroupId; // 원본 일지에도 groupId 확실하게 각인
 
                 if(db && currentUser) {
                     await db.collection("users").doc(currentUser.uid).collection("journals").add({...closedEntry, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
-                    await db.collection("users").doc(currentUser.uid).collection("journals").doc(id).update({ qty: remainQty });
+                    await db.collection("users").doc(currentUser.uid).collection("journals").doc(id).update({ qty: remainQty, groupId: originalGroupId });
                     await db.collection("users").doc(currentUser.uid).collection("tradingData").doc("account").set({ balanceUSD: localFuturesAccount });
                     await loadAllData();
                 } else {
@@ -2089,7 +2117,7 @@
             safeCall(renderJournalTags);
         }
 
-        // 진입 일지 작성
+        // 진입 일지 작성 (신규 게임 시 그룹 ID 발급)
         window.addJournal = async function(e) {
             e.preventDefault();
             const id = document.getElementById('journal-id').value;
@@ -2119,6 +2147,7 @@
             }
 
             const entry = {
+                groupId: oldJ ? (oldJ.groupId || oldJ.id) : 'grp_' + Date.now(), // 게임 그룹 ID 추가
                 position, status, assetName, qty, entryPrice, targetPrice, slPrice, date: entryDateTime,
                 closePrice: oldJ ? oldJ.closePrice : null,
                 commission: oldJ ? oldJ.commission : null,
@@ -2149,7 +2178,7 @@
             showToast(id ? "진입 기록이 수정되었습니다." : "진입 기록이 저장되었습니다.");
         };
 
-        // 피드 전체 렌더링 (손익비 통계 추가됨)
+        // 피드 전체 렌더링 (게임 그룹핑 합산 승률 통계 반영)
         window.renderJournals = function() {
             const container = document.getElementById('journal-feed-container');
             if(!container) return;
@@ -2177,12 +2206,19 @@
             // --- 손익비 통계 관련 변수 ---
             let validRCount = 0; let totalExpRR = 0; let totalActRR = 0;
 
+            // --- ★ 분할매도를 하나의 게임으로 묶는 그룹핑 변수 ---
+            let groupPnL = {};
+
             filteredJournals.forEach(j => {
                 if(j.status === 'closed') {
-                    totalClosed++;
-                    if(j.pnl > 0) wins++;
+                    // 수수료와 총 손익은 기존처럼 단순 합산
                     totalPnl += (parseFloat(j.pnl) || 0);
                     totalComm += (parseFloat(j.commission) || 0);
+
+                    // ★ 승률 계산용: 같은 groupId를 가진 분할 청산의 손익을 전부 합친다.
+                    const gId = j.groupId || j.id;
+                    if(groupPnL[gId] === undefined) groupPnL[gId] = 0;
+                    groupPnL[gId] += (parseFloat(j.pnl) || 0);
 
                     // --- 기대/실제 R배수 계산 ---
                     const risk = Math.abs(j.entryPrice - j.slPrice);
@@ -2222,6 +2258,10 @@
                     periodStats[periodKey] += (parseFloat(j.pnl) || 0);
                 }
             });
+
+            // ★ 통계 계산: 합산 PnL이 0보다 큰 그룹(게임)만 승리로 판정
+            totalClosed = Object.keys(groupPnL).length; // 총 게임 횟수
+            wins = Object.values(groupPnL).filter(pnl => pnl > 0).length; // 승리한 게임 횟수
 
             const winRate = totalClosed > 0 ? ((wins/totalClosed)*100).toFixed(1) : 0;
             if(document.getElementById('stat-total-trades')) document.getElementById('stat-total-trades').textContent = `${totalClosed}건`;
