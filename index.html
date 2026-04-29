@@ -774,7 +774,7 @@
 
                 <div>
                     <label class="text-xs font-bold text-gray-500 block mb-1">내용</label>
-                    <textarea id="note-content" rows="8" class="pc-input bg-white border-gray-200 resize-none text-sm w-full leading-relaxed" placeholder="자유롭게 작성하세요..." required></textarea>
+                    <textarea id="note-content" rows="8" class="pc-input bg-white border-gray-200 resize-none text-sm w-full leading-relaxed" placeholder="자유롭게 작성하세요... (클립보드 이미지 복사/붙여넣기 가능)" required></textarea>
                 </div>
 
                 <div>
@@ -956,6 +956,14 @@
                 if(e.target.id === 'global-exchange-rate-mobile') document.getElementById('global-exchange-rate').value = e.target.value;
 
                 safeCall(updateHoldingPreview); safeCall(renderHoldings); safeCall(updateWalletDisplay); safeCall(initTab1Charts); safeCall(renderFuturesAccountDisplay);
+                
+                // Firestore 설정 저장 (타이핑 중 잦은 요청 방지를 위해 1초 딜레이)
+                if (window.exchangeRateTimeout) clearTimeout(window.exchangeRateTimeout);
+                window.exchangeRateTimeout = setTimeout(async () => {
+                    if(db && currentUser) {
+                        await db.collection("users").doc(currentUser.uid).collection("tradingData").doc("account").set({ exchangeRate: globalExchangeRate }, {merge: true});
+                    }
+                }, 1000);
             }
         };
         document.getElementById('global-exchange-rate')?.addEventListener('input', syncExchangeRate);
@@ -1091,7 +1099,15 @@
                 }
                 
                 if(sSnap.exists) localFuturesSpecs = sSnap.data().list || [];
-                if(aSnap.exists) localFuturesAccount = aSnap.data().balanceUSD || 0;
+                if(aSnap.exists) {
+                    const aData = aSnap.data();
+                    localFuturesAccount = aData.balanceUSD || 0;
+                    if(aData.exchangeRate) {
+                        globalExchangeRate = aData.exchangeRate;
+                        if(document.getElementById('global-exchange-rate')) document.getElementById('global-exchange-rate').value = formatNumber(globalExchangeRate);
+                        if(document.getElementById('global-exchange-rate-mobile')) document.getElementById('global-exchange-rate-mobile').value = formatNumber(globalExchangeRate);
+                    }
+                }
                 
                 if(pSnap.exists) localPrinciples = pSnap.data().content || localPrinciples;
 
@@ -1957,7 +1973,7 @@
             else localFuturesAccount -= amount;
 
             if(db && currentUser) {
-                await db.collection("users").doc(currentUser.uid).collection("tradingData").doc("account").set({ balanceUSD: localFuturesAccount });
+                await db.collection("users").doc(currentUser.uid).collection("tradingData").doc("account").set({ balanceUSD: localFuturesAccount }, {merge: true});
             }
             
             safeCall(renderFuturesAccountDisplay);
@@ -2169,7 +2185,7 @@
 
                 if(db && currentUser) {
                     await db.collection("users").doc(currentUser.uid).collection("journals").doc(id).update(updateData);
-                    await db.collection("users").doc(currentUser.uid).collection("tradingData").doc("account").set({ balanceUSD: localFuturesAccount });
+                    await db.collection("users").doc(currentUser.uid).collection("tradingData").doc("account").set({ balanceUSD: localFuturesAccount }, {merge: true});
                     await loadAllData();
                 } else {
                     safeCall(renderFuturesAccountDisplay);
@@ -2198,7 +2214,7 @@
                 if(db && currentUser) {
                     await db.collection("users").doc(currentUser.uid).collection("journals").add({...closedEntry, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
                     await db.collection("users").doc(currentUser.uid).collection("journals").doc(id).update({ qty: remainQty, groupId: originalGroupId });
-                    await db.collection("users").doc(currentUser.uid).collection("tradingData").doc("account").set({ balanceUSD: localFuturesAccount });
+                    await db.collection("users").doc(currentUser.uid).collection("tradingData").doc("account").set({ balanceUSD: localFuturesAccount }, {merge: true});
                     await loadAllData();
                 } else {
                     localJournals.unshift({ id: 'jou_split_'+Date.now(), ...closedEntry });
@@ -2300,7 +2316,7 @@
                 else await db.collection("users").doc(currentUser.uid).collection("journals").add({...entry, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
                 
                 if(status === 'closed') { 
-                    await db.collection("users").doc(currentUser.uid).collection("tradingData").doc("account").set({ balanceUSD: localFuturesAccount });
+                    await db.collection("users").doc(currentUser.uid).collection("tradingData").doc("account").set({ balanceUSD: localFuturesAccount }, {merge: true});
                 }
                 await loadAllData();
             } else {
@@ -2655,7 +2671,7 @@
             
             if(j && j.status === 'closed' && j.pnl !== null) {
                 localFuturesAccount -= j.pnl;
-                if(db && currentUser) await db.collection("users").doc(currentUser.uid).collection("tradingData").doc("account").set({ balanceUSD: localFuturesAccount });
+                if(db && currentUser) await db.collection("users").doc(currentUser.uid).collection("tradingData").doc("account").set({ balanceUSD: localFuturesAccount }, {merge: true});
             }
 
             if(db && currentUser) {
@@ -2788,9 +2804,8 @@
             openModal('note-write-modal');
         }
 
-        // 이미지 파일 선택 시 리사이징(압축) 후 Base64로 변환하여 메모리에 들고 있는 로직
-        document.getElementById('note-image')?.addEventListener('change', function(e) {
-            const file = e.target.files[0];
+        // 공통 이미지 처리 함수 (압축 및 미리보기)
+        function processImageFile(file) {
             if (!file) return;
             
             const reader = new FileReader();
@@ -2831,6 +2846,26 @@
                 img.src = event.target.result;
             };
             reader.readAsDataURL(file);
+        }
+
+        // 파일 첨부 버튼 이벤트
+        document.getElementById('note-image')?.addEventListener('change', function(e) {
+            processImageFile(e.target.files[0]);
+        });
+
+        // 클립보드 붙여넣기 이벤트 (내용 입력창에서 캐치)
+        document.getElementById('note-content')?.addEventListener('paste', function(e) {
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            for (let index in items) {
+                const item = items[index];
+                if (item.kind === 'file' && item.type.startsWith('image/')) {
+                    e.preventDefault(); // 기본 붙여넣기(텍스트화 등) 방지
+                    const file = item.getAsFile();
+                    processImageFile(file);
+                    showToast("클립보드 이미지가 첨부되었습니다.");
+                    break; // 첫 번째 이미지만 처리
+                }
+            }
         });
 
         window.removeNoteImage = function() {
