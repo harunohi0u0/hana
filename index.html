@@ -463,7 +463,7 @@
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
                         <div class="bg-gray-50 p-4 rounded-2xl text-center border border-gray-100">
                             <p class="text-[10px] font-bold text-gray-500 mb-1">총 거래 횟수 (게임 기준)</p>
                             <p id="stat-total-trades" class="text-xl font-brand font-bold text-pancake-text">0건</p>
@@ -487,6 +487,11 @@
                         <div class="bg-gray-50 p-4 rounded-2xl text-center border border-gray-100">
                             <p class="text-[10px] font-bold text-gray-500 mb-1">평균 실제 R배수</p>
                             <p id="stat-avg-act-rr" class="text-xl font-brand font-bold text-gray-400">0.00 R</p>
+                        </div>
+                        <!-- 🚀 새로 추가: 원칙 준수율 박스 -->
+                        <div class="bg-[#F0FDFA] p-4 rounded-2xl text-center border border-pancake-primary shadow-sm">
+                            <p class="text-[10px] font-bold text-gray-500 mb-1">원칙 준수율</p>
+                            <p id="stat-principle-rate" class="text-xl font-brand font-bold text-pancake-primary">0%</p>
                         </div>
                     </div>
                 </div>
@@ -711,7 +716,6 @@
                 <input type="hidden" id="jc-entry">
                 <input type="hidden" id="jc-max-qty">
                 
-                <!-- oninput 이벤트 변경: 수량 조절 시 수수료도 비례 계산되도록 변경 -->
                 <div>
                     <label class="text-[10px] font-bold text-pancake-text block mb-1">청산 수량 <span class="text-gray-400 font-normal">(수정하여 분할 매도 가능)</span></label>
                     <input type="text" id="jc-qty" class="pc-input bg-white border-gray-200 number-input" oninput="updateCloseQty()" onblur="calcClosePnL()" required>
@@ -734,6 +738,17 @@
                     <div>
                         <label class="text-[10px] font-bold text-pancake-text block mb-1">순 실현 손익($)</label>
                         <input type="text" id="jc-pnl" class="pc-input bg-white number-input text-right font-bold border-gray-200" readonly required>
+                    </div>
+                </div>
+
+                <!-- 🚀 새로 추가: 원칙 준수 여부 -->
+                <div class="mt-4 border-t border-gray-100 pt-4 pb-2">
+                    <label class="text-[10px] font-bold text-pancake-text block mb-2 flex items-center">
+                        <i data-lucide="shield-check" class="w-3 h-3 mr-1 text-pancake-primary"></i> 매매 원칙을 철저히 지켰나요?
+                    </label>
+                    <div class="pc-toggle-group w-full shadow-sm" data-group="jc-principle">
+                        <button type="button" data-value="true" class="pc-toggle-btn selected w-1/2 !text-pancake-success">⭕ 원칙 준수</button>
+                        <button type="button" data-value="false" class="pc-toggle-btn w-1/2 !text-pancake-failure">❌ 뇌동/위반</button>
                     </div>
                 </div>
 
@@ -878,6 +893,14 @@
         function safeCall(fn) {
             try { fn(); } catch(e) { console.warn(`Error in ${fn.name}:`, e); }
         }
+
+        // 🚀 신규 추가: 청산 모달 원칙 준수 토글 동작
+        document.querySelectorAll('[data-group="jc-principle"] button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('[data-group="jc-principle"] button').forEach(b => b.classList.remove('selected'));
+                e.target.classList.add('selected');
+            });
+        });
 
         // 🚀 신규 추가: 탭 3 연동
         function switchMainTab(id) { 
@@ -2093,6 +2116,9 @@
             document.getElementById('jc-date').value = cd.toISOString().split('T')[0];
             document.getElementById('jc-time').value = cd.toTimeString().split(':').slice(0,2).join(':');
 
+            // 🚀 새로 추가: 모달 열 때 '원칙 준수' 기본 선택으로 초기화
+            document.querySelector('[data-group="jc-principle"] button[data-value="true"]')?.click();
+
             safeCall(calcClosePnL);
             openModal('journal-close-modal');
         };
@@ -2165,6 +2191,9 @@
             const closeTime = document.getElementById('jc-time').value;
             const closeDateTime = new Date(`${closeDate}T${closeTime}:00`).toISOString();
             
+            // 🚀 새로 추가: 원칙 준수 여부 값 가져오기
+            const adheredToPrinciple = document.querySelector('[data-group="jc-principle"] .selected')?.dataset.value === 'true';
+
             const j = localJournals.find(x => x.id === id);
             const originalGroupId = j.groupId || j.id; // 기존 그룹 ID 보존 (또는 최초 분할 시 생성)
             
@@ -2179,7 +2208,8 @@
                 const updateData = {
                     groupId: originalGroupId,
                     status: 'closed', qty: closeQty,
-                    closePrice, commission: comm, pnl, closeDate: closeDateTime
+                    closePrice, commission: comm, pnl, closeDate: closeDateTime,
+                    adheredToPrinciple // 🚀 새로 추가
                 };
                 Object.assign(j, updateData);
 
@@ -2202,7 +2232,8 @@
                     ...j, 
                     groupId: originalGroupId, 
                     status: 'closed', qty: closeQty,
-                    closePrice, commission: comm, pnl, closeDate: closeDateTime
+                    closePrice, commission: comm, pnl, closeDate: closeDateTime,
+                    adheredToPrinciple // 🚀 새로 추가
                 };
                 delete closedEntry.id; // DB 저장을 위해 id 제거
 
@@ -2362,6 +2393,7 @@
 
             // --- ★ 분할매도를 하나의 게임으로 묶는 그룹핑 변수 ---
             let groupPnL = {};
+            let groupPrinciple = {}; // 🚀 새로 추가
 
             filteredJournals.forEach(j => {
                 if(j.status === 'closed') {
@@ -2373,6 +2405,12 @@
                     const gId = j.groupId || j.id;
                     if(groupPnL[gId] === undefined) groupPnL[gId] = 0;
                     groupPnL[gId] += (parseFloat(j.pnl) || 0);
+
+                    // 🚀 새로 추가: 원칙 준수 여부 수집 (분할 청산 중 한 번이라도 어겼으면 위반으로 간주)
+                    if (j.adheredToPrinciple !== undefined) {
+                        if (groupPrinciple[gId] === undefined) groupPrinciple[gId] = true;
+                        if (j.adheredToPrinciple === false) groupPrinciple[gId] = false;
+                    }
 
                     // --- 기대/실제 R배수 계산 ---
                     const risk = Math.abs(j.entryPrice - j.slPrice);
@@ -2420,6 +2458,19 @@
             const winRate = totalClosed > 0 ? ((wins/totalClosed)*100).toFixed(1) : 0;
             if(document.getElementById('stat-total-trades')) document.getElementById('stat-total-trades').textContent = `${totalClosed}건`;
             if(document.getElementById('stat-win-rate')) document.getElementById('stat-win-rate').textContent = `${winRate}%`;
+            
+            // 🚀 새로 추가: 원칙 준수율 계산 및 DOM 업데이트
+            const pTotal = Object.keys(groupPrinciple).length;
+            const pKept = Object.values(groupPrinciple).filter(v => v === true).length;
+            const principleRate = pTotal > 0 ? ((pKept / pTotal) * 100).toFixed(1) : 0;
+            
+            const pRateEl = document.getElementById('stat-principle-rate');
+            if(pRateEl) {
+                pRateEl.textContent = `${principleRate}%`;
+                if (principleRate >= 80) pRateEl.className = 'text-xl font-brand font-bold text-pancake-success';
+                else if (principleRate < 50) pRateEl.className = 'text-xl font-brand font-bold text-pancake-failure';
+                else pRateEl.className = 'text-xl font-brand font-bold text-pancake-primary';
+            }
             
             const pnlEl = document.getElementById('stat-total-pnl');
             if(pnlEl) {
@@ -2563,6 +2614,7 @@
                                     ? `<span class="text-[10px] font-bold text-pancake-text bg-white px-2 py-0.5 rounded-md border border-gray-100 shadow-sm">청산가: ${formatNumber(j.closePrice)}</span>` 
                                     : `<span class="text-[10px] font-bold text-gray-400 border border-dashed border-gray-300 px-2 py-0.5 rounded-md">포지션 유지중</span>`}
                                 ${j.status === 'closed' && actRR !== '-' ? `<span class="text-[10px] font-bold ${actRR.includes('-')?'text-pancake-failure':'text-pancake-success'}">실제 R/R ${actRR}</span>` : ''}
+                                ${j.status === 'closed' && j.adheredToPrinciple !== undefined ? (j.adheredToPrinciple ? `<span class="text-[10px] font-bold text-pancake-success border border-pancake-success/30 bg-green-50 px-1.5 rounded">원칙 준수</span>` : `<span class="text-[10px] font-bold text-pancake-failure border border-pancake-failure/30 bg-red-50 px-1.5 rounded">원칙 위반</span>`) : ''}
                             </div>
                             <div class="text-[10px] font-bold text-gray-500">
                                 ${j.status === 'closed' ? `수수료: -$${formatNumber(j.commission)} <span class="mx-1">·</span> 청산: ${subDateStr}` : `진입: ${subDateStr}`}
