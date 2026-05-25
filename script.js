@@ -1,4 +1,3 @@
-<script>
         lucide.createIcons();
         Chart.defaults.font.family = '"Noto Sans KR", sans-serif';
         Chart.defaults.color = '#7A6EAA'; 
@@ -2196,5 +2195,3 @@
             document.getElementById('fullscreen-img').src = src;
             openModal('fullscreen-img-modal');
         }
-
-    </script>
