@@ -1,0 +1,50 @@
+<style>
+        body { background-color: #F0FDFA; color: #280D5F; }
+        
+        .pc-card { background-color: #FFFFFF; border-radius: 24px; box-shadow: 0px 2px 12px -8px rgba(25, 19, 38, 0.1), 0px 1px 1px rgba(25, 19, 38, 0.05); padding: 24px; border: 1px solid #E7E3EB; transition: all 0.2s ease; }
+        
+        .pc-input { width: 100%; background-color: #EEEAF4; color: #280D5F; border: 2px solid transparent; border-radius: 12px; padding: 10px 16px; font-size: 0.875rem; font-weight: 600; transition: all 0.2s ease; outline: none; }
+        .pc-input:focus { border-color: #1FC7D4; background-color: #FFFFFF; }
+        
+        .pc-btn { display: inline-flex; align-items: center; justify-content: center; font-family: '"Noto Sans KR"', sans-serif; font-weight: 700; border-radius: 16px; padding: 12px 24px; cursor: pointer; transition: transform 0.1s, opacity 0.2s; border: none; outline: none; position: relative; z-index: 10; }
+        .pc-btn:active { transform: translateY(4px); box-shadow: none !important; }
+        
+        .pc-btn-primary { background-color: #1FC7D4; color: white; box-shadow: 0px 4px 0px #139ea8; }
+        .pc-btn-purple { background-color: #7645D9; color: white; box-shadow: 0px 4px 0px #522f99; }
+        .pc-btn-success { background-color: #31D0AA; color: white; box-shadow: 0px 4px 0px #1e7a63; }
+        .pc-btn-failure { background-color: #ED4B9E; color: white; box-shadow: 0px 4px 0px #c03d80; }
+        
+        .pc-btn-secondary { background-color: #FFFFFF; color: #7A6EAA; border: 2px solid #E7E3EB; box-shadow: 0px 3px 0px #D7CAEC; }
+        .pc-btn-secondary:active { box-shadow: none !important; transform: translateY(3px); }
+
+        .pc-toggle-group { display: inline-flex; background-color: #EEEAF4; border-radius: 12px; padding: 4px; position: relative; z-index: 20; }
+        .pc-toggle-btn { padding: 8px 20px; border-radius: 8px; font-weight: 700; font-size: 0.875rem; color: #7A6EAA; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; border: none; background: transparent; outline: none; }
+        .pc-toggle-btn.selected { background-color: #FFFFFF; color: #280D5F; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        .nav-tab { padding: 12px 24px; font-family: '"Kanit"', sans-serif; font-weight: 700; color: #7A6EAA; border-bottom: 4px solid transparent; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .nav-tab.active { color: #1FC7D4; border-bottom-color: #1FC7D4; }
+
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E7E3EB; border-radius: 3px; }
+
+        .category-btn { background-color: #EEEAF4; color: #280D5F; border: 2px solid transparent; font-weight: 700; border-radius: 12px; padding: 6px 12px; }
+        .category-btn.selected-cat { background-color: #7645D9 !important; color: white !important; box-shadow: 0 4px 6px -1px rgba(118, 69, 217, 0.3); }
+        .minor-category-btn { background-color: white; color: #1FC7D4; border: 2px solid #1FC7D4; font-weight: 700; border-radius: 8px; padding: 4px 10px; }
+        .minor-category-btn.selected-minor { background-color: #1FC7D4 !important; color: white !important; box-shadow: 0 4px 6px -1px rgba(31, 199, 212, 0.3); }
+
+        /* Login Animations */
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob { animation: blob 10s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        @keyframes bounce-slow { 0%, 100% { transform: translateY(-5%); } 50% { transform: translateY(5%); } }
+        .mascot-bounce { animation: bounce-slow 3s infinite ease-in-out; }
+    </style>
