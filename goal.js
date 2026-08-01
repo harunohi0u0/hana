@@ -1,15 +1,10 @@
-// ================= [TAB 4] GOALSWAP (목표관리) 전용 스크립트 =================
+// ================= [TAB 4] GOAL (목표관리) 전용 스크립트 =================
 
+let localTopGoals = [];
 let localQuests = [];
 let localRoutines = [];
 
-const TOP_GOALS = {
-    'goal_1': { title: '월 300 자동화', icon: '🚀', color: 'primary' },
-    'goal_2': { title: '일본 대학 입시', icon: '🌸', color: 'failure' },
-    'goal_3': { title: '트레이딩/투자', icon: '📈', color: 'success' }
-};
-
-// 1. 기존 탭 전환 기능에 GoalSwap 끼워넣기 (덮어쓰기)
+// 1. 기존 탭 전환 기능에 Goal 끼워넣기 (덮어쓰기)
 window.switchMainTab = function(id) { 
     document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); 
@@ -20,65 +15,136 @@ window.switchMainTab = function(id) {
     
     document.getElementById(id).classList.add('active'); 
     
-    // 기존 탭 기능들 유지
     if(id==='tab1') safeCall(initTab1Charts); 
     if(id==='tab2') { safeCall(initJournalDates); safeCall(renderJournals); }
     if(id==='tab3') safeCall(renderNotes); 
     
-    // 새로운 GoalSwap 탭 기능 추가
-    if(id==='tab4') { safeCall(renderTopGoals); safeCall(renderQuests); safeCall(renderRoutines); }
+    // 새로운 Goal 탭 기능 추가
+    if(id==='tab4') { safeCall(renderTopGoals); safeCall(renderQuests); safeCall(renderRoutines); safeCall(updateDropdowns); }
 }
 
-// 2. 기존 데이터 불러오기 기능에 GoalSwap 데이터 로딩 추가
+// 2. 데이터 불러오기 기능 (Firestore 연동)
 const originalInitializeData = window.initializeData || async function(){};
 window.initializeData = async function() {
-    await originalInitializeData(); // 기존 매매일지 데이터 먼저 안전하게 불러오기
+    await originalInitializeData(); 
     
     if(db && currentUser) {
         try {
             const uid = currentUser.uid;
-            // 퀘스트와 루틴 데이터 불러오기
-            const [qSnap, rSnap] = await Promise.all([
+            // 3가지 컬렉션(목표, 퀘스트, 루틴) 불러오기
+            const [gSnap, qSnap, rSnap] = await Promise.all([
+                db.collection("users").doc(uid).collection("top_goals").orderBy("created_at").get(),
                 db.collection("users").doc(uid).collection("quests").get(),
                 db.collection("users").doc(uid).collection("routines").get()
             ]);
+            localTopGoals = gSnap.docs.map(d => ({ id: d.id, ...d.data() }));
             localQuests = qSnap.docs.map(d => ({ id: d.id, ...d.data() }));
             localRoutines = rSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        } catch(e) { console.error("GoalSwap 데이터 로드 에러:", e); }
+        } catch(e) { console.error("Goal 데이터 로드 에러:", e); }
     }
 };
 
-// ================= 여기서부터는 화면 렌더링 및 클릭 기능 =================
+// 3. 동적 드롭다운 업데이트 (목표가 추가/삭제될 때마다 목록 갱신)
+function updateDropdowns() {
+    const questSelect = document.getElementById('quest-parent');
+    const routineSelect = document.getElementById('routine-parent');
+    if(!questSelect || !routineSelect) return;
+    
+    let optionsHtml = '';
+    if(localTopGoals.length === 0) {
+        optionsHtml = '<option value="">최상위 목표를 먼저 만들어주세요!</option>';
+    } else {
+        localTopGoals.forEach(g => {
+            optionsHtml += `<option value="${g.id}">${g.icon} ${g.title}</option>`;
+        });
+    }
+    
+    questSelect.innerHTML = optionsHtml;
+    routineSelect.innerHTML = optionsHtml;
+}
+
+// ================= [최상위 목표 (Top Goals) 기능] =================
+
+async function addTopGoal() {
+    const title = document.getElementById('top-goal-title').value;
+    const icon = document.getElementById('top-goal-icon').value || '🎯';
+    const color = document.getElementById('top-goal-color').value;
+    const maxExp = parseInt(document.getElementById('top-goal-max-exp').value);
+
+    if(!title || isNaN(maxExp) || maxExp <= 0) return alert("올바른 값을 입력해주세요.");
+
+    const goalData = { title, icon, color, max_exp: maxExp, current_exp: 0, created_at: new Date().toISOString() };
+    
+    if(db && currentUser) {
+        const docRef = await db.collection("users").doc(currentUser.uid).collection("top_goals").add(goalData);
+        localTopGoals.push({ id: docRef.id, ...goalData });
+    } else {
+        localTopGoals.push({ id: 'g_' + Date.now(), ...goalData });
+    }
+    
+    document.getElementById('top-goal-title').value = '';
+    document.getElementById('top-goal-max-exp').value = '';
+    closeModal('add-top-goal-modal');
+    renderTopGoals(); updateDropdowns(); renderQuests(); renderRoutines();
+    showToast("새로운 목표가 생성되었습니다!");
+}
+
+async function deleteTopGoal(id) {
+    if(!confirm("이 목표를 삭제하시겠습니까? (연결된 퀘스트와 루틴은 수동으로 삭제해야 합니다)")) return;
+    if(db && currentUser) { await db.collection("users").doc(currentUser.uid).collection("top_goals").doc(id).delete(); }
+    localTopGoals = localTopGoals.filter(g => g.id !== id);
+    renderTopGoals(); updateDropdowns(); renderQuests(); renderRoutines();
+    showToast("목표가 삭제되었습니다.");
+}
 
 function renderTopGoals() {
     const container = document.getElementById('top-goals-container');
     if(!container) return;
     container.innerHTML = '';
 
-    Object.keys(TOP_GOALS).forEach(key => {
-        const goal = TOP_GOALS[key];
-        const relatedQuests = localQuests.filter(q => q.parent_goal_id === key);
-        const completedQuests = relatedQuests.filter(q => q.is_completed).length;
-        const progress = relatedQuests.length === 0 ? 0 : Math.round((completedQuests / relatedQuests.length) * 100);
+    if(localTopGoals.length === 0) {
+        container.innerHTML = '<div class="col-span-full text-center text-sm text-gray-400 py-10 font-bold border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">우측 상단의 [+ 목표 추가] 버튼을 눌러 목표를 세워보세요!</div>';
+        return;
+    }
+
+    localTopGoals.forEach(goal => {
+        // 레벨 및 진행률 계산
+        let progress = Math.floor((goal.current_exp / goal.max_exp) * 100);
+        if(progress > 100) progress = 100;
+        
+        let level = Math.floor((goal.current_exp / goal.max_exp) * 99) + 1;
+        if(level > 100) level = 100;
 
         container.innerHTML += `
-            <div class="pc-card border-t-4 border-pancake-${goal.color} hover:-translate-y-1 transition duration-300">
-                <div class="text-3xl mb-2">${goal.icon}</div>
-                <h3 class="font-bold text-lg mb-4 text-pancake-text">${goal.title}</h3>
-                <div class="w-full bg-gray-100 rounded-full h-3 mb-1 overflow-hidden border border-gray-200">
-                    <div class="bg-pancake-${goal.color} h-full rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+            <div class="pc-card border-t-4 border-pancake-${goal.color} hover:-translate-y-1 transition duration-300 relative group">
+                <button onclick="deleteTopGoal('${goal.id}')" class="absolute top-4 right-4 text-gray-300 hover:text-pancake-failure opacity-0 group-hover:opacity-100 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="text-3xl">${goal.icon}</div>
+                    <h3 class="font-bold text-lg text-pancake-text">${goal.title}</h3>
                 </div>
-                <div class="text-right text-xs font-bold text-gray-500">${progress}% 진행됨</div>
+                
+                <div class="flex justify-between items-end mb-1 mt-4">
+                    <span class="text-sm font-brand font-bold text-pancake-${goal.color}">Lv. ${level}</span>
+                    <span class="text-[10px] font-bold text-gray-400">${goal.current_exp} / ${goal.max_exp} EXP</span>
+                </div>
+                
+                <div class="w-full bg-gray-100 rounded-full h-3 mb-1 overflow-hidden border border-gray-200 relative">
+                    <div class="bg-pancake-${goal.color} h-full rounded-full transition-all duration-700" style="width: ${progress}%"></div>
+                </div>
+                <div class="text-right text-[10px] font-bold text-gray-400">${progress}% 진행됨</div>
             </div>
         `;
     });
     lucide.createIcons();
 }
 
+// ================= [퀘스트 (Quests) 기능] =================
+
 async function addQuest() {
     const parentId = document.getElementById('quest-parent').value;
     const taskName = document.getElementById('quest-name').value;
-    if(!taskName) return;
+    if(!parentId || !taskName) return alert("목표를 선택하고 내용을 입력하세요.");
 
     const questData = { parent_goal_id: parentId, task_name: taskName, is_completed: false, created_at: new Date().toISOString() };
     
@@ -91,21 +157,21 @@ async function addQuest() {
     
     document.getElementById('quest-name').value = '';
     closeModal('add-quest-modal');
-    renderQuests(); renderTopGoals(); showToast("퀘스트가 추가되었습니다!");
+    renderQuests(); showToast("퀘스트가 추가되었습니다!");
 }
 
 async function toggleQuest(id, currentStatus) {
     if(db && currentUser) { await db.collection("users").doc(currentUser.uid).collection("quests").doc(id).update({ is_completed: !currentStatus }); }
     const quest = localQuests.find(q => q.id === id);
     if(quest) quest.is_completed = !currentStatus;
-    renderQuests(); renderTopGoals();
+    renderQuests();
 }
 
 async function deleteQuest(id) {
     if(!confirm("퀘스트를 삭제하시겠습니까?")) return;
     if(db && currentUser) { await db.collection("users").doc(currentUser.uid).collection("quests").doc(id).delete(); }
     localQuests = localQuests.filter(q => q.id !== id);
-    renderQuests(); renderTopGoals(); showToast("삭제 완료");
+    renderQuests(); showToast("삭제 완료");
 }
 
 function renderQuests() {
@@ -118,11 +184,11 @@ function renderQuests() {
         return;
     }
 
-    Object.keys(TOP_GOALS).forEach(key => {
-        const quests = localQuests.filter(q => q.parent_goal_id === key);
+    localTopGoals.forEach(goal => {
+        const quests = localQuests.filter(q => q.parent_goal_id === goal.id);
         if(quests.length === 0) return;
 
-        let html = `<div class="mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100"><h4 class="text-xs font-bold text-pancake-text mb-2 flex items-center">${TOP_GOALS[key].icon} ${TOP_GOALS[key].title}</h4>`;
+        let html = `<div class="mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100"><h4 class="text-xs font-bold text-pancake-text mb-2 flex items-center">${goal.icon} ${goal.title}</h4>`;
         
         quests.forEach(q => {
             const isDone = q.is_completed;
@@ -144,11 +210,17 @@ function renderQuests() {
     lucide.createIcons();
 }
 
-async function addRoutine() {
-    const name = document.getElementById('routine-name').value;
-    if(!name) return;
+// ================= [데일리 루틴 (Routines) 및 경험치 로직] =================
 
-    const routineData = { routine_name: name, streak_count: 0, last_completed_date: '' };
+async function addRoutine() {
+    const parentId = document.getElementById('routine-parent').value;
+    const name = document.getElementById('routine-name').value;
+    const expReward = parseInt(document.getElementById('routine-exp').value);
+
+    if(!parentId || !name || isNaN(expReward) || expReward <= 0) return alert("항목을 올바르게 채워주세요.");
+
+    const routineData = { parent_goal_id: parentId, routine_name: name, exp_reward: expReward, streak_count: 0, last_completed_date: '' };
+    
     if(db && currentUser) {
         const docRef = await db.collection("users").doc(currentUser.uid).collection("routines").add(routineData);
         localRoutines.push({ id: docRef.id, ...routineData });
@@ -157,6 +229,7 @@ async function addRoutine() {
     }
     
     document.getElementById('routine-name').value = '';
+    document.getElementById('routine-exp').value = '';
     closeModal('add-routine-modal');
     renderRoutines(); showToast("루틴이 심어졌습니다!");
 }
@@ -165,25 +238,50 @@ async function toggleRoutine(id) {
     const routine = localRoutines.find(r => r.id === id);
     if(!routine) return;
 
+    const parentGoal = localTopGoals.find(g => g.id === routine.parent_goal_id);
+    if(!parentGoal) return alert("연결된 목표가 삭제되어 경험치를 올릴 수 없습니다.");
+
     const todayStr = new Date().toISOString().split('T')[0];
     const isDoneToday = routine.last_completed_date === todayStr;
 
     let newStreak = routine.streak_count;
     let newDate = routine.last_completed_date;
+    let expChange = 0;
 
-    if (isDoneToday) { newStreak = Math.max(0, newStreak - 1); newDate = ''; } 
-    else { newStreak += 1; newDate = todayStr; }
+    if (isDoneToday) { 
+        // 완료 취소 시 경험치 차감
+        newStreak = Math.max(0, newStreak - 1); 
+        newDate = ''; 
+        expChange = -routine.exp_reward;
+    } else { 
+        // 루틴 완료 시 경험치 획득
+        newStreak += 1; 
+        newDate = todayStr; 
+        expChange = routine.exp_reward;
+    }
 
-    if(db && currentUser) { await db.collection("users").doc(currentUser.uid).collection("routines").doc(id).update({ streak_count: newStreak, last_completed_date: newDate }); }
+    // 새 경험치 적용 (0 이하로 떨어지지 않게)
+    let newGoalExp = Math.max(0, parentGoal.current_exp + expChange);
+
+    // 파이어베이스에 루틴과 목표 경험치 동시 업데이트
+    if(db && currentUser) { 
+        await db.collection("users").doc(currentUser.uid).collection("routines").doc(id).update({ streak_count: newStreak, last_completed_date: newDate }); 
+        await db.collection("users").doc(currentUser.uid).collection("top_goals").doc(parentGoal.id).update({ current_exp: newGoalExp });
+    }
+    
+    // 로컬 데이터 업데이트
     routine.streak_count = newStreak;
     routine.last_completed_date = newDate;
+    parentGoal.current_exp = newGoalExp;
     
     renderRoutines();
-    if(!isDoneToday) showToast("🎉 루틴 달성! 경험치 획득");
+    renderTopGoals();
+
+    if(!isDoneToday) showToast(`🎉 루틴 달성! (+${routine.exp_reward} EXP 획득)`);
 }
 
 async function deleteRoutine(id) {
-    if(!confirm("루틴을 삭제하시겠습니까?")) return;
+    if(!confirm("루틴을 삭제하시겠습니까? (기존에 얻은 경험치는 사라지지 않습니다)")) return;
     if(db && currentUser) { await db.collection("users").doc(currentUser.uid).collection("routines").doc(id).delete(); }
     localRoutines = localRoutines.filter(r => r.id !== id);
     renderRoutines(); showToast("삭제 완료");
@@ -203,17 +301,25 @@ function renderRoutines() {
 
     localRoutines.forEach(r => {
         const isDone = r.last_completed_date === todayStr;
+        
+        // 어떤 목표에 연결되어 있는지 찾아서 아이콘 표시
+        const parentGoal = localTopGoals.find(g => g.id === r.parent_goal_id);
+        const goalIcon = parentGoal ? parentGoal.icon : '❓';
+
         container.innerHTML += `
             <div class="flex justify-between items-center p-3 bg-white rounded-xl border ${isDone ? 'border-pancake-success bg-[#F0FDFA]' : 'border-gray-200'} shadow-sm transition hover:shadow-md">
                 <div class="flex items-center gap-3 cursor-pointer flex-1" onclick="toggleRoutine('${r.id}')">
-                    <div class="w-6 h-6 rounded-lg border-2 flex items-center justify-center ${isDone ? 'bg-pancake-success border-pancake-success text-white' : 'border-gray-300 bg-gray-50'} transition">
+                    <div class="w-6 h-6 rounded-lg border-2 flex items-center justify-center ${isDone ? 'bg-pancake-success border-pancake-success text-white' : 'border-gray-300 bg-gray-50'} transition shrink-0">
                         ${isDone ? '<i data-lucide="check" class="w-4 h-4"></i>' : ''}
                     </div>
-                    <span class="text-sm font-bold ${isDone ? 'text-pancake-success' : 'text-pancake-text'}">${r.routine_name}</span>
+                    <div>
+                        <span class="text-sm font-bold block leading-tight ${isDone ? 'text-pancake-success' : 'text-pancake-text'}">${r.routine_name}</span>
+                        <span class="text-[10px] text-gray-400 font-bold mt-0.5 inline-block">${goalIcon} ${isDone ? '완료됨' : `완료 시 +${r.exp_reward} EXP`}</span>
+                    </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <span class="text-xs font-bold ${isDone ? 'text-pancake-warning' : 'text-gray-400'} flex items-center"><i data-lucide="flame" class="w-4 h-4 mr-1"></i> ${r.streak_count}일</span>
-                    <button onclick="deleteRoutine('${r.id}')" class="text-gray-400 hover:text-pancake-failure p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                <div class="flex items-center gap-3 pl-2">
+                    <span class="text-xs font-bold ${isDone ? 'text-pancake-warning' : 'text-gray-400'} flex items-center shrink-0"><i data-lucide="flame" class="w-4 h-4 mr-1"></i> ${r.streak_count}일</span>
+                    <button onclick="deleteRoutine('${r.id}')" class="text-gray-400 hover:text-pancake-failure p-1 shrink-0"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>
             </div>
         `;
