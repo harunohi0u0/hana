@@ -98,6 +98,7 @@
                 <button class="nav-tab" onclick="switchMainTab('tab2')">Trading Desk</button>
                 <!-- 🚀 신규 추가: 트레이딩 노트 탭 -->
                 <button class="nav-tab" onclick="switchMainTab('tab3')">Trading Notes</button>
+                <button class="nav-tab font-bold text-pancake-primary" onclick="switchMainTab('tab4')">🎯 GoalSwap</button>
             </div>
             
             <div class="flex items-center gap-2 ml-4">
@@ -550,7 +551,42 @@
                 <!-- JS 렌더링 영역 -->
             </div>
         </div>
+        <!-- ================= [TAB 4] GoalSwap (목표 관리) ================= -->
+        <div id="tab4" class="tab-content space-y-6 hidden">
+            <!-- 1. 최상위 목표 (Top Goals) -->
+            <section>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold flex items-center text-pancake-text"><i data-lucide="target" class="w-6 h-6 mr-2 text-pancake-primary"></i> 나의 3대 퀘스트</h2>
+                </div>
+                <div id="top-goals-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- JS 렌더링 영역 -->
+                </div>
+            </section>
 
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- 2. 세부 퀘스트 보드 (Sub-goals) -->
+                <section class="pc-card">
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                        <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="list-todo" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 퀘스트 보드 (진행 현황)</h2>
+                        <button onclick="openModal('add-quest-modal')" class="pc-btn pc-btn-primary !px-3 !py-1.5 !text-xs">+ 추가</button>
+                    </div>
+                    <div id="quest-board-container" class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+                        <!-- JS 렌더링 영역 -->
+                    </div>
+                </section>
+
+                <!-- 3. 데일리 팜 (Daily Routines) -->
+                <section class="pc-card bg-gray-50/50">
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                        <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="sprout" class="w-5 h-5 mr-2 text-pancake-success"></i> 오늘의 수확 (데일리 루틴)</h2>
+                        <button onclick="openModal('add-routine-modal')" class="pc-btn pc-btn-success !px-3 !py-1.5 !text-xs">+ 루틴 생성</button>
+                    </div>
+                    <div id="daily-routine-container" class="space-y-3">
+                        <!-- JS 렌더링 영역 -->
+                    </div>
+                </section>
+            </div>
+        </div>
     </main>
 </div>
 
@@ -791,6 +827,44 @@
     <img id="fullscreen-img" src="" class="max-w-[95%] max-h-[95vh] object-contain rounded-lg shadow-2xl">
 </div>
 
+<!-- 👇 여기서부터 복사해서 붙여넣으세요 👇 -->
+<!-- GoalSwap 모달: 퀘스트 추가 -->
+<div id="add-quest-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
+        <button onclick="closeModal('add-quest-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="plus-circle" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 세부 퀘스트 추가</h2>
+        <form onsubmit="event.preventDefault(); addQuest();" class="space-y-4">
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">어떤 최상위 목표와 연결할까요?</label>
+                <select id="quest-parent" class="pc-input bg-white border-gray-200" required>
+                    <option value="goal_1">월 300 자동화 사업</option>
+                    <option value="goal_2">일본 대학 입시</option>
+                    <option value="goal_3">트레이딩 / 투자</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">퀘스트 내용</label>
+                <input type="text" id="quest-name" class="pc-input bg-white border-gray-200" placeholder="예: 첫 수익 10만원 달성하기" required>
+            </div>
+            <button type="submit" class="pc-btn pc-btn-purple w-full py-3 text-base">퀘스트 등록</button>
+        </form>
+    </div>
+</div>
 
+<!-- GoalSwap 모달: 루틴 추가 -->
+<div id="add-routine-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
+        <button onclick="closeModal('add-routine-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="sprout" class="w-5 h-5 mr-2 text-pancake-success"></i> 매일 반복할 루틴 추가</h2>
+        <form onsubmit="event.preventDefault(); addRoutine();" class="space-y-4">
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">루틴 이름</label>
+                <input type="text" id="routine-name" class="pc-input bg-white border-gray-200" placeholder="예: 일본어 단어 50개 암기" required>
+            </div>
+            <button type="submit" class="pc-btn pc-btn-success w-full py-3 text-base">루틴 심기</button>
+        </form>
+    </div>
+</div>
+<!-- 👆 여기까지 복사 👆 -->
 <!-- 🌟 JS 파일 연결 🌟 -->
 <script src="script.js"></script>
