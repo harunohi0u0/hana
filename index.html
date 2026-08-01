@@ -911,30 +911,6 @@
     <img id="fullscreen-img" src="" class="max-w-[95%] max-h-[95vh] object-contain rounded-lg shadow-2xl">
 </div>
 
-<!-- 👇 여기서부터 복사해서 붙여넣으세요 👇 -->
-<!-- GoalSwap 모달: 퀘스트 추가 -->
-<div id="add-quest-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
-    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
-        <button onclick="closeModal('add-quest-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
-        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="plus-circle" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 세부 퀘스트 추가</h2>
-        <form onsubmit="event.preventDefault(); addQuest();" class="space-y-4">
-            <div>
-                <label class="text-xs font-bold text-gray-500 mb-1 block">어떤 최상위 목표와 연결할까요?</label>
-                <select id="quest-parent" class="pc-input bg-white border-gray-200" required>
-                    <option value="goal_1">월 300 자동화 사업</option>
-                    <option value="goal_2">일본 대학 입시</option>
-                    <option value="goal_3">트레이딩 / 투자</option>
-                </select>
-            </div>
-            <div>
-                <label class="text-xs font-bold text-gray-500 mb-1 block">퀘스트 내용</label>
-                <input type="text" id="quest-name" class="pc-input bg-white border-gray-200" placeholder="예: 첫 수익 10만원 달성하기" required>
-            </div>
-            <button type="submit" class="pc-btn pc-btn-purple w-full py-3 text-base">퀘스트 등록</button>
-        </form>
-    </div>
-</div>
-
 <!-- GoalSwap 모달: 루틴 추가 -->
 <div id="add-routine-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
     <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
