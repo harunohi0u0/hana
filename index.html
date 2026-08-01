@@ -537,6 +537,20 @@
 
         <!-- ================= [TAB 4] Goal (목표 관리) ================= -->
         <div id="tab4" class="tab-content space-y-6 hidden">
+            <!-- 0. 오늘의 통합 체크리스트 (루틴 + 퀘스트) -->
+            <section class="pc-card border-2 border-pancake-primary/20">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="calendar-check" class="w-5 h-5 mr-2 text-pancake-primary"></i> 오늘의 체크리스트</h2>
+                    <span id="today-checklist-summary" class="text-xs font-bold text-pancake-primary bg-white px-3 py-1 rounded-full border border-pancake-primary/30">0 / 0 완료</span>
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-2.5 mb-4 overflow-hidden border border-gray-200">
+                    <div id="today-checklist-bar" class="bg-pancake-primary h-full rounded-full transition-all duration-500" style="width:0%"></div>
+                </div>
+                <div id="today-checklist-container" class="space-y-2 max-h-[360px] overflow-y-auto custom-scrollbar pr-1">
+                    <!-- JS 렌더링 영역 -->
+                </div>
+            </section>
+
             <!-- 1. 최상위 목표 (Top Goals) -->
             <section>
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-gray-100 pb-3 gap-2">
@@ -564,7 +578,7 @@
                 <section class="pc-card bg-gray-50/50">
                     <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
                         <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="sprout" class="w-5 h-5 mr-2 text-pancake-success"></i> 오늘의 수확 (데일리 루틴)</h2>
-                        <button onclick="openModal('add-routine-modal')" class="pc-btn pc-btn-success !px-3 !py-1.5 !text-xs">+ 루틴 생성</button>
+                        <button onclick="window.resetRoutineModal(); openModal('add-routine-modal')" class="pc-btn pc-btn-success !px-3 !py-1.5 !text-xs">+ 루틴 생성</button>
                     </div>
                     <div id="daily-routine-container" class="space-y-3">
                         <!-- JS 렌더링 영역 -->
@@ -795,6 +809,11 @@
                 <input type="number" id="top-goal-max-exp" class="pc-input bg-white border-gray-200" placeholder="예: 10000" required>
                 <p class="text-[10px] text-gray-400 mt-1">이 수치에 도달하면 100레벨(만렙)이 됩니다.</p>
             </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">목표 마감일 (선택사항)</label>
+                <input type="date" id="top-goal-deadline" class="pc-input bg-white border-gray-200">
+                <p class="text-[10px] text-gray-400 mt-1">설정하면 카드에 D-day가 표시됩니다.</p>
+            </div>
             <button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">목표 생성하기</button>
         </form>
     </div>
@@ -825,7 +844,7 @@
 <div id="add-routine-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
     <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
         <button onclick="closeModal('add-routine-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
-        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="sprout" class="w-5 h-5 mr-2 text-pancake-success"></i> 매일 반복할 루틴 추가</h2>
+        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="sprout" class="w-5 h-5 mr-2 text-pancake-success"></i> 반복할 루틴 추가</h2>
         <form onsubmit="event.preventDefault(); if(window.addRoutine) { window.addRoutine(); } else { alert('🚨 파일 로딩 에러: goalswap.js 파일을 읽지 못했습니다!'); }" class="space-y-4">
             <div>
                 <label class="text-xs font-bold text-gray-500 mb-1 block">완료 시 어느 목표의 경험치를 올릴까요?</label>
@@ -841,7 +860,45 @@
                 <label class="text-xs font-bold text-gray-500 mb-1 block">1회 완료 시 획득할 경험치(EXP)</label>
                 <input type="number" id="routine-exp" class="pc-input bg-white border-gray-200" placeholder="예: 25" required>
             </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">반복 주기</label>
+                <div class="flex gap-1.5" id="routine-repeat-days">
+                    <button type="button" class="pc-day-btn selected" data-day="0" onclick="window.toggleDayBtn(this)">일</button>
+                    <button type="button" class="pc-day-btn selected" data-day="1" onclick="window.toggleDayBtn(this)">월</button>
+                    <button type="button" class="pc-day-btn selected" data-day="2" onclick="window.toggleDayBtn(this)">화</button>
+                    <button type="button" class="pc-day-btn selected" data-day="3" onclick="window.toggleDayBtn(this)">수</button>
+                    <button type="button" class="pc-day-btn selected" data-day="4" onclick="window.toggleDayBtn(this)">목</button>
+                    <button type="button" class="pc-day-btn selected" data-day="5" onclick="window.toggleDayBtn(this)">금</button>
+                    <button type="button" class="pc-day-btn selected" data-day="6" onclick="window.toggleDayBtn(this)">토</button>
+                </div>
+                <div class="flex gap-3 mt-2">
+                    <button type="button" onclick="window.setAllDays(true)" class="text-[10px] font-bold text-pancake-primary hover:underline">매일</button>
+                    <button type="button" onclick="window.setAllDays(false)" class="text-[10px] font-bold text-gray-400 hover:underline">전체 해제</button>
+                </div>
+            </div>
             <button type="submit" class="pc-btn pc-btn-success w-full py-3 text-base">루틴 심기</button>
+        </form>
+    </div>
+</div>
+
+<!-- Goal 모달 4: 마일스톤 추가 -->
+<div id="add-milestone-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
+        <button onclick="closeModal('add-milestone-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-1 flex items-center"><i data-lucide="flag" class="w-5 h-5 mr-2 text-pancake-warning"></i> 마일스톤 추가</h2>
+        <p id="milestone-parent-name" class="text-xs font-bold text-gray-400 mb-4 border-b border-gray-100 pb-2"></p>
+        <form onsubmit="event.preventDefault(); if(window.addMilestone) { window.addMilestone(); } else { alert('🚨 파일 로딩 에러: goal.js 파일을 읽지 못했습니다!'); }" class="space-y-4">
+            <input type="hidden" id="milestone-parent-id">
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">마일스톤 이름</label>
+                <input type="text" id="milestone-title" class="pc-input bg-white border-gray-200" placeholder="예: 중간 목표 달성" required>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">목표 경험치(EXP) 도달 시 달성 처리</label>
+                <input type="number" id="milestone-target-exp" class="pc-input bg-white border-gray-200" placeholder="예: 3000" required>
+                <p class="text-[10px] text-gray-400 mt-1">해당 목표의 누적 경험치가 이 값에 도달하면 자동으로 달성 축하 팝업이 뜹니다.</p>
+            </div>
+            <button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">마일스톤 등록</button>
         </form>
     </div>
 </div>

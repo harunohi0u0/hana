@@ -47,4 +47,27 @@
         .animation-delay-2000 { animation-delay: 2s; }
         @keyframes bounce-slow { 0%, 100% { transform: translateY(-5%); } 50% { transform: translateY(5%); } }
         .mascot-bounce { animation: bounce-slow 3s infinite ease-in-out; }
+
+        /* ===== [Goal Tab 추가 기능] 반복요일 선택 버튼 ===== */
+        .pc-day-btn { flex: 1; text-align: center; padding: 8px 0; border-radius: 8px; font-size: 11px; font-weight: 700; background-color: #EEEAF4; color: #7A6EAA; border: 2px solid transparent; cursor: pointer; transition: all 0.15s ease; }
+        .pc-day-btn.selected { background-color: #31D0AA; color: #ffffff; border-color: #31D0AA; }
+
+        /* ===== [Goal Tab 추가 기능] 마일스톤 칩 & 진행바 위 깃발 ===== */
+        .milestone-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: #EEEAF4; color: #7A6EAA; border: 1px solid #E7E3EB; white-space: nowrap; }
+        .milestone-chip.achieved { background: #FFF7E0; color: #B8860B; border-color: #FFB237; }
+        .milestone-chip button { line-height: 1; }
+
+        .milestone-flag { position: absolute; top: -11px; transform: translateX(-50%); font-size: 12px; line-height: 1; pointer-events: none; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2)); }
+
+        /* ===== [Goal Tab 추가 기능] 목표 마감일 D-day 배지 ===== */
+        .dday-badge { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: #EEEAF4; color: #7A6EAA; }
+        .dday-badge.overdue { background: #FDE7F0; color: #ED4B9E; }
+
+        /* ===== [Goal Tab 추가 기능] 오늘의 체크리스트 완료 항목 ===== */
+        .today-item-done { opacity: 0.55; }
+
+        /* ===== [Goal Tab 추가 기능] 마일스톤 달성 축하 팝업 ===== */
+        .milestone-celebrate-backdrop { position: fixed; inset: 0; background: rgba(40,13,95,0.4); backdrop-filter: blur(2px); z-index: 200; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; cursor: pointer; }
+        .milestone-celebrate-card { background: #ffffff; border-radius: 24px; padding: 32px 44px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.25); animation: milestonePop 0.5s cubic-bezier(.34,1.56,.64,1); cursor: default; }
+        @keyframes milestonePop { 0% { transform: scale(0.6); opacity: 0; } 70% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
     </style>
