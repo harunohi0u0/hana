@@ -1,5 +1,5 @@
 <!-- Libraries -->
-<script src="https://cdn.tailwindcss.com"></script>`
+<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -96,9 +96,8 @@
             <div class="flex flex-1">
                 <button class="nav-tab active" onclick="switchMainTab('tab1')">Asset & Ledger</button>
                 <button class="nav-tab" onclick="switchMainTab('tab2')">Trading Desk</button>
-                <!-- 🚀 신규 추가: 트레이딩 노트 탭 -->
                 <button class="nav-tab" onclick="switchMainTab('tab3')">Trading Notes</button>
-                <button class="nav-tab font-bold text-pancake-primary" onclick="switchMainTab('tab4')">Goal</button>
+                <button class="nav-tab font-bold text-pancake-primary" onclick="switchMainTab('tab4')">🎯 Goal</button>
             </div>
             
             <div class="flex items-center gap-2 ml-4">
@@ -134,7 +133,6 @@
         
         <!-- ================= [TAB 1] 종합 자산 & 가계부 ================= -->
         <div id="tab1" class="tab-content active space-y-6">
-            <!-- 기존 탭 1 구조 유지 -->
             <div class="flex justify-center mb-6">
                 <div class="pc-toggle-group shadow-sm p-1.5 border border-gray-100">
                     <button class="pc-toggle-btn selected flex items-center gap-2" onclick="switchSubTab('sub-dashboard', this)"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> 대시보드</button>
@@ -143,7 +141,6 @@
                 </div>
             </div>
 
-            <!-- Sub-tab 1: Dashboard -->
             <div id="sub-dashboard" class="sub-tab-content active space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="pc-card text-center py-8 md:col-span-2 flex flex-col justify-center border-b-4 border-pancake-cyan">
@@ -210,7 +207,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- 가계부 작성 폼 -->
                     <div class="pc-card relative z-10 overflow-hidden" id="ledger-write-section">
                         <div class="flex justify-between items-center mb-6 relative z-20">
                             <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="edit-3" class="w-5 h-5 mr-2 text-pancake-purple"></i> 가계부 작성</h2>
@@ -252,7 +248,6 @@
                         </form>
                     </div>
 
-                    <!-- 고정비 관리 -->
                     <div class="pc-card flex flex-col h-full bg-gray-50/50">
                         <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
                             <div>
@@ -266,7 +261,6 @@
                 </div>
             </div>
 
-            <!-- Sub-tab 2: Portfolio -->
             <div id="sub-portfolio" class="sub-tab-content hidden space-y-6">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="pc-card lg:col-span-1 h-fit sticky top-24">
@@ -333,7 +327,6 @@
                 </div>
             </div>
 
-            <!-- Sub-tab 3: Transaction Timeline -->
             <div id="sub-timeline" class="sub-tab-content hidden space-y-6">
                 <div class="pc-card min-h-[500px]">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-gray-100 pb-4">
@@ -360,10 +353,8 @@
             </div>
         </div>
 
-        <!-- ================= [TAB 2] 트레이딩 데스크 (매매일지 & 선물계좌) ================= -->
+        <!-- ================= [TAB 2] 트레이딩 데스크 ================= -->
         <div id="tab2" class="tab-content space-y-6">
-            
-            <!-- 선물 계좌 현황 바 -->
             <div class="pc-card py-4 bg-[#F0FDFA] border border-pancake-primary shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-3">
                     <div class="bg-pancake-primary text-white p-3 rounded-2xl"><i data-lucide="wallet" class="w-6 h-6"></i></div>
@@ -381,7 +372,6 @@
                 </div>
             </div>
 
-            <!-- 투자 원칙 & 마인드셋 카드 -->
             <div class="pc-card mb-6 border-l-4 border-pancake-primary bg-white">
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="font-bold text-sm text-pancake-text flex items-center">
@@ -396,7 +386,6 @@
                 </ul>
             </div>
 
-            <!-- 기간 필터 & 대시보드 통계 -->
             <div class="pc-card">
                 <div class="flex flex-col sm:flex-row justify-between items-center mb-6 border-b border-gray-100 pb-4 gap-4">
                     <h3 class="font-bold text-base text-pancake-text flex items-center"><i data-lucide="bar-chart-2" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 기간별 트레이딩 성과</h3>
@@ -434,7 +423,6 @@
                         <p class="text-[10px] font-bold text-gray-500 mb-1">평균 실제 R배수</p>
                         <p id="stat-avg-act-rr" class="text-xl font-brand font-bold text-gray-400">0.00 R</p>
                     </div>
-                    <!-- 🚀 새로 추가: 원칙 준수율 박스 -->
                     <div class="bg-[#F0FDFA] p-4 rounded-2xl text-center border border-pancake-primary shadow-sm">
                         <p class="text-[10px] font-bold text-gray-500 mb-1">원칙 준수율</p>
                         <p id="stat-principle-rate" class="text-xl font-brand font-bold text-pancake-primary">0%</p>
@@ -443,7 +431,6 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- 태그별 승률 및 월별/주간별 성과 -->
                 <div class="pc-card lg:col-span-1 space-y-6 flex flex-col h-fit">
                     <div>
                         <h3 class="font-bold text-sm text-pancake-text mb-3 border-b border-gray-100 pb-2 flex items-center"><i data-lucide="tag" class="w-4 h-4 mr-2 text-pancake-primary"></i> 태그별 승률 분석</h3>
@@ -466,9 +453,7 @@
                     </div>
                 </div>
 
-                <!-- 일지 작성 및 피드 -->
                 <div class="lg:col-span-2 space-y-6">
-                    <!-- 진입 일지 작성 폼 -->
                     <div class="pc-card relative z-10 overflow-hidden">
                         <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
                             <h3 class="font-bold text-pancake-text flex items-center text-lg"><i data-lucide="edit" class="w-5 h-5 mr-2 text-pancake-primary"></i> 매매일지 진입(Open) 기록</h3>
@@ -500,7 +485,6 @@
                                 <div><label class="text-[10px] font-bold text-gray-500 block mb-1">진입 시간</label><input type="time" id="journal-time" class="pc-input bg-white border-gray-200 !py-1.5" required></div>
                             </div>
 
-                            <!-- 태그 섹션 -->
                             <div class="space-y-3 pt-3 border-t border-gray-100">
                                 <div>
                                     <label class="text-xs font-bold text-gray-500 block mb-2 flex items-center"><i data-lucide="trending-up" class="w-3 h-3 mr-1 text-blue-500"></i> 진입/차트 태그</label>
@@ -524,7 +508,6 @@
                         </form>
                     </div>
 
-                    <!-- 피드 영역 -->
                     <div class="pc-card flex flex-col bg-gray-50/50">
                         <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
                             <h3 class="font-bold text-pancake-text flex items-center"><i data-lucide="book-open" class="w-4 h-4 mr-2 text-pancake-secondary"></i> 매매 기록 피드</h3>
@@ -537,8 +520,8 @@
             </div>
         </div>
 
-        <!-- ================= [TAB 3] 🚀 신규 추가: 트레이딩 노트 (자유 일지) ================= -->
-        <div id="tab3" class="tab-content space-y-6">
+        <!-- ================= [TAB 3] 트레이딩 노트 ================= -->
+        <div id="tab3" class="tab-content space-y-6 hidden">
             <div class="pc-card flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border border-pancake-primary/20 shadow-sm">
                 <div>
                     <h2 class="text-xl font-bold flex items-center text-pancake-text"><i data-lucide="book-open" class="w-6 h-6 mr-2 text-pancake-primary"></i> 자유 트레이딩 노트</h2>
@@ -551,7 +534,8 @@
                 <!-- JS 렌더링 영역 -->
             </div>
         </div>
-<!-- ================= [TAB 4] Goal (목표 관리) ================= -->
+
+        <!-- ================= [TAB 4] Goal (목표 관리) ================= -->
         <div id="tab4" class="tab-content space-y-6 hidden">
             <!-- 1. 최상위 목표 (Top Goals) -->
             <section>
@@ -560,7 +544,7 @@
                     <button onclick="openModal('add-top-goal-modal')" class="pc-btn pc-btn-primary !px-4 !py-2 !text-xs !rounded-lg"><span class="text-lg mr-1">+</span> 목표 추가</button>
                 </div>
                 <div id="top-goals-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- JS 렌더링 영역 (레벨과 경험치 바가 여기에 그려집니다) -->
+                    <!-- JS 렌더링 영역 -->
                 </div>
             </section>
 
@@ -588,7 +572,197 @@
                 </section>
             </div>
         </div>
-        <!-- ================= [TAB 4] Goal 모달 팝업창들 ================= -->
+    </main>
+</div>
+
+<!-- ================= Modals (팝업창) ================= -->
+
+<!-- 고정비 추가 모달 -->
+<div id="fixed-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
+        <button onclick="closeModal('fixed-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="repeat" class="w-5 h-5 mr-2 text-pancake-primary"></i> 고정비/구독 추가</h2>
+        <form id="fixed-form" class="space-y-4" onsubmit="saveFixedExpense(event)">
+            <div><label class="text-xs font-bold text-gray-500 mb-1 block">구독/고정비 이름</label><input type="text" id="fx-name" class="pc-input bg-white border-gray-200" placeholder="예: 넷플릭스" required></div>
+            <div><label class="text-xs font-bold text-gray-500 mb-1 block">결제일 (매월)</label><select id="fx-day" class="pc-input bg-white border-gray-200" required></select></div>
+            <div><label class="text-xs font-bold text-gray-500 mb-1 block">금액</label><input type="text" id="fx-amount" class="pc-input bg-white number-input text-right border-gray-200" placeholder="0" required></div>
+            <div class="pt-2"><button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">등록하기</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- 자산 매도 모달 -->
+<div id="sell-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
+        <button onclick="closeModal('sell-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-4 flex items-center text-pancake-text"><i data-lucide="trending-up" class="w-5 h-5 mr-2 text-pancake-success"></i> 자산 매도</h2>
+        <form id="sell-form" class="space-y-4" onsubmit="processSell(event)">
+            <input type="hidden" id="sell-asset-id"><input type="hidden" id="sell-avg-price"><input type="hidden" id="sell-currency">
+            <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 mb-2"><div class="text-xs font-bold text-gray-500 mb-1">매도 대상</div><div id="sell-asset-name" class="font-bold text-pancake-text"></div></div>
+            <div><label class="text-xs font-bold text-gray-500 block mb-1">매도 날짜</label><input type="date" id="sell-date" class="pc-input bg-white border-gray-200" required></div>
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="text-xs font-bold text-gray-500 block mb-1">매도 수량</label><input type="text" id="sell-qty" class="pc-input bg-white number-input text-right border-gray-200" required></div>
+                <div><label id="sell-price-label" class="text-xs font-bold text-gray-500 block mb-1">매도 단가</label><input type="text" id="sell-price" class="pc-input bg-white number-input text-right border-gray-200" required></div>
+            </div>
+            <div class="bg-[#F0FDFA] p-3 rounded-xl border border-pancake-primary/30 space-y-2 mt-2">
+                <div class="flex justify-between text-xs font-bold text-gray-600"><span>총 매도 금액(₩)</span><span id="sell-proceeds" class="text-pancake-text">₩ 0</span></div>
+                <div class="flex justify-between text-xs font-bold text-gray-600"><span>예상 손익(₩)</span><span id="sell-pnl">₩ 0</span></div>
+            </div>
+            <button type="submit" class="pc-btn pc-btn-success w-full py-3 mt-2 text-base">매도 완료 (예금 입금)</button>
+        </form>
+    </div>
+</div>
+
+<!-- 커스텀 태그 관리자 -->
+<div id="tag-manager-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-md m-4 shadow-2xl relative bg-white max-h-[90vh] flex flex-col">
+        <button onclick="closeModal('tag-manager-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-4 flex items-center text-pancake-text"><i data-lucide="settings" class="w-5 h-5 mr-2 text-gray-500"></i> 커스텀 태그 관리</h2>
+        <p class="text-xs text-gray-500 mb-4 font-bold border-b border-gray-100 pb-2">클릭하여 삭제하거나, 새로운 태그를 추가하세요.</p>
+        <div class="overflow-y-auto custom-scrollbar pr-2 flex-1 space-y-6" id="tag-manager-content"></div>
+    </div>
+</div>
+
+<!-- 선물 계좌 입출금 모달 -->
+<div id="futures-wallet-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
+        <button onclick="closeModal('futures-wallet-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="arrow-left-right" class="w-5 h-5 mr-2 text-pancake-primary"></i> 선물 계좌 입출금</h2>
+        <form id="futures-wallet-form" class="space-y-4" onsubmit="event.preventDefault(); updateFuturesWallet();">
+            <div class="pc-toggle-group w-full shadow-sm" data-group="f-wallet-type">
+                <button type="button" data-value="deposit" class="pc-toggle-btn selected w-1/2 !text-pancake-success">입금 (+)</button>
+                <button type="button" data-value="withdraw" class="pc-toggle-btn w-1/2 !text-pancake-failure">출금 (-)</button>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">금액 (USD 기준)</label>
+                <input type="text" id="f-wallet-amount" class="pc-input bg-white number-input font-bold text-right text-xl text-blue-500 border-gray-200" placeholder="$ 0.00" required>
+            </div>
+            <div class="pt-2"><button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">계좌 잔고 업데이트</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- 선물 종목 설정 모달 -->
+<div id="futures-spec-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-2xl m-4 shadow-2xl relative bg-white max-h-[90vh] flex flex-col">
+        <button onclick="closeModal('futures-spec-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-4 flex items-center text-pancake-text"><i data-lucide="settings-2" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 해외선물 종목 설정 (수수료 포함)</h2>
+        <form id="futures-spec-form" class="flex gap-2 mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100 items-end" onsubmit="event.preventDefault(); saveFuturesSpec();">
+            <div class="flex-1"><label class="text-[10px] font-bold text-gray-500 block">티커(종목명)</label><input type="text" id="spec-ticker" class="pc-input !py-1.5 !px-2 text-xs bg-white uppercase" placeholder="NQ" required></div>
+            <div class="flex-1"><label class="text-[10px] font-bold text-gray-500 block">틱 단위(Size)</label><input type="number" step="any" id="spec-tick-size" class="pc-input !py-1.5 !px-2 text-xs bg-white" placeholder="0.25" required></div>
+            <div class="flex-1"><label class="text-[10px] font-bold text-gray-500 block">틱 가치(Value $)</label><input type="number" step="any" id="spec-tick-value" class="pc-input !py-1.5 !px-2 text-xs bg-white" placeholder="5" required></div>
+            <div class="flex-1"><label class="text-[10px] font-bold text-gray-500 block">수수료(1계약 $)</label><input type="number" step="any" id="spec-commission" class="pc-input !py-1.5 !px-2 text-xs bg-white" placeholder="1.5"></div>
+            <div><button type="submit" class="pc-btn pc-btn-primary !px-3 !py-1.5 !h-[32px]"><i data-lucide="plus" class="w-4 h-4"></i></button></div>
+        </form>
+        <div class="overflow-y-auto custom-scrollbar pr-1 flex-1">
+            <table class="w-full text-left text-xs">
+                <thead><tr class="border-b border-gray-200 text-gray-500"><th class="pb-2">티커</th><th class="pb-2 text-right">틱 단위</th><th class="pb-2 text-right">틱 가치($)</th><th class="pb-2 text-right">1계약 수수료($)</th><th class="pb-2 text-center">관리</th></tr></thead>
+                <tbody id="futures-spec-list"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 포지션 청산 모달 -->
+<div id="journal-close-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
+        <button onclick="closeModal('journal-close-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-1 flex items-center">⚡ 포지션 청산 (계좌 연동)</h2>
+        <p class="text-xs font-bold text-gray-500 mb-4 border-b border-gray-100 pb-2">청산 시 실현 손익이 선물 계좌에 자동 반영됩니다.</p>
+        <form id="journal-close-form" class="space-y-4" onsubmit="processCloseJournal(event)">
+            <input type="hidden" id="jc-id">
+            <input type="hidden" id="jc-entry">
+            <input type="hidden" id="jc-max-qty">
+            <div><label class="text-[10px] font-bold text-pancake-text block mb-1">청산 수량 <span class="text-gray-400 font-normal">(수정하여 분할 매도 가능)</span></label><input type="text" id="jc-qty" class="pc-input bg-white border-gray-200 number-input" oninput="updateCloseQty()" onblur="calcClosePnL()" required></div>
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="text-[10px] font-bold text-pancake-text block mb-1">청산 날짜</label><input type="date" id="jc-date" class="pc-input bg-white border-gray-200" required></div>
+                <div><label class="text-[10px] font-bold text-pancake-text block mb-1">청산 시간</label><input type="time" id="jc-time" class="pc-input bg-white border-gray-200" required></div>
+            </div>
+            <div class="grid grid-cols-2 gap-3 p-4 bg-[#F0FDFA] rounded-xl border border-pancake-primary/30">
+                <div class="col-span-2"><label class="text-[10px] font-bold text-pancake-text block mb-1">실제 청산 단가</label><input type="text" id="jc-price" class="pc-input bg-white number-input text-right border-gray-200 font-bold" oninput="calcClosePnL()" onblur="calcClosePnL()" required></div>
+                <div><label class="text-[10px] font-bold text-pancake-text block mb-1">총 수수료($)</label><input type="text" id="jc-commission" class="pc-input bg-white number-input text-right border-gray-200" placeholder="0" oninput="calcClosePnL()" onblur="calcClosePnL()" required></div>
+                <div><label class="text-[10px] font-bold text-pancake-text block mb-1">순 실현 손익($)</label><input type="text" id="jc-pnl" class="pc-input bg-white number-input text-right font-bold border-gray-200" readonly required></div>
+            </div>
+            <div class="mt-4 border-t border-gray-100 pt-4 pb-2">
+                <label class="text-[10px] font-bold text-pancake-text block mb-2 flex items-center"><i data-lucide="shield-check" class="w-3 h-3 mr-1 text-pancake-primary"></i> 매매 원칙을 철저히 지켰나요?</label>
+                <div class="pc-toggle-group w-full shadow-sm" data-group="jc-principle">
+                    <button type="button" data-value="true" class="pc-toggle-btn selected w-1/2 !text-pancake-success">⭕ 원칙 준수</button>
+                    <button type="button" data-value="false" class="pc-toggle-btn w-1/2 !text-pancake-failure">❌ 뇌동/위반</button>
+                </div>
+            </div>
+            <button type="submit" class="pc-btn pc-btn-success w-full py-3 mt-2 text-base"><i data-lucide="check-circle" class="w-5 h-5 mr-2"></i> 청산 완료 및 계좌 반영</button>
+        </form>
+    </div>
+</div>
+
+<!-- 투자 원칙 수정 모달 -->
+<div id="principles-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-lg m-4 shadow-2xl relative bg-white flex flex-col">
+        <button onclick="closeModal('principles-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-4 flex items-center text-pancake-text"><i data-lucide="shield-check" class="w-5 h-5 mr-2 text-pancake-primary"></i> 투자 원칙 및 마인드셋</h2>
+        <form id="principles-form" onsubmit="savePrinciples(event)">
+            <textarea id="principles-input" rows="8" class="pc-input bg-white border-gray-200 resize-none text-sm w-full mb-4" placeholder="자신만의 투자 원칙을 작성해주세요..."></textarea>
+            <button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">원칙 저장</button>
+        </form>
+    </div>
+</div>
+
+<!-- 트레이딩 노트 작성/수정 모달 -->
+<div id="note-write-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-2xl m-4 shadow-2xl relative bg-white flex flex-col max-h-[90vh]">
+        <button onclick="closeModal('note-write-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-4 flex items-center text-pancake-text"><i data-lucide="pen-tool" class="w-5 h-5 mr-2 text-pancake-primary"></i> 노트 작성</h2>
+        <form id="note-form" onsubmit="saveNote(event)" class="overflow-y-auto custom-scrollbar pr-2 flex-1 space-y-4">
+            <input type="hidden" id="note-id">
+            <div><label class="text-xs font-bold text-gray-500 block mb-1">제목</label><input type="text" id="note-title" class="pc-input bg-white border-gray-200" placeholder="노트 제목을 입력하세요" required></div>
+            <div class="grid grid-cols-2 gap-4"><div><label class="text-xs font-bold text-gray-500 block mb-1">날짜</label><input type="date" id="note-date" class="pc-input bg-white border-gray-200" required></div></div>
+            <div><label class="text-xs font-bold text-gray-500 block mb-1">내용</label><textarea id="note-content" rows="8" class="pc-input bg-white border-gray-200 resize-none text-sm w-full leading-relaxed" placeholder="자유롭게 작성하세요... (클립보드 이미지 복사/붙여넣기 가능)" required></textarea></div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 block mb-1">사진 첨부 (선택)</label>
+                <input type="file" id="note-image" accept="image/*" class="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-pancake-input file:text-pancake-secondary hover:file:bg-gray-200 cursor-pointer w-full">
+                <p class="text-[10px] text-gray-400 mt-1">이미지는 서버 용량 관리를 위해 자동으로 압축되어 저장됩니다.</p>
+                <input type="hidden" id="note-image-base64">
+                <div id="note-image-preview" class="mt-3 hidden">
+                    <div class="relative inline-block border border-gray-200 p-1 rounded-lg bg-gray-50">
+                        <img id="note-preview-img" src="" class="max-h-40 rounded object-contain">
+                        <button type="button" onclick="removeNoteImage()" class="absolute -top-3 -right-3 bg-white border border-gray-200 rounded-full p-1.5 text-pancake-failure shadow-md hover:bg-red-50"><i data-lucide="x" class="w-3 h-3"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-t border-gray-100 mt-2"><button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">노트 저장</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- 트레이딩 노트 열람(상세) 모달 -->
+<div id="note-view-modal" class="fixed inset-0 z-[55] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-2xl m-4 shadow-2xl relative bg-white flex flex-col max-h-[90vh]">
+        <button onclick="closeModal('note-view-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure z-10 bg-white/80 rounded-full p-1"><span class="text-2xl font-bold">×</span></button>
+        <div class="overflow-y-auto custom-scrollbar pr-2 flex-1 space-y-4">
+            <div class="flex justify-between items-start border-b border-gray-100 pb-4 pr-6">
+                <div>
+                    <h2 id="view-note-title" class="text-xl font-bold text-pancake-text leading-tight mb-2"></h2>
+                    <span id="view-note-date" class="text-xs font-bold text-gray-500 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-200 shadow-sm"></span>
+                </div>
+            </div>
+            <div id="view-note-image-container" class="hidden">
+                <img id="view-note-image" src="" class="w-full rounded-xl border border-gray-200 shadow-sm cursor-pointer hover:opacity-90 transition" onclick="openFullscreenImage(this.src)">
+                <p class="text-[10px] text-pancake-primary mt-1.5 text-center font-bold flex items-center justify-center"><i data-lucide="zoom-in" class="w-3 h-3 mr-1"></i>사진을 클릭하면 크게 볼 수 있습니다.</p>
+            </div>
+            <div id="view-note-content" class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap font-medium p-2"></div>
+        </div>
+        <div class="flex justify-end gap-2 pt-4 border-t border-gray-100 mt-4">
+            <button id="btn-edit-note" class="pc-btn pc-btn-secondary !px-5 !py-2 !text-xs font-bold">수정</button>
+            <button id="btn-delete-note" class="pc-btn pc-btn-failure !px-5 !py-2 !text-xs font-bold !bg-white !text-pancake-failure !border-pancake-failure !shadow-[0px_3px_0px_#ED4B9E] hover:!bg-red-50">삭제</button>
+        </div>
+    </div>
+</div>
+
+<!-- 이미지 풀스크린 모달 -->
+<div id="fullscreen-img-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-black/90 backdrop-blur-md" onclick="closeModal('fullscreen-img-modal')">
+    <button class="absolute top-4 right-4 text-white hover:text-gray-300"><span class="text-4xl">×</span></button>
+    <img id="fullscreen-img" src="" class="max-w-[95%] max-h-[95vh] object-contain rounded-lg shadow-2xl">
+</div>
 
 <!-- Goal 모달 1: 최상위 목표 추가 -->
 <div id="add-top-goal-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
@@ -635,7 +809,7 @@
             <div>
                 <label class="text-xs font-bold text-gray-500 mb-1 block">어떤 최상위 목표와 연결할까요?</label>
                 <select id="quest-parent" class="pc-input bg-white border-gray-200" required>
-                    <!-- JS에서 생성된 목표 목록을 자동으로 채워 넣음 -->
+                    <!-- JS에서 자동 생성 -->
                 </select>
             </div>
             <div>
@@ -656,7 +830,7 @@
             <div>
                 <label class="text-xs font-bold text-gray-500 mb-1 block">완료 시 어느 목표의 경험치를 올릴까요?</label>
                 <select id="routine-parent" class="pc-input bg-white border-gray-200" required>
-                    <!-- JS에서 생성된 목표 목록을 자동으로 채워 넣음 -->
+                    <!-- JS에서 자동 생성 -->
                 </select>
             </div>
             <div>
@@ -671,262 +845,7 @@
         </form>
     </div>
 </div>
-    </main>
-</div>
 
-<!-- Modals -->
-
-<!-- 0. 고정비 추가 모달 -->
-<div id="fixed-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
-    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
-        <button onclick="closeModal('fixed-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
-        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="repeat" class="w-5 h-5 mr-2 text-pancake-primary"></i> 고정비/구독 추가</h2>
-        <form id="fixed-form" class="space-y-4" onsubmit="saveFixedExpense(event)">
-            <div><label class="text-xs font-bold text-gray-500 mb-1 block">구독/고정비 이름</label><input type="text" id="fx-name" class="pc-input bg-white border-gray-200" placeholder="예: 넷플릭스" required></div>
-            <div><label class="text-xs font-bold text-gray-500 mb-1 block">결제일 (매월)</label><select id="fx-day" class="pc-input bg-white border-gray-200" required></select></div>
-            <div><label class="text-xs font-bold text-gray-500 mb-1 block">금액</label><input type="text" id="fx-amount" class="pc-input bg-white number-input text-right border-gray-200" placeholder="0" required></div>
-            <div class="pt-2"><button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">등록하기</button></div>
-        </form>
-    </div>
-</div>
-
-<!-- 0. 자산 매도 모달 -->
-<div id="sell-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
-    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
-        <button onclick="closeModal('sell-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
-        <h2 class="text-lg font-bold mb-4 flex items-center text-pancake-text"><i data-lucide="trending-up" class="w-5 h-5 mr-2 text-pancake-success"></i> 자산 매도</h2>
-        
-        <form id="sell-form" class="space-y-4" onsubmit="processSell(event)">
-            <input type="hidden" id="sell-asset-id"><input type="hidden" id="sell-avg-price"><input type="hidden" id="sell-currency">
-            <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 mb-2"><div class="text-xs font-bold text-gray-500 mb-1">매도 대상</div><div id="sell-asset-name" class="font-bold text-pancake-text"></div></div>
-            <div><label class="text-xs font-bold text-gray-500 block mb-1">매도 날짜</label><input type="date" id="sell-date" class="pc-input bg-white border-gray-200" required></div>
-            <div class="grid grid-cols-2 gap-3">
-                <div><label class="text-xs font-bold text-gray-500 block mb-1">매도 수량</label><input type="text" id="sell-qty" class="pc-input bg-white number-input text-right border-gray-200" required></div>
-                <div><label id="sell-price-label" class="text-xs font-bold text-gray-500 block mb-1">매도 단가</label><input type="text" id="sell-price" class="pc-input bg-white number-input text-right border-gray-200" required></div>
-            </div>
-            <div class="bg-[#F0FDFA] p-3 rounded-xl border border-pancake-primary/30 space-y-2 mt-2">
-                <div class="flex justify-between text-xs font-bold text-gray-600"><span>총 매도 금액(₩)</span><span id="sell-proceeds" class="text-pancake-text">₩ 0</span></div>
-                <div class="flex justify-between text-xs font-bold text-gray-600"><span>예상 손익(₩)</span><span id="sell-pnl">₩ 0</span></div>
-            </div>
-            <button type="submit" class="pc-btn pc-btn-success w-full py-3 mt-2 text-base">매도 완료 (예금 입금)</button>
-        </form>
-    </div>
-</div>
-
-
-<!-- 1. 커스텀 태그 관리자 -->
-<div id="tag-manager-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
-    <div class="pc-card w-full max-w-md m-4 shadow-2xl relative bg-white max-h-[90vh] flex flex-col">
-        <button onclick="closeModal('tag-manager-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
-        <h2 class="text-lg font-bold mb-4 flex items-center text-pancake-text"><i data-lucide="settings" class="w-5 h-5 mr-2 text-gray-500"></i> 커스텀 태그 관리</h2>
-        <p class="text-xs text-gray-500 mb-4 font-bold border-b border-gray-100 pb-2">클릭하여 삭제하거나, 새로운 태그를 추가하세요.</p>
-        
-        <div class="overflow-y-auto custom-scrollbar pr-2 flex-1 space-y-6" id="tag-manager-content">
-            <!-- JS 렌더링 -->
-        </div>
-    </div>
-</div>
-
-<!-- 2. 선물 계좌 입출금 모달 -->
-<div id="futures-wallet-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
-    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
-        <button onclick="closeModal('futures-wallet-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
-        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="arrow-left-right" class="w-5 h-5 mr-2 text-pancake-primary"></i> 선물 계좌 입출금</h2>
-        <form id="futures-wallet-form" class="space-y-4" onsubmit="event.preventDefault(); updateFuturesWallet();">
-            <div class="pc-toggle-group w-full shadow-sm" data-group="f-wallet-type">
-                <button type="button" data-value="deposit" class="pc-toggle-btn selected w-1/2 !text-pancake-success">입금 (+)</button>
-                <button type="button" data-value="withdraw" class="pc-toggle-btn w-1/2 !text-pancake-failure">출금 (-)</button>
-            </div>
-            <div>
-                <label class="text-xs font-bold text-gray-500 mb-1 block">금액 (USD 기준)</label>
-                <input type="text" id="f-wallet-amount" class="pc-input bg-white number-input font-bold text-right text-xl text-blue-500 border-gray-200" placeholder="$ 0.00" required>
-            </div>
-            <div class="pt-2"><button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">계좌 잔고 업데이트</button></div>
-        </form>
-    </div>
-</div>
-
-<!-- 3. 선물 종목 설정 (틱가치/단위/수수료) 모달 -->
-<div id="futures-spec-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
-    <div class="pc-card w-full max-w-2xl m-4 shadow-2xl relative bg-white max-h-[90vh] flex flex-col">
-        <button onclick="closeModal('futures-spec-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
-        <h2 class="text-lg font-bold mb-4 flex items-center text-pancake-text"><i data-lucide="settings-2" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 해외선물 종목 설정 (수수료 포함)</h2>
-        
-        <form id="futures-spec-form" class="flex gap-2 mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100 items-end" onsubmit="event.preventDefault(); saveFuturesSpec();">
-            <div class="flex-1"><label class="text-[10px] font-bold text-gray-500 block">티커(종목명)</label><input type="text" id="spec-ticker" class="pc-input !py-1.5 !px-2 text-xs bg-white uppercase" placeholder="NQ" required></div>
-            <div class="flex-1"><label class="text-[10px] font-bold text-gray-500 block">틱 단위(Size)</label><input type="number" step="any" id="spec-tick-size" class="pc-input !py-1.5 !px-2 text-xs bg-white" placeholder="0.25" required></div>
-            <div class="flex-1"><label class="text-[10px] font-bold text-gray-500 block">틱 가치(Value $)</label><input type="number" step="any" id="spec-tick-value" class="pc-input !py-1.5 !px-2 text-xs bg-white" placeholder="5" required></div>
-            <div class="flex-1"><label class="text-[10px] font-bold text-gray-500 block">수수료(1계약 $)</label><input type="number" step="any" id="spec-commission" class="pc-input !py-1.5 !px-2 text-xs bg-white" placeholder="1.5"></div>
-            <div><button type="submit" class="pc-btn pc-btn-primary !px-3 !py-1.5 !h-[32px]"><i data-lucide="plus" class="w-4 h-4"></i></button></div>
-        </form>
-        
-        <div class="overflow-y-auto custom-scrollbar pr-1 flex-1">
-            <table class="w-full text-left text-xs">
-                <thead><tr class="border-b border-gray-200 text-gray-500"><th class="pb-2">티커</th><th class="pb-2 text-right">틱 단위</th><th class="pb-2 text-right">틱 가치($)</th><th class="pb-2 text-right">1계약 수수료($)</th><th class="pb-2 text-center">관리</th></tr></thead>
-                <tbody id="futures-spec-list"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- 4. 피드에서 호출되는 [청산하기] 모달 -->
-<div id="journal-close-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
-    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
-        <button onclick="closeModal('journal-close-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
-        <h2 class="text-lg font-bold mb-1 flex items-center">⚡ 포지션 청산 (계좌 연동)</h2>
-        <p class="text-xs font-bold text-gray-500 mb-4 border-b border-gray-100 pb-2">청산 시 실현 손익이 선물 계좌에 자동 반영됩니다.</p>
-        
-        <form id="journal-close-form" class="space-y-4" onsubmit="processCloseJournal(event)">
-            <input type="hidden" id="jc-id">
-            <input type="hidden" id="jc-entry">
-            <input type="hidden" id="jc-max-qty">
-            
-            <div>
-                <label class="text-[10px] font-bold text-pancake-text block mb-1">청산 수량 <span class="text-gray-400 font-normal">(수정하여 분할 매도 가능)</span></label>
-                <input type="text" id="jc-qty" class="pc-input bg-white border-gray-200 number-input" oninput="updateCloseQty()" onblur="calcClosePnL()" required>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div><label class="text-[10px] font-bold text-pancake-text block mb-1">청산 날짜</label><input type="date" id="jc-date" class="pc-input bg-white border-gray-200" required></div>
-                <div><label class="text-[10px] font-bold text-pancake-text block mb-1">청산 시간</label><input type="time" id="jc-time" class="pc-input bg-white border-gray-200" required></div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 p-4 bg-[#F0FDFA] rounded-xl border border-pancake-primary/30">
-                <div class="col-span-2">
-                    <label class="text-[10px] font-bold text-pancake-text block mb-1">실제 청산 단가</label>
-                    <input type="text" id="jc-price" class="pc-input bg-white number-input text-right border-gray-200 font-bold" oninput="calcClosePnL()" onblur="calcClosePnL()" required>
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-pancake-text block mb-1">총 수수료($)</label>
-                    <input type="text" id="jc-commission" class="pc-input bg-white number-input text-right border-gray-200" placeholder="0" oninput="calcClosePnL()" onblur="calcClosePnL()" required>
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-pancake-text block mb-1">순 실현 손익($)</label>
-                    <input type="text" id="jc-pnl" class="pc-input bg-white number-input text-right font-bold border-gray-200" readonly required>
-                </div>
-            </div>
-
-            <!-- 🚀 새로 추가: 원칙 준수 여부 -->
-            <div class="mt-4 border-t border-gray-100 pt-4 pb-2">
-                <label class="text-[10px] font-bold text-pancake-text block mb-2 flex items-center">
-                    <i data-lucide="shield-check" class="w-3 h-3 mr-1 text-pancake-primary"></i> 매매 원칙을 철저히 지켰나요?
-                </label>
-                <div class="pc-toggle-group w-full shadow-sm" data-group="jc-principle">
-                    <button type="button" data-value="true" class="pc-toggle-btn selected w-1/2 !text-pancake-success">⭕ 원칙 준수</button>
-                    <button type="button" data-value="false" class="pc-toggle-btn w-1/2 !text-pancake-failure">❌ 뇌동/위반</button>
-                </div>
-            </div>
-
-            <button type="submit" class="pc-btn pc-btn-success w-full py-3 mt-2 text-base"><i data-lucide="check-circle" class="w-5 h-5 mr-2"></i> 청산 완료 및 계좌 반영</button>
-        </form>
-    </div>
-</div>
-
-<!-- 5. 투자 원칙 수정 모달 -->
-<div id="principles-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
-    <div class="pc-card w-full max-w-lg m-4 shadow-2xl relative bg-white flex flex-col">
-        <button onclick="closeModal('principles-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
-        <h2 class="text-lg font-bold mb-4 flex items-center text-pancake-text"><i data-lucide="shield-check" class="w-5 h-5 mr-2 text-pancake-primary"></i> 투자 원칙 및 마인드셋</h2>
-        <form id="principles-form" onsubmit="savePrinciples(event)">
-            <textarea id="principles-input" rows="8" class="pc-input bg-white border-gray-200 resize-none text-sm w-full mb-4" placeholder="자신만의 투자 원칙을 작성해주세요..."></textarea>
-            <button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">원칙 저장</button>
-        </form>
-    </div>
-</div>
-
-<!-- 6. 🚀 신규 추가: 트레이딩 노트 작성/수정 모달 -->
-<div id="note-write-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
-    <div class="pc-card w-full max-w-2xl m-4 shadow-2xl relative bg-white flex flex-col max-h-[90vh]">
-        <button onclick="closeModal('note-write-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
-        <h2 class="text-lg font-bold mb-4 flex items-center text-pancake-text"><i data-lucide="pen-tool" class="w-5 h-5 mr-2 text-pancake-primary"></i> 노트 작성</h2>
-        
-        <form id="note-form" onsubmit="saveNote(event)" class="overflow-y-auto custom-scrollbar pr-2 flex-1 space-y-4">
-            <input type="hidden" id="note-id">
-            
-            <div>
-                <label class="text-xs font-bold text-gray-500 block mb-1">제목</label>
-                <input type="text" id="note-title" class="pc-input bg-white border-gray-200" placeholder="노트 제목을 입력하세요" required>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div><label class="text-xs font-bold text-gray-500 block mb-1">날짜</label><input type="date" id="note-date" class="pc-input bg-white border-gray-200" required></div>
-            </div>
-
-            <div>
-                <label class="text-xs font-bold text-gray-500 block mb-1">내용</label>
-                <textarea id="note-content" rows="8" class="pc-input bg-white border-gray-200 resize-none text-sm w-full leading-relaxed" placeholder="자유롭게 작성하세요... (클립보드 이미지 복사/붙여넣기 가능)" required></textarea>
-            </div>
-
-            <div>
-                <label class="text-xs font-bold text-gray-500 block mb-1">사진 첨부 (선택)</label>
-                <input type="file" id="note-image" accept="image/*" class="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-pancake-input file:text-pancake-secondary hover:file:bg-gray-200 cursor-pointer w-full">
-                <p class="text-[10px] text-gray-400 mt-1">이미지는 서버 용량 관리를 위해 자동으로 압축되어 저장됩니다.</p>
-                <input type="hidden" id="note-image-base64">
-                <div id="note-image-preview" class="mt-3 hidden">
-                    <div class="relative inline-block border border-gray-200 p-1 rounded-lg bg-gray-50">
-                        <img id="note-preview-img" src="" class="max-h-40 rounded object-contain">
-                        <button type="button" onclick="removeNoteImage()" class="absolute -top-3 -right-3 bg-white border border-gray-200 rounded-full p-1.5 text-pancake-failure shadow-md hover:bg-red-50"><i data-lucide="x" class="w-3 h-3"></i></button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pt-4 border-t border-gray-100 mt-2">
-                <button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">노트 저장</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- 7. 🚀 신규 추가: 트레이딩 노트 열람(상세) 모달 -->
-<div id="note-view-modal" class="fixed inset-0 z-[55] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
-    <div class="pc-card w-full max-w-2xl m-4 shadow-2xl relative bg-white flex flex-col max-h-[90vh]">
-        <button onclick="closeModal('note-view-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure z-10 bg-white/80 rounded-full p-1"><span class="text-2xl font-bold">×</span></button>
-        
-        <div class="overflow-y-auto custom-scrollbar pr-2 flex-1 space-y-4">
-            <div class="flex justify-between items-start border-b border-gray-100 pb-4 pr-6">
-                <div>
-                    <h2 id="view-note-title" class="text-xl font-bold text-pancake-text leading-tight mb-2"></h2>
-                    <span id="view-note-date" class="text-xs font-bold text-gray-500 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-200 shadow-sm"></span>
-                </div>
-            </div>
-
-            <div id="view-note-image-container" class="hidden">
-                <img id="view-note-image" src="" class="w-full rounded-xl border border-gray-200 shadow-sm cursor-pointer hover:opacity-90 transition" onclick="openFullscreenImage(this.src)">
-                <p class="text-[10px] text-pancake-primary mt-1.5 text-center font-bold flex items-center justify-center"><i data-lucide="zoom-in" class="w-3 h-3 mr-1"></i>사진을 클릭하면 크게 볼 수 있습니다.</p>
-            </div>
-
-            <div id="view-note-content" class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap font-medium p-2"></div>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-4 border-t border-gray-100 mt-4">
-            <button id="btn-edit-note" class="pc-btn pc-btn-secondary !px-5 !py-2 !text-xs font-bold">수정</button>
-            <button id="btn-delete-note" class="pc-btn pc-btn-failure !px-5 !py-2 !text-xs font-bold !bg-white !text-pancake-failure !border-pancake-failure !shadow-[0px_3px_0px_#ED4B9E] hover:!bg-red-50">삭제</button>
-        </div>
-    </div>
-</div>
-
-<!-- 이미지 풀스크린 모달 -->
-<div id="fullscreen-img-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-black/90 backdrop-blur-md" onclick="closeModal('fullscreen-img-modal')">
-    <button class="absolute top-4 right-4 text-white hover:text-gray-300"><span class="text-4xl">×</span></button>
-    <img id="fullscreen-img" src="" class="max-w-[95%] max-h-[95vh] object-contain rounded-lg shadow-2xl">
-</div>
-
-<!-- GoalSwap 모달: 루틴 추가 -->
-<div id="add-routine-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
-    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
-        <button onclick="closeModal('add-routine-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
-        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="sprout" class="w-5 h-5 mr-2 text-pancake-success"></i> 매일 반복할 루틴 추가</h2>
-        <form onsubmit="event.preventDefault(); addRoutine();" class="space-y-4">
-            <div>
-                <label class="text-xs font-bold text-gray-500 mb-1 block">루틴 이름</label>
-                <input type="text" id="routine-name" class="pc-input bg-white border-gray-200" placeholder="예: 일본어 단어 50개 암기" required>
-            </div>
-            <button type="submit" class="pc-btn pc-btn-success w-full py-3 text-base">루틴 심기</button>
-        </form>
-    </div>
-</div>
-<!-- 👆 여기까지 복사 👆 -->
 <!-- 🌟 JS 파일 연결 🌟 -->
 <script src="script.js"></script>
 <script src="goalswap.js"></script>
-
