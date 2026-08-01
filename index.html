@@ -537,20 +537,6 @@
 
         <!-- ================= [TAB 4] Goal (목표 관리) ================= -->
         <div id="tab4" class="tab-content space-y-6 hidden">
-            <!-- 0. 오늘의 통합 체크리스트 (루틴 + 퀘스트) -->
-            <section class="pc-card border-2 border-pancake-primary/20">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="calendar-check" class="w-5 h-5 mr-2 text-pancake-primary"></i> 오늘의 체크리스트</h2>
-                    <span id="today-checklist-summary" class="text-xs font-bold text-pancake-primary bg-white px-3 py-1 rounded-full border border-pancake-primary/30">0 / 0 완료</span>
-                </div>
-                <div class="w-full bg-gray-100 rounded-full h-2.5 mb-4 overflow-hidden border border-gray-200">
-                    <div id="today-checklist-bar" class="bg-pancake-primary h-full rounded-full transition-all duration-500" style="width:0%"></div>
-                </div>
-                <div id="today-checklist-container" class="space-y-2 max-h-[360px] overflow-y-auto custom-scrollbar pr-1">
-                    <!-- JS 렌더링 영역 -->
-                </div>
-            </section>
-
             <!-- 1. 최상위 목표 (Top Goals) -->
             <section>
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-gray-100 pb-3 gap-2">
@@ -585,6 +571,20 @@
                     </div>
                 </section>
             </div>
+
+            <!-- 4. 오늘의 통합 체크리스트 (루틴 + 퀘스트) -->
+            <section class="pc-card border-2 border-pancake-primary/20">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="calendar-check" class="w-5 h-5 mr-2 text-pancake-primary"></i> 오늘의 체크리스트</h2>
+                    <span id="today-checklist-summary" class="text-xs font-bold text-pancake-primary bg-white px-3 py-1 rounded-full border border-pancake-primary/30">0 / 0 완료</span>
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-2.5 mb-4 overflow-hidden border border-gray-200">
+                    <div id="today-checklist-bar" class="bg-pancake-primary h-full rounded-full transition-all duration-500" style="width:0%"></div>
+                </div>
+                <div id="today-checklist-container" class="space-y-2 max-h-[360px] overflow-y-auto custom-scrollbar pr-1">
+                    <!-- JS 렌더링 영역 -->
+                </div>
+            </section>
         </div>
     </main>
 </div>

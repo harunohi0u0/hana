@@ -358,7 +358,9 @@ window.renderTodayChecklist = function() {
 
     items.sort((a,b) => (a.done === b.done) ? 0 : (a.done ? 1 : -1));
 
-    container.innerHTML = items.map(item => `
+    container.innerHTML = items.map(item => {
+        const deleteCall = item.type === 'routine' ? `window.deleteRoutine('${item.id}')` : `window.deleteQuest('${item.id}')`;
+        return `
         <div class="flex justify-between items-center p-2.5 bg-white rounded-lg border ${item.done ? 'border-gray-100' : 'border-gray-200'} shadow-sm ${item.done ? 'today-item-done' : ''}">
             <div class="flex items-center gap-2.5 cursor-pointer flex-1 min-w-0" onclick="${item.type==='routine' ? `window.toggleRoutine('${item.id}')` : `window.toggleQuest('${item.id}', ${item.rawDone})`}">
                 <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${item.done ? 'bg-pancake-success border-pancake-success text-white' : 'border-gray-300'}">
@@ -369,9 +371,13 @@ window.renderTodayChecklist = function() {
                     <div class="text-[10px] text-gray-400 font-bold truncate">${item.sub}</div>
                 </div>
             </div>
-            <span class="text-[10px] font-bold text-gray-400 shrink-0 pl-2">${item.meta}</span>
+            <div class="flex items-center gap-2 pl-2 shrink-0">
+                <span class="text-[10px] font-bold text-gray-400">${item.meta}</span>
+                <button onclick="${deleteCall}" class="text-gray-400 hover:text-pancake-failure p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+            </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
     if(typeof lucide !== 'undefined') lucide.createIcons();
 }
 
