@@ -1,5 +1,5 @@
 <!-- Libraries -->
-<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com"></script>`
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -98,7 +98,7 @@
                 <button class="nav-tab" onclick="switchMainTab('tab2')">Trading Desk</button>
                 <!-- 🚀 신규 추가: 트레이딩 노트 탭 -->
                 <button class="nav-tab" onclick="switchMainTab('tab3')">Trading Notes</button>
-                <button class="nav-tab font-bold text-pancake-primary" onclick="switchMainTab('tab4')">🎯 GoalSwap</button>
+                <button class="nav-tab font-bold text-pancake-primary" onclick="switchMainTab('tab4')">Goal</button>
             </div>
             
             <div class="flex items-center gap-2 ml-4">
@@ -551,15 +551,16 @@
                 <!-- JS 렌더링 영역 -->
             </div>
         </div>
-        <!-- ================= [TAB 4] GoalSwap (목표 관리) ================= -->
+<!-- ================= [TAB 4] Goal (목표 관리) ================= -->
         <div id="tab4" class="tab-content space-y-6 hidden">
             <!-- 1. 최상위 목표 (Top Goals) -->
             <section>
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold flex items-center text-pancake-text"><i data-lucide="target" class="w-6 h-6 mr-2 text-pancake-primary"></i> 나의 3대 퀘스트</h2>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-gray-100 pb-3 gap-2">
+                    <h2 class="text-xl font-bold flex items-center text-pancake-text"><i data-lucide="target" class="w-6 h-6 mr-2 text-pancake-primary"></i> 나의 최상위 목표</h2>
+                    <button onclick="openModal('add-top-goal-modal')" class="pc-btn pc-btn-primary !px-4 !py-2 !text-xs !rounded-lg"><span class="text-lg mr-1">+</span> 목표 추가</button>
                 </div>
                 <div id="top-goals-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- JS 렌더링 영역 -->
+                    <!-- JS 렌더링 영역 (레벨과 경험치 바가 여기에 그려집니다) -->
                 </div>
             </section>
 
@@ -587,6 +588,89 @@
                 </section>
             </div>
         </div>
+        <!-- ================= [TAB 4] Goal 모달 팝업창들 ================= -->
+
+<!-- Goal 모달 1: 최상위 목표 추가 -->
+<div id="add-top-goal-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
+        <button onclick="closeModal('add-top-goal-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="target" class="w-5 h-5 mr-2 text-pancake-primary"></i> 새 최상위 목표 생성</h2>
+        <form onsubmit="event.preventDefault(); addTopGoal();" class="space-y-4">
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">목표 이름</label>
+                <input type="text" id="top-goal-title" class="pc-input bg-white border-gray-200" placeholder="예: 경제적 자유 달성" required>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 mb-1 block">아이콘 (이모지)</label>
+                    <input type="text" id="top-goal-icon" class="pc-input bg-white border-gray-200" placeholder="예: 🚀" required>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 mb-1 block">테마 색상</label>
+                    <select id="top-goal-color" class="pc-input bg-white border-gray-200 cursor-pointer">
+                        <option value="primary">청록색 (Cyan)</option>
+                        <option value="secondary">보라색 (Purple)</option>
+                        <option value="success">초록색 (Green)</option>
+                        <option value="failure">핑크색 (Pink)</option>
+                        <option value="warning">노란색 (Yellow)</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">만렙(Lv.100) 도달을 위한 총 필요 경험치</label>
+                <input type="number" id="top-goal-max-exp" class="pc-input bg-white border-gray-200" placeholder="예: 10000" required>
+                <p class="text-[10px] text-gray-400 mt-1">이 수치에 도달하면 100레벨(만렙)이 됩니다.</p>
+            </div>
+            <button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">목표 생성하기</button>
+        </form>
+    </div>
+</div>
+
+<!-- Goal 모달 2: 퀘스트 추가 -->
+<div id="add-quest-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
+        <button onclick="closeModal('add-quest-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="plus-circle" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 세부 퀘스트 추가</h2>
+        <form onsubmit="event.preventDefault(); addQuest();" class="space-y-4">
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">어떤 최상위 목표와 연결할까요?</label>
+                <select id="quest-parent" class="pc-input bg-white border-gray-200" required>
+                    <!-- JS에서 생성된 목표 목록을 자동으로 채워 넣음 -->
+                </select>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">퀘스트 내용</label>
+                <input type="text" id="quest-name" class="pc-input bg-white border-gray-200" placeholder="예: 첫 수익 10만원 달성하기" required>
+            </div>
+            <button type="submit" class="pc-btn pc-btn-purple w-full py-3 text-base">퀘스트 등록</button>
+        </form>
+    </div>
+</div>
+
+<!-- Goal 모달 3: 루틴 추가 -->
+<div id="add-routine-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
+        <button onclick="closeModal('add-routine-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="sprout" class="w-5 h-5 mr-2 text-pancake-success"></i> 매일 반복할 루틴 추가</h2>
+        <form onsubmit="event.preventDefault(); addRoutine();" class="space-y-4">
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">완료 시 어느 목표의 경험치를 올릴까요?</label>
+                <select id="routine-parent" class="pc-input bg-white border-gray-200" required>
+                    <!-- JS에서 생성된 목표 목록을 자동으로 채워 넣음 -->
+                </select>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">루틴 이름</label>
+                <input type="text" id="routine-name" class="pc-input bg-white border-gray-200" placeholder="예: 일본어 단어 50개 암기" required>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">1회 완료 시 획득할 경험치(EXP)</label>
+                <input type="number" id="routine-exp" class="pc-input bg-white border-gray-200" placeholder="예: 25" required>
+            </div>
+            <button type="submit" class="pc-btn pc-btn-success w-full py-3 text-base">루틴 심기</button>
+        </form>
+    </div>
+</div>
     </main>
 </div>
 
