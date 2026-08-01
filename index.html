@@ -578,7 +578,7 @@
                 <section class="pc-card bg-gray-50/50">
                     <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
                         <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="sprout" class="w-5 h-5 mr-2 text-pancake-success"></i> 오늘의 수확 (데일리 루틴)</h2>
-                        <button onclick="window.resetRoutineModal(); openModal('add-routine-modal')" class="pc-btn pc-btn-success !px-3 !py-1.5 !text-xs">+ 루틴 생성</button>
+                        <button onclick="if(window.resetRoutineModal){ try { window.resetRoutineModal(); } catch(e){ console.warn(e); } } openModal('add-routine-modal')" class="pc-btn pc-btn-success !px-3 !py-1.5 !text-xs">+ 루틴 생성</button>
                     </div>
                     <div id="daily-routine-container" class="space-y-3">
                         <!-- JS 렌더링 영역 -->
