@@ -2,6 +2,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
+
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 
@@ -353,7 +354,7 @@
         </div>
 
         <!-- ================= [TAB 2] 트레이딩 데스크 ================= -->
-        <div id="tab2" class="tab-content space-y-6">
+        <div id="tab2" class="tab-content space-y-6 hidden">
             <div class="pc-card py-4 bg-[#F0FDFA] border border-pancake-primary shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-3">
                     <div class="bg-pancake-primary text-white p-3 rounded-2xl"><i data-lucide="wallet" class="w-6 h-6"></i></div>
@@ -768,7 +769,7 @@
     <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
         <button onclick="closeModal('add-top-goal-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
         <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="target" class="w-5 h-5 mr-2 text-pancake-primary"></i> 새 최상위 목표 생성</h2>
-        <form onsubmit="event.preventDefault(); addTopGoal();" class="space-y-4">
+        <form onsubmit="event.preventDefault(); window.addTopGoal();" class="space-y-4">
             <div>
                 <label class="text-xs font-bold text-gray-500 mb-1 block">목표 이름</label>
                 <input type="text" id="top-goal-title" class="pc-input bg-white border-gray-200" placeholder="예: 경제적 자유 달성" required>
@@ -804,7 +805,7 @@
     <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
         <button onclick="closeModal('add-quest-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
         <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="plus-circle" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 세부 퀘스트 추가</h2>
-        <form onsubmit="event.preventDefault(); addQuest();" class="space-y-4">
+        <form onsubmit="event.preventDefault(); window.addQuest();" class="space-y-4">
             <div>
                 <label class="text-xs font-bold text-gray-500 mb-1 block">어떤 최상위 목표와 연결할까요?</label>
                 <select id="quest-parent" class="pc-input bg-white border-gray-200" required>
@@ -825,7 +826,7 @@
     <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
         <button onclick="closeModal('add-routine-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
         <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="sprout" class="w-5 h-5 mr-2 text-pancake-success"></i> 매일 반복할 루틴 추가</h2>
-        <form onsubmit="event.preventDefault(); addRoutine();" class="space-y-4">
+        <form onsubmit="event.preventDefault(); window.addRoutine();" class="space-y-4">
             <div>
                 <label class="text-xs font-bold text-gray-500 mb-1 block">완료 시 어느 목표의 경험치를 올릴까요?</label>
                 <select id="routine-parent" class="pc-input bg-white border-gray-200" required>
