@@ -997,7 +997,7 @@ window.renderRoutineStats = function() {
     });
 }
 
-// ================= [마일스톤 수직 타임라인 & 드래그 재정렬] =================
+// ================= [마일스톤 가로 타임라인(수직선) & 드래그 재정렬] =================
 
 let draggedMilestoneId = null;
 let currentTimelineGoalId = null;
@@ -1006,30 +1006,30 @@ window.renderMilestoneTimeline = function(manualMilestones, goalId, isExpanded) 
     if (!manualMilestones || manualMilestones.length === 0) return '';
 
     const items = manualMilestones.map((m, idx) => {
-        const isLast = idx === manualMilestones.length - 1;
-        const lineClass = m.achieved ? 'milestone-timeline-line achieved' : 'milestone-timeline-line';
+        const orderBadge = isExpanded ? `<div class="milestone-horder">${idx + 1}</div>` : '';
+        const delBtn = isExpanded
+            ? `<button onclick="event.stopPropagation(); window.deleteMilestone('${m.id}')" class="milestone-hdel" title="삭제"><i data-lucide="x" class="w-3 h-3"></i></button>`
+            : '';
         return `
-            <div class="milestone-timeline-item" draggable="true" data-milestone-id="${m.id}" data-goal-id="${goalId}"
+            <div class="milestone-hitem" draggable="true" data-milestone-id="${m.id}" data-goal-id="${goalId}"
                  ondragstart="window.onMilestoneDragStart(event, '${m.id}', '${goalId}')"
                  ondragend="window.onMilestoneDragEnd(event)"
                  ondragover="window.onMilestoneDragOver(event, '${m.id}', '${goalId}')"
                  ondragleave="window.onMilestoneDragLeave(event)"
-                 ondrop="window.onMilestoneDrop(event, '${m.id}', '${goalId}')">
-                ${!isLast ? `<div class="${lineClass}"></div>` : ''}
-                <div class="milestone-timeline-dot ${m.achieved ? 'achieved' : ''}" onclick="window.toggleMilestoneManual('${m.id}')" title="클릭하면 달성/미달성 전환">
-                    <i data-lucide="check" class="w-3 h-3 check-icon"></i>
+                 ondrop="window.onMilestoneDrop(event, '${m.id}', '${goalId}')"
+                 onclick="window.toggleMilestoneManual('${m.id}')"
+                 title="${m.title.replace(/"/g, '&quot;')}">
+                <div class="milestone-hdot ${m.achieved ? 'achieved' : ''}">
+                    ${m.achieved ? '<i data-lucide="check" class="w-2.5 h-2.5 check-icon"></i>' : ''}
                 </div>
-                <span class="milestone-timeline-order">${idx + 1}</span>
-                <div class="milestone-timeline-label ${m.achieved ? 'achieved' : ''}" onclick="window.toggleMilestoneManual('${m.id}')">${m.title}</div>
-                <div class="milestone-timeline-actions">
-                    <span class="milestone-drag-handle" title="드래그해서 순서 변경"><i data-lucide="grip-vertical" class="w-3.5 h-3.5"></i></span>
-                    <button onclick="event.stopPropagation(); window.deleteMilestone('${m.id}')" class="text-gray-300 hover:text-pancake-failure p-0.5" title="삭제"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
-                </div>
+                <div class="milestone-hlabel ${m.achieved ? 'achieved' : ''}">${m.title}</div>
+                ${orderBadge}
+                ${delBtn}
             </div>
         `;
     }).join('');
 
-    return `<div class="milestone-timeline ${isExpanded ? 'milestone-timeline-expanded' : ''}">${items}</div>`;
+    return `<div class="milestone-hline-scroll"><div class="milestone-hline${isExpanded ? ' milestone-hline-expanded' : ''}">${items}</div></div>`;
 }
 
 window.onMilestoneDragStart = function(e, milestoneId, goalId) {
@@ -1041,8 +1041,8 @@ window.onMilestoneDragStart = function(e, milestoneId, goalId) {
 
 window.onMilestoneDragEnd = function(e) {
     e.currentTarget.classList.remove('dragging');
-    document.querySelectorAll('.milestone-timeline-item').forEach(el => {
-        el.classList.remove('drag-over-top', 'drag-over-bottom');
+    document.querySelectorAll('.milestone-hitem').forEach(el => {
+        el.classList.remove('drag-over-left', 'drag-over-right');
     });
     draggedMilestoneId = null;
 }
@@ -1056,21 +1056,21 @@ window.onMilestoneDragOver = function(e, targetId, goalId) {
     e.dataTransfer.dropEffect = 'move';
 
     const rect = e.currentTarget.getBoundingClientRect();
-    const midY = rect.top + rect.height / 2;
-    e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom');
-    if (e.clientY < midY) e.currentTarget.classList.add('drag-over-top');
-    else e.currentTarget.classList.add('drag-over-bottom');
+    const midX = rect.left + rect.width / 2;
+    e.currentTarget.classList.remove('drag-over-left', 'drag-over-right');
+    if (e.clientX < midX) e.currentTarget.classList.add('drag-over-left');
+    else e.currentTarget.classList.add('drag-over-right');
 }
 
 window.onMilestoneDragLeave = function(e) {
-    e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom');
+    e.currentTarget.classList.remove('drag-over-left', 'drag-over-right');
 }
 
 window.onMilestoneDrop = async function(e, targetId, goalId) {
     e.preventDefault();
     e.stopPropagation();
     const wasDraggedId = draggedMilestoneId;
-    e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom');
+    e.currentTarget.classList.remove('drag-over-left', 'drag-over-right');
     if (!wasDraggedId || wasDraggedId === targetId) { draggedMilestoneId = null; return; }
 
     const dragged = localMilestones.find(m => m.id === wasDraggedId);
@@ -1078,7 +1078,7 @@ window.onMilestoneDrop = async function(e, targetId, goalId) {
     if (!dragged || !target || dragged.parent_goal_id !== target.parent_goal_id) { draggedMilestoneId = null; return; }
 
     const rect = e.currentTarget.getBoundingClientRect();
-    const dropAbove = e.clientY < rect.top + rect.height / 2;
+    const dropBefore = e.clientX < rect.left + rect.width / 2;
 
     // 같은 목표 내 manual 마일스톤을 order 기준으로 정렬
     const siblings = localMilestones
@@ -1094,7 +1094,7 @@ window.onMilestoneDrop = async function(e, targetId, goalId) {
     if (oldIdx > -1) siblings.splice(oldIdx, 1);
     let targetIdx = siblings.findIndex(m => m.id === targetId);
     if (targetIdx < 0) targetIdx = siblings.length;
-    const insertIdx = dropAbove ? targetIdx : targetIdx + 1;
+    const insertIdx = dropBefore ? targetIdx : targetIdx + 1;
     siblings.splice(insertIdx, 0, dragged);
 
     // order 재부여
@@ -1127,8 +1127,9 @@ window.openMilestoneTimelineModal = function(goalId) {
     if(nameEl) nameEl.textContent = `${goal.icon} ${goal.title}`;
     const addBtn = document.getElementById('milestone-timeline-add-btn');
     if(addBtn) addBtn.onclick = () => { closeModal('milestone-timeline-modal'); window.openAddMilestoneModal(goalId); };
-    window.refreshMilestoneTimelineModal();
+    // 모달을 먼저 연 뒤에 콘텐츠를 채워야 refresh 함수의 hidden 체크를 통과함
     if(typeof openModal !== 'undefined') openModal('milestone-timeline-modal');
+    window.refreshMilestoneTimelineModal();
 }
 
 window.refreshMilestoneTimelineModal = function() {
@@ -1136,7 +1137,6 @@ window.refreshMilestoneTimelineModal = function() {
     const container = document.getElementById('milestone-timeline-modal-content');
     if(!container) return;
     const modal = document.getElementById('milestone-timeline-modal');
-    // 모달이 닫혀있으면 갱신 불필요
     if(modal && modal.classList.contains('hidden')) return;
 
     const manualMilestones = localMilestones
@@ -1151,12 +1151,7 @@ window.refreshMilestoneTimelineModal = function() {
     if (manualMilestones.length === 0) {
         container.innerHTML = '<div class="text-center text-sm text-gray-400 py-8 font-bold">이 목표에 직접 체크 방식의 마일스톤이 아직 없어요.<br><span class="text-[10px]">아래 [+ 이 목표에 마일스톤 추가] 버튼으로 만들어보세요.</span></div>';
     } else {
-        // renderMilestoneTimeline은 wrapper div까지 감싸서 반환하지만,
-        // 모달의 container 자체가 이미 wrapper 역할을 하므로 innerHTML로 안전하게 재삽입
-        const tempWrapper = document.createElement('div');
-        tempWrapper.innerHTML = window.renderMilestoneTimeline(manualMilestones, currentTimelineGoalId, true);
-        const inner = tempWrapper.firstElementChild;
-        container.innerHTML = inner ? inner.innerHTML : '';
+        container.innerHTML = window.renderMilestoneTimeline(manualMilestones, currentTimelineGoalId, true);
     }
     if(typeof lucide !== 'undefined') lucide.createIcons();
 }
