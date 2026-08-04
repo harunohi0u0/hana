@@ -551,9 +551,18 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- 2. 세부 퀘스트 보드 (Sub-goals) -->
                 <section class="pc-card">
-                    <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
-                        <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="list-todo" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 퀘스트 보드 (진행 현황)</h2>
-                        <button onclick="openModal('add-quest-modal')" class="pc-btn pc-btn-primary !px-3 !py-1.5 !text-xs">+ 추가</button>
+                    <div class="flex justify-between items-center mb-3 border-b border-gray-100 pb-3">
+                        <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="list-todo" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 퀘스트 보드</h2>
+                        <button onclick="if(window.resetQuestModal){ try { window.resetQuestModal(); } catch(e){ console.warn(e); } } openModal('add-quest-modal')" class="pc-btn pc-btn-primary !px-3 !py-1.5 !text-xs">+ 추가</button>
+                    </div>
+                    <div id="quest-filter-bar" class="flex flex-wrap gap-1.5 mb-3">
+                        <!-- JS: 목표별 필터 칩 -->
+                    </div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span id="quest-active-count" class="text-[10px] font-bold text-gray-400">진행중 0</span>
+                        <button id="quest-show-completed-toggle" onclick="window.toggleShowCompletedQuests()" class="text-[10px] font-bold text-gray-500 hover:text-pancake-primary flex items-center gap-1">
+                            <i data-lucide="archive" class="w-3 h-3"></i> <span id="quest-show-completed-label">완료된 퀘스트 보기</span>
+                        </button>
                     </div>
                     <div id="quest-board-container" class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
                         <!-- JS 렌더링 영역 -->
@@ -859,6 +868,18 @@
             <div>
                 <label class="text-xs font-bold text-gray-500 mb-1 block">퀘스트 내용</label>
                 <input type="text" id="quest-name" class="pc-input bg-white border-gray-200" placeholder="예: 첫 수익 10만원 달성하기" required>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">우선순위</label>
+                <div class="flex gap-2" id="quest-priority-group">
+                    <button type="button" class="pc-day-btn flex-1 !py-2" data-priority="high" onclick="window.setQuestPriority('high')">🔥 높음</button>
+                    <button type="button" class="pc-day-btn selected flex-1 !py-2" data-priority="medium" onclick="window.setQuestPriority('medium')">🟡 보통</button>
+                    <button type="button" class="pc-day-btn flex-1 !py-2" data-priority="low" onclick="window.setQuestPriority('low')">💧 낮음</button>
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">마감일 (선택)</label>
+                <input type="date" id="quest-deadline" class="pc-input bg-white border-gray-200">
             </div>
             <button type="submit" class="pc-btn pc-btn-purple w-full py-3 text-base">퀘스트 등록</button>
         </form>

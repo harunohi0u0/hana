@@ -6,6 +6,8 @@ let localRoutines = [];
 let localMilestones = [];
 let localRoutineLogs = [];
 let routineTrendChartInstance = null;
+let questFilterGoalId = 'all';
+let showCompletedQuests = false;
 
 // 1. 기존 탭 전환 기능
 window.switchMainTab = function(id) { 
@@ -411,14 +413,18 @@ window.renderTodayChecklist = function() {
         });
     });
     localQuests.forEach(q => {
+        if (q.is_completed) return; // 완료된 퀘스트는 오늘 체크리스트에서 제외
+        // 마감이 오늘까지거나 이미 지난 퀘스트만 오늘 체크리스트에 표시
+        const dInfo = window.getQuestDeadlineInfo ? window.getQuestDeadlineInfo(q.deadline) : { today: false, overdue: false };
+        if (!dInfo.today && !dInfo.overdue) return;
         const parentGoal = localTopGoals.find(g => g.id === q.parent_goal_id);
         items.push({
             type: 'quest', id: q.id,
-            done: q.is_completed,
-            rawDone: q.is_completed,
+            done: false,
+            rawDone: false,
             label: q.task_name,
             sub: parentGoal ? `${parentGoal.icon} ${parentGoal.title}` : '연결된 목표 없음',
-            meta: '퀘스트'
+            meta: dInfo.overdue ? `⚠️ ${dInfo.label}` : '오늘 마감'
         });
     });
 
@@ -459,19 +465,51 @@ window.renderTodayChecklist = function() {
 
 // ================= [퀘스트 (Quests) 기능] =================
 
+window.setQuestPriority = function(priority) {
+    document.querySelectorAll('#quest-priority-group .pc-day-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.priority === priority);
+    });
+}
+
+window.resetQuestModal = function() {
+    const nameEl = document.getElementById('quest-name');
+    const deadlineEl = document.getElementById('quest-deadline');
+    if(nameEl) nameEl.value = '';
+    if(deadlineEl) deadlineEl.value = '';
+    window.setQuestPriority('medium');
+}
+
+window.setQuestFilter = function(goalId) {
+    questFilterGoalId = goalId;
+    window.renderQuests();
+}
+
+window.toggleShowCompletedQuests = function() {
+    showCompletedQuests = !showCompletedQuests;
+    const label = document.getElementById('quest-show-completed-label');
+    if(label) label.textContent = showCompletedQuests ? '완료된 퀘스트 숨기기' : '완료된 퀘스트 보기';
+    window.renderQuests();
+}
+
 window.addQuest = async function() {
     try {
         const parentId = document.getElementById('quest-parent').value;
         const taskNameEl = document.getElementById('quest-name');
+        const deadlineEl = document.getElementById('quest-deadline');
+        const priorityBtn = document.querySelector('#quest-priority-group .pc-day-btn.selected');
+        const priority = priorityBtn ? priorityBtn.dataset.priority : 'medium';
         const taskName = taskNameEl.value.trim();
+        const deadline = deadlineEl ? deadlineEl.value : '';
         
         if(!parentId || !taskName) return alert("목표를 선택하고 내용을 입력하세요.");
 
         // 무조건 창부터 닫기
         taskNameEl.value = '';
+        if(deadlineEl) deadlineEl.value = '';
+        window.setQuestPriority('medium');
         if(typeof closeModal !== 'undefined') closeModal('add-quest-modal');
 
-        const questData = { parent_goal_id: parentId, task_name: taskName, is_completed: false, created_at: new Date().toISOString() };
+        const questData = { parent_goal_id: parentId, task_name: taskName, is_completed: false, created_at: new Date().toISOString(), priority, deadline: deadline || '', completed_at: '' };
         let newId = 'q_' + Date.now();
         
         if(typeof db !== 'undefined' && typeof currentUser !== 'undefined' && currentUser) {
@@ -489,11 +527,14 @@ window.addQuest = async function() {
 }
 
 window.toggleQuest = async function(id, currentStatus) {
-    if(typeof db !== 'undefined' && typeof currentUser !== 'undefined' && currentUser) { 
-        try { await db.collection("users").doc(currentUser.uid).collection("quests").doc(id).update({ is_completed: !currentStatus }); } catch(e){}
-    }
     const quest = localQuests.find(q => q.id === id);
-    if(quest) quest.is_completed = !currentStatus;
+    if(quest) {
+        quest.is_completed = !currentStatus;
+        quest.completed_at = !currentStatus ? new Date().toISOString() : '';
+    }
+    if(typeof db !== 'undefined' && typeof currentUser !== 'undefined' && currentUser) { 
+        try { await db.collection("users").doc(currentUser.uid).collection("quests").doc(id).update({ is_completed: !currentStatus, completed_at: !currentStatus ? new Date().toISOString() : '' }); } catch(e){}
+    }
     window.renderQuests();
     window.renderTodayChecklist();
 }
@@ -508,38 +549,131 @@ window.deleteQuest = async function(id) {
     window.renderTodayChecklist();
 }
 
+window.getQuestDeadlineInfo = function(deadlineStr) {
+    if(!deadlineStr) return { label: '', className: '', sortKey: Number.MAX_SAFE_INTEGER, overdue: false, today: false };
+    const today = new Date(); today.setHours(0,0,0,0);
+    const deadline = new Date(deadlineStr + 'T00:00:00');
+    if(isNaN(deadline.getTime())) return { label: '', className: '', sortKey: Number.MAX_SAFE_INTEGER, overdue: false, today: false };
+    const diffDays = Math.round((deadline - today) / 86400000);
+    if(diffDays < 0) return { label: `D+${Math.abs(diffDays)} 기한초과`, className: 'overdue', sortKey: diffDays, overdue: true, today: false };
+    if(diffDays === 0) return { label: '오늘까지', className: 'today', sortKey: 0, overdue: false, today: true };
+    return { label: `D-${diffDays}`, className: '', sortKey: diffDays, overdue: false, today: false };
+}
+
 window.renderQuests = function() {
     const container = document.getElementById('quest-board-container');
     if(!container) return;
     container.innerHTML = '';
 
-    if (localQuests.length === 0) {
+    // 1) 필터 바 렌더
+    const filterBar = document.getElementById('quest-filter-bar');
+    if(filterBar) {
+        let filterHtml = `<button class="quest-filter-chip ${questFilterGoalId==='all'?'selected':''}" onclick="window.setQuestFilter('all')">전체</button>`;
+        localTopGoals.forEach(g => {
+            const cnt = localQuests.filter(q => q.parent_goal_id === g.id && !q.is_completed).length;
+            filterHtml += `<button class="quest-filter-chip ${questFilterGoalId===g.id?'selected':''}" onclick="window.setQuestFilter('${g.id}')">${g.icon} ${g.title}${cnt>0?` <span class="text-[9px] opacity-70">(${cnt})</span>`:''}</button>`;
+        });
+        filterBar.innerHTML = filterHtml;
+    }
+
+    // 2) 필터 적용 및 통계 카운트
+    const filteredQuests = questFilterGoalId === 'all'
+        ? localQuests
+        : localQuests.filter(q => q.parent_goal_id === questFilterGoalId);
+    const activeCount = filteredQuests.filter(q => !q.is_completed).length;
+    const completedCount = filteredQuests.filter(q => q.is_completed).length;
+    const countEl = document.getElementById('quest-active-count');
+    if(countEl) countEl.textContent = `진행중 ${activeCount} · 완료 ${completedCount}`;
+
+    if (filteredQuests.length === 0) {
         container.innerHTML = '<div class="text-center text-sm text-gray-400 py-6 font-bold">등록된 퀘스트가 없습니다.</div>';
+        if(typeof lucide !== 'undefined') lucide.createIcons();
         return;
     }
 
-    localTopGoals.forEach(goal => {
-        const quests = localQuests.filter(q => q.parent_goal_id === goal.id);
+    const priorityWeight = { high: 0, medium: 1, low: 2 };
+
+    // 3) 목표별 그룹 렌더 (진행중만 우선순위/마감 정렬)
+    const goalsToRender = questFilterGoalId === 'all' ? localTopGoals : localTopGoals.filter(g => g.id === questFilterGoalId);
+
+    goalsToRender.forEach(goal => {
+        const quests = filteredQuests.filter(q => q.parent_goal_id === goal.id && !q.is_completed);
         if(quests.length === 0) return;
 
-        let html = `<div class="mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100"><h4 class="text-xs font-bold text-pancake-text mb-2 flex items-center">${goal.icon} ${goal.title}</h4>`;
+        // 정렬: 기한초과 → 오늘 → 임박순, 같은 기한 그룹 내에서는 우선순위(높음>보통>낮음), 마지막에 마감 없는 것
+        quests.sort((a, b) => {
+            const ai = window.getQuestDeadlineInfo(a.deadline);
+            const bi = window.getQuestDeadlineInfo(b.deadline);
+            if (ai.sortKey !== bi.sortKey) return ai.sortKey - bi.sortKey;
+            const pw = (priorityWeight[a.priority || 'medium']) - (priorityWeight[b.priority || 'medium']);
+            if (pw !== 0) return pw;
+            return (a.created_at || '').localeCompare(b.created_at || '');
+        });
+
+        let html = `<div class="mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+            <h4 class="text-xs font-bold text-pancake-text mb-2 flex items-center gap-1">
+                <span>${goal.icon} ${goal.title}</span>
+                <span class="text-[10px] font-bold text-gray-400 ml-1">${quests.length}건</span>
+            </h4>`;
         quests.forEach(q => {
-            const isDone = q.is_completed;
+            const dInfo = window.getQuestDeadlineInfo(q.deadline);
+            const priority = q.priority || 'medium';
+            const pLabel = priority === 'high' ? '🔥 높음' : priority === 'low' ? '💧 낮음' : '🟡 보통';
+            const edgeClass = dInfo.overdue ? 'quest-item-overdue' : (dInfo.today ? 'quest-item-today' : '');
             html += `
-                <div class="flex justify-between items-center p-2 mb-2 bg-white rounded-lg border border-gray-200 shadow-sm transition hover:border-pancake-primary/50">
-                    <div class="flex items-center gap-2 cursor-pointer flex-1" onclick="window.toggleQuest('${q.id}', ${isDone})">
-                        <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center ${isDone ? 'bg-pancake-success border-pancake-success text-white' : 'border-gray-300'}">
-                            ${isDone ? '<i data-lucide="check" class="w-3 h-3"></i>' : ''}
+                <div class="flex justify-between items-center p-2 mb-2 bg-white rounded-lg border border-gray-200 shadow-sm transition hover:border-pancake-primary/50 ${edgeClass}">
+                    <div class="flex items-start gap-2 cursor-pointer flex-1 min-w-0" onclick="window.toggleQuest('${q.id}', false)">
+                        <div class="w-5 h-5 mt-0.5 rounded-full border-2 flex items-center justify-center shrink-0 border-gray-300"></div>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-sm font-bold text-pancake-text leading-tight break-words">${q.task_name}</div>
+                            <div class="flex flex-wrap gap-1 mt-1 items-center">
+                                <span class="quest-priority-badge quest-priority-${priority}">${pLabel}</span>
+                                ${dInfo.label ? `<span class="quest-deadline-badge ${dInfo.className}"><i data-lucide="calendar" class="w-2.5 h-2.5 inline mr-0.5"></i>${dInfo.label}</span>` : ''}
+                            </div>
                         </div>
-                        <span class="text-sm font-bold ${isDone ? 'text-gray-400 line-through' : 'text-pancake-text'}">${q.task_name}</span>
                     </div>
-                    <button onclick="window.deleteQuest('${q.id}')" class="text-gray-400 hover:text-pancake-failure p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <button onclick="window.deleteQuest('${q.id}')" class="text-gray-400 hover:text-pancake-failure p-1 shrink-0"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>
             `;
         });
         html += `</div>`;
         container.innerHTML += html;
     });
+
+    if(activeCount === 0) {
+        container.innerHTML += '<div class="text-center text-sm text-gray-400 py-6 font-bold">🎉 진행중인 퀘스트가 없어요. 새 퀘스트를 추가하거나 완료된 퀘스트를 확인해보세요.</div>';
+    }
+
+    // 4) 완료된 퀘스트 아카이브 (토글 시)
+    if(showCompletedQuests) {
+        const doneQuests = filteredQuests.filter(q => q.is_completed).sort((a,b) => (b.completed_at || '').localeCompare(a.completed_at || ''));
+        if(doneQuests.length > 0) {
+            let archHtml = `<div class="mt-4 pt-4 border-t-2 border-dashed border-gray-200">
+                <div class="text-xs font-bold text-gray-500 mb-2 flex items-center"><i data-lucide="archive" class="w-3.5 h-3.5 mr-1"></i> 완료된 퀘스트 (${doneQuests.length})</div>`;
+            doneQuests.forEach(q => {
+                const parentGoal = localTopGoals.find(g => g.id === q.parent_goal_id);
+                const goalLabel = parentGoal ? `${parentGoal.icon} ${parentGoal.title}` : '';
+                const completedDate = q.completed_at ? q.completed_at.split('T')[0] : '';
+                archHtml += `
+                    <div class="flex justify-between items-center p-2 mb-1.5 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-2 cursor-pointer flex-1 min-w-0" onclick="window.toggleQuest('${q.id}', true)" title="클릭하면 진행중으로 되돌립니다">
+                            <div class="w-4 h-4 rounded-full bg-pancake-success flex items-center justify-center shrink-0"><i data-lucide="check" class="w-2.5 h-2.5 text-white"></i></div>
+                            <div class="min-w-0">
+                                <div class="text-xs font-bold text-gray-400 line-through truncate">${q.task_name}</div>
+                                <div class="text-[10px] text-gray-400 font-bold truncate">${goalLabel}${completedDate ? ` · ${completedDate} 완료` : ''}</div>
+                            </div>
+                        </div>
+                        <button onclick="window.deleteQuest('${q.id}')" class="text-gray-300 hover:text-pancake-failure p-1 shrink-0"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                `;
+            });
+            archHtml += `</div>`;
+            container.innerHTML += archHtml;
+        } else {
+            container.innerHTML += '<div class="mt-4 pt-4 border-t-2 border-dashed border-gray-200 text-center text-xs text-gray-400 font-bold py-3">완료된 퀘스트가 없어요.</div>';
+        }
+    }
+
     if(typeof lucide !== 'undefined') lucide.createIcons();
 }
 

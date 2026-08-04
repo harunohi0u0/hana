@@ -70,4 +70,21 @@
         .milestone-celebrate-backdrop { position: fixed; inset: 0; background: rgba(40,13,95,0.4); backdrop-filter: blur(2px); z-index: 200; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; cursor: pointer; }
         .milestone-celebrate-card { background: #ffffff; border-radius: 24px; padding: 32px 44px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.25); animation: milestonePop 0.5s cubic-bezier(.34,1.56,.64,1); cursor: default; }
         @keyframes milestonePop { 0% { transform: scale(0.6); opacity: 0; } 70% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
+
+        /* ===== [Goal Tab 추가 기능] 퀘스트 우선순위·마감 배지 & 필터 칩 ===== */
+        .quest-priority-badge { display: inline-flex; align-items: center; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 999px; white-space: nowrap; letter-spacing: 0.02em; }
+        .quest-priority-high { background: #FDE7F0; color: #ED4B9E; }
+        .quest-priority-medium { background: #FFF4D6; color: #B8860B; }
+        .quest-priority-low { background: #E6F5FE; color: #1FC7D4; }
+
+        .quest-deadline-badge { display: inline-flex; align-items: center; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 999px; background: #EEEAF4; color: #7A6EAA; white-space: nowrap; }
+        .quest-deadline-badge.today { background: #FFF7E0; color: #B8860B; }
+        .quest-deadline-badge.overdue { background: #FDE7F0; color: #ED4B9E; }
+
+        .quest-filter-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #EEEAF4; color: #7A6EAA; border: 1.5px solid transparent; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; }
+        .quest-filter-chip:hover { background: #E7E3EB; }
+        .quest-filter-chip.selected { background: #FFFFFF; color: #280D5F; border-color: #1FC7D4; box-shadow: 0 2px 4px rgba(31,199,212,0.15); }
+
+        .quest-item-overdue { border-left: 3px solid #ED4B9E !important; }
+        .quest-item-today { border-left: 3px solid #FFB237 !important; }
     </style>
