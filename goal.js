@@ -192,7 +192,12 @@ window.renderTopGoals = function() {
 
         const goalMilestones = localMilestones.filter(m => m.parent_goal_id === goal.id);
         const expMilestones = goalMilestones.filter(m => (m.type || 'exp') === 'exp').sort((a,b) => a.target_exp - b.target_exp);
-        const manualMilestones = goalMilestones.filter(m => (m.type || 'exp') === 'manual').sort((a,b) => (a.created_at||'').localeCompare(b.created_at||''));
+        const manualMilestones = goalMilestones.filter(m => (m.type || 'exp') === 'manual').sort((a,b) => {
+            const ao = (typeof a.order === 'number') ? a.order : Number.MAX_SAFE_INTEGER;
+            const bo = (typeof b.order === 'number') ? b.order : Number.MAX_SAFE_INTEGER;
+            if (ao !== bo) return ao - bo;
+            return (a.created_at||'').localeCompare(b.created_at||'');
+        });
 
         // 경험치 자동형: 진행바 위 깃발 마커
         const flagsHtml = expMilestones.map(m => {
@@ -201,26 +206,23 @@ window.renderTopGoals = function() {
         }).join('');
 
         // 경험치 자동형: 칩 목록 (읽기 전용 상태 표시)
-        const expChipsHtml = expMilestones.length > 0 ? `<div class="flex flex-wrap gap-1.5">${expMilestones.map(m => `
+        const expChipsHtml = expMilestones.length > 0 ? `<div class="flex flex-wrap gap-1.5 mt-2">${expMilestones.map(m => `
             <span class="milestone-chip ${m.achieved ? 'achieved' : ''}">${m.achieved ? '✅' : '⬜'} ${m.title}<button onclick="window.deleteMilestone('${m.id}')" class="ml-1 text-gray-400 hover:text-pancake-failure">×</button></span>
         `).join('')}</div>` : '';
 
-        // 직접 체크형: 클릭해서 수동으로 달성 처리하는 체크리스트
-        const manualListHtml = manualMilestones.length > 0 ? `<div class="space-y-1 mb-2">${manualMilestones.map(m => `
-            <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-gray-50">
-                <div class="flex items-center gap-2 cursor-pointer flex-1 min-w-0" onclick="window.toggleMilestoneManual('${m.id}')">
-                    <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${m.achieved ? 'bg-pancake-warning border-pancake-warning text-white' : 'border-gray-300'}">
-                        ${m.achieved ? '<i data-lucide="check" class="w-2.5 h-2.5"></i>' : ''}
-                    </div>
-                    <span class="text-xs font-bold truncate ${m.achieved ? 'text-gray-400 line-through' : 'text-pancake-text'}">${m.title}</span>
-                </div>
-                <button onclick="window.deleteMilestone('${m.id}')" class="text-gray-300 hover:text-pancake-failure p-0.5 shrink-0 opacity-70 hover:opacity-100"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
-            </div>
-        `).join('')}</div>` : '';
+        // 직접 체크형: 수직 타임라인 (드래그로 순서 조정 가능)
+        const manualTimelineHtml = manualMilestones.length > 0
+            ? window.renderMilestoneTimeline(manualMilestones, goal.id, false)
+            : '';
 
         const milestoneBodyHtml = (manualMilestones.length === 0 && expMilestones.length === 0)
             ? '<span class="text-[10px] text-gray-300 font-bold">설정된 마일스톤이 없어요</span>'
-            : manualListHtml + expChipsHtml;
+            : manualTimelineHtml + expChipsHtml;
+
+        const hasManyManual = manualMilestones.length >= 2;
+        const expandBtnHtml = manualMilestones.length > 0
+            ? `<button onclick="window.openMilestoneTimelineModal('${goal.id}')" class="text-[10px] font-bold text-gray-500 hover:text-pancake-primary flex items-center gap-0.5" title="타임라인 확대"><i data-lucide="maximize-2" class="w-3 h-3"></i></button>`
+            : '';
 
         container.innerHTML += `
             <div class="pc-card border-t-4 border-pancake-${goal.color} hover:-translate-y-1 transition duration-300 relative group">
@@ -246,7 +248,10 @@ window.renderTopGoals = function() {
                 <div class="pt-3 border-t border-gray-100">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[10px] font-bold text-gray-400 flex items-center"><i data-lucide="flag" class="w-3 h-3 mr-1"></i> 마일스톤</span>
-                        <button onclick="window.openAddMilestoneModal('${goal.id}')" class="text-[10px] font-bold text-pancake-primary hover:underline">+ 추가</button>
+                        <div class="flex items-center gap-2">
+                            ${expandBtnHtml}
+                            <button onclick="window.openAddMilestoneModal('${goal.id}')" class="text-[10px] font-bold text-pancake-primary hover:underline">+ 추가</button>
+                        </div>
                     </div>
                     ${milestoneBodyHtml}
                 </div>
@@ -312,7 +317,9 @@ window.addMilestone = async function() {
         if(typeof closeModal !== 'undefined') closeModal('add-milestone-modal');
 
         const achievedNow = type === 'exp' ? (parentGoal.current_exp >= targetExp) : false;
-        const msData = { parent_goal_id: goalId, title, type, target_exp: targetExp, achieved: achievedNow, achieved_at: achievedNow ? new Date().toISOString() : '', created_at: new Date().toISOString() };
+        // manual 마일스톤은 order 자동 부여 (같은 목표의 기존 개수 = 새 항목 순서)
+        const currentManualCount = localMilestones.filter(x => x.parent_goal_id === goalId && (x.type || 'exp') === 'manual').length;
+        const msData = { parent_goal_id: goalId, title, type, target_exp: targetExp, achieved: achievedNow, achieved_at: achievedNow ? new Date().toISOString() : '', created_at: new Date().toISOString(), order: type === 'manual' ? currentManualCount : null };
         let newId = 'm_' + Date.now();
 
         if(typeof db !== 'undefined' && typeof currentUser !== 'undefined' && currentUser) {
@@ -324,6 +331,11 @@ window.addMilestone = async function() {
 
         localMilestones.push({ id: newId, ...msData });
         window.renderTopGoals();
+        // 확대 모달이 열려있으면 그것도 갱신
+        const timelineModal = document.getElementById('milestone-timeline-modal');
+        if(timelineModal && !timelineModal.classList.contains('hidden')) {
+            window.refreshMilestoneTimelineModal();
+        }
         if(typeof showToast !== 'undefined') showToast("마일스톤이 추가되었습니다!");
     } catch(e) { alert(e.message); }
 }
@@ -340,6 +352,7 @@ window.toggleMilestoneManual = async function(id) {
     }
 
     window.renderTopGoals();
+    window.refreshMilestoneTimelineModal();
     if(nowAchieved && typeof window.showMilestoneCelebration === 'function') window.showMilestoneCelebration(m.title);
 }
 
@@ -350,6 +363,7 @@ window.deleteMilestone = async function(id) {
     }
     localMilestones = localMilestones.filter(m => m.id !== id);
     window.renderTopGoals();
+    window.refreshMilestoneTimelineModal();
 }
 
 window.checkMilestones = async function(goalId, currentExp) {
@@ -747,6 +761,17 @@ window.toggleRoutine = async function(id) {
 
     let newGoalExp = Math.max(0, parentGoal.current_exp + expChange);
 
+    // 레벨업 감지 — 렌더링 로직과 동일한 공식으로 이전/이후 레벨 계산
+    const oldExp = parentGoal.current_exp;
+    const computeLevel = (exp) => {
+        let lv = Math.floor((exp / parentGoal.max_exp) * 99) + 1;
+        if (lv > 100) lv = 100;
+        if (lv < 1) lv = 1;
+        return lv;
+    };
+    const oldLevel = computeLevel(oldExp);
+    const newLevel = computeLevel(newGoalExp);
+
     routine.streak_count = newStreak;
     routine.last_completed_date = newDate;
     parentGoal.current_exp = newGoalExp;
@@ -780,6 +805,11 @@ window.toggleRoutine = async function(id) {
     }
 
     if(!isDoneToday && typeof showToast !== 'undefined') showToast(`🎉 루틴 달성! (+${routine.exp_reward} EXP 획득)`);
+
+    // 레벨업 축하 (마일스톤 축하와 겹치지 않게 살짝 지연 후 순차 재생)
+    if (newLevel > oldLevel && typeof window.showLevelUpCelebration === 'function') {
+        setTimeout(() => window.showLevelUpCelebration(parentGoal, oldLevel, newLevel), 150);
+    }
 
     window.checkMilestones(parentGoal.id, newGoalExp);
 }
@@ -965,4 +995,190 @@ window.renderRoutineStats = function() {
             }
         }
     });
+}
+
+// ================= [마일스톤 수직 타임라인 & 드래그 재정렬] =================
+
+let draggedMilestoneId = null;
+let currentTimelineGoalId = null;
+
+window.renderMilestoneTimeline = function(manualMilestones, goalId, isExpanded) {
+    if (!manualMilestones || manualMilestones.length === 0) return '';
+
+    const items = manualMilestones.map((m, idx) => {
+        const isLast = idx === manualMilestones.length - 1;
+        const lineClass = m.achieved ? 'milestone-timeline-line achieved' : 'milestone-timeline-line';
+        return `
+            <div class="milestone-timeline-item" draggable="true" data-milestone-id="${m.id}" data-goal-id="${goalId}"
+                 ondragstart="window.onMilestoneDragStart(event, '${m.id}', '${goalId}')"
+                 ondragend="window.onMilestoneDragEnd(event)"
+                 ondragover="window.onMilestoneDragOver(event, '${m.id}', '${goalId}')"
+                 ondragleave="window.onMilestoneDragLeave(event)"
+                 ondrop="window.onMilestoneDrop(event, '${m.id}', '${goalId}')">
+                ${!isLast ? `<div class="${lineClass}"></div>` : ''}
+                <div class="milestone-timeline-dot ${m.achieved ? 'achieved' : ''}" onclick="window.toggleMilestoneManual('${m.id}')" title="클릭하면 달성/미달성 전환">
+                    <i data-lucide="check" class="w-3 h-3 check-icon"></i>
+                </div>
+                <span class="milestone-timeline-order">${idx + 1}</span>
+                <div class="milestone-timeline-label ${m.achieved ? 'achieved' : ''}" onclick="window.toggleMilestoneManual('${m.id}')">${m.title}</div>
+                <div class="milestone-timeline-actions">
+                    <span class="milestone-drag-handle" title="드래그해서 순서 변경"><i data-lucide="grip-vertical" class="w-3.5 h-3.5"></i></span>
+                    <button onclick="event.stopPropagation(); window.deleteMilestone('${m.id}')" class="text-gray-300 hover:text-pancake-failure p-0.5" title="삭제"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    return `<div class="milestone-timeline ${isExpanded ? 'milestone-timeline-expanded' : ''}">${items}</div>`;
+}
+
+window.onMilestoneDragStart = function(e, milestoneId, goalId) {
+    draggedMilestoneId = milestoneId;
+    e.currentTarget.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', milestoneId); } catch(_) {}
+}
+
+window.onMilestoneDragEnd = function(e) {
+    e.currentTarget.classList.remove('dragging');
+    document.querySelectorAll('.milestone-timeline-item').forEach(el => {
+        el.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+    draggedMilestoneId = null;
+}
+
+window.onMilestoneDragOver = function(e, targetId, goalId) {
+    if (!draggedMilestoneId || draggedMilestoneId === targetId) return;
+    const dragged = localMilestones.find(m => m.id === draggedMilestoneId);
+    const target = localMilestones.find(m => m.id === targetId);
+    if (!dragged || !target || dragged.parent_goal_id !== target.parent_goal_id) return; // 다른 목표로는 이동 불가
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom');
+    if (e.clientY < midY) e.currentTarget.classList.add('drag-over-top');
+    else e.currentTarget.classList.add('drag-over-bottom');
+}
+
+window.onMilestoneDragLeave = function(e) {
+    e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom');
+}
+
+window.onMilestoneDrop = async function(e, targetId, goalId) {
+    e.preventDefault();
+    e.stopPropagation();
+    const wasDraggedId = draggedMilestoneId;
+    e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom');
+    if (!wasDraggedId || wasDraggedId === targetId) { draggedMilestoneId = null; return; }
+
+    const dragged = localMilestones.find(m => m.id === wasDraggedId);
+    const target = localMilestones.find(m => m.id === targetId);
+    if (!dragged || !target || dragged.parent_goal_id !== target.parent_goal_id) { draggedMilestoneId = null; return; }
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const dropAbove = e.clientY < rect.top + rect.height / 2;
+
+    // 같은 목표 내 manual 마일스톤을 order 기준으로 정렬
+    const siblings = localMilestones
+        .filter(m => m.parent_goal_id === goalId && (m.type || 'exp') === 'manual')
+        .sort((a,b) => {
+            const ao = (typeof a.order === 'number') ? a.order : Number.MAX_SAFE_INTEGER;
+            const bo = (typeof b.order === 'number') ? b.order : Number.MAX_SAFE_INTEGER;
+            if (ao !== bo) return ao - bo;
+            return (a.created_at||'').localeCompare(b.created_at||'');
+        });
+
+    const oldIdx = siblings.findIndex(m => m.id === wasDraggedId);
+    if (oldIdx > -1) siblings.splice(oldIdx, 1);
+    let targetIdx = siblings.findIndex(m => m.id === targetId);
+    if (targetIdx < 0) targetIdx = siblings.length;
+    const insertIdx = dropAbove ? targetIdx : targetIdx + 1;
+    siblings.splice(insertIdx, 0, dragged);
+
+    // order 재부여
+    siblings.forEach((m, i) => { m.order = i; });
+
+    draggedMilestoneId = null;
+    window.renderTopGoals();
+    window.refreshMilestoneTimelineModal();
+
+    // Firestore 저장 (배치)
+    if(typeof db !== 'undefined' && typeof currentUser !== 'undefined' && currentUser) {
+        try {
+            const batch = db.batch();
+            siblings.forEach(m => {
+                const ref = db.collection("users").doc(currentUser.uid).collection("milestones").doc(m.id);
+                batch.update(ref, { order: m.order });
+            });
+            await batch.commit();
+        } catch(err) { console.warn("마일스톤 순서 저장 실패:", err); }
+    }
+
+    if(typeof showToast !== 'undefined') showToast("순서가 변경되었습니다.");
+}
+
+window.openMilestoneTimelineModal = function(goalId) {
+    currentTimelineGoalId = goalId;
+    const goal = localTopGoals.find(g => g.id === goalId);
+    if(!goal) return;
+    const nameEl = document.getElementById('milestone-timeline-goal-name');
+    if(nameEl) nameEl.textContent = `${goal.icon} ${goal.title}`;
+    const addBtn = document.getElementById('milestone-timeline-add-btn');
+    if(addBtn) addBtn.onclick = () => { closeModal('milestone-timeline-modal'); window.openAddMilestoneModal(goalId); };
+    window.refreshMilestoneTimelineModal();
+    if(typeof openModal !== 'undefined') openModal('milestone-timeline-modal');
+}
+
+window.refreshMilestoneTimelineModal = function() {
+    if (!currentTimelineGoalId) return;
+    const container = document.getElementById('milestone-timeline-modal-content');
+    if(!container) return;
+    const modal = document.getElementById('milestone-timeline-modal');
+    // 모달이 닫혀있으면 갱신 불필요
+    if(modal && modal.classList.contains('hidden')) return;
+
+    const manualMilestones = localMilestones
+        .filter(m => m.parent_goal_id === currentTimelineGoalId && (m.type || 'exp') === 'manual')
+        .sort((a,b) => {
+            const ao = (typeof a.order === 'number') ? a.order : Number.MAX_SAFE_INTEGER;
+            const bo = (typeof b.order === 'number') ? b.order : Number.MAX_SAFE_INTEGER;
+            if (ao !== bo) return ao - bo;
+            return (a.created_at||'').localeCompare(b.created_at||'');
+        });
+
+    if (manualMilestones.length === 0) {
+        container.innerHTML = '<div class="text-center text-sm text-gray-400 py-8 font-bold">이 목표에 직접 체크 방식의 마일스톤이 아직 없어요.<br><span class="text-[10px]">아래 [+ 이 목표에 마일스톤 추가] 버튼으로 만들어보세요.</span></div>';
+    } else {
+        // renderMilestoneTimeline은 wrapper div까지 감싸서 반환하지만,
+        // 모달의 container 자체가 이미 wrapper 역할을 하므로 innerHTML로 안전하게 재삽입
+        const tempWrapper = document.createElement('div');
+        tempWrapper.innerHTML = window.renderMilestoneTimeline(manualMilestones, currentTimelineGoalId, true);
+        const inner = tempWrapper.firstElementChild;
+        container.innerHTML = inner ? inner.innerHTML : '';
+    }
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// ================= [레벨업 축하 팝업] =================
+
+window.showLevelUpCelebration = function(goal, oldLevel, newLevel) {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'levelup-celebrate-backdrop';
+    backdrop.innerHTML = `
+        <div class="levelup-celebrate-card">
+            <div class="levelup-sparkles">✨ 🎉 ✨</div>
+            <div class="levelup-title">LEVEL UP</div>
+            <div class="text-3xl mb-1" style="position:relative;">${goal.icon}</div>
+            <div class="levelup-goal-title">${goal.title}</div>
+            <div class="levelup-number">
+                <span>Lv.${oldLevel}</span><span class="arrow">→</span><span class="new-lv">Lv.${newLevel}</span>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(backdrop);
+    backdrop.addEventListener('click', () => backdrop.remove());
+    setTimeout(() => { if(backdrop && backdrop.parentNode) backdrop.remove(); }, 2600);
+    if(typeof showToast !== 'undefined') showToast(`⬆️ 레벨업! ${goal.title} Lv.${newLevel}`);
 }

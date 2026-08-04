@@ -87,4 +87,47 @@
 
         .quest-item-overdue { border-left: 3px solid #ED4B9E !important; }
         .quest-item-today { border-left: 3px solid #FFB237 !important; }
+
+        /* ===== [Goal Tab 추가 기능] 레벨업 축하 팝업 ===== */
+        .levelup-celebrate-backdrop { position: fixed; inset: 0; background: rgba(40,13,95,0.55); backdrop-filter: blur(3px); z-index: 210; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; cursor: pointer; }
+        .levelup-celebrate-card { background: linear-gradient(135deg, #FFF9E6 0%, #FFFFFF 60%, #E6F5FE 100%); border-radius: 28px; padding: 36px 52px; text-align: center; box-shadow: 0 24px 48px rgba(0,0,0,0.28), inset 0 0 0 2px rgba(255,178,55,0.4); animation: levelupPop 0.6s cubic-bezier(.34,1.56,.64,1); cursor: default; position: relative; overflow: hidden; }
+        .levelup-celebrate-card::before { content: ''; position: absolute; inset: -50%; background: conic-gradient(from 0deg, transparent 0deg, rgba(255,178,55,0.15) 40deg, transparent 80deg, transparent 360deg); animation: levelupSpin 3s linear infinite; pointer-events: none; }
+        .levelup-sparkles { font-size: 28px; letter-spacing: 0.1em; margin-bottom: 8px; animation: sparkleFloat 1.6s ease-in-out infinite; }
+        .levelup-title { font-family: 'Kanit', sans-serif; font-size: 12px; font-weight: 800; color: #B8860B; letter-spacing: 0.3em; margin-bottom: 6px; position: relative; }
+        .levelup-goal-title { font-size: 11px; font-weight: 700; color: #7A6EAA; margin-bottom: 12px; position: relative; }
+        .levelup-number { font-family: 'Kanit', sans-serif; font-size: 42px; font-weight: 900; color: #280D5F; line-height: 1; position: relative; }
+        .levelup-number .arrow { color: #7A6EAA; margin: 0 8px; font-size: 24px; vertical-align: 4px; }
+        .levelup-number .new-lv { color: #ED4B9E; text-shadow: 0 2px 12px rgba(237,75,158,0.35); }
+        @keyframes levelupPop { 0% { transform: scale(0.5) rotate(-8deg); opacity: 0; } 60% { transform: scale(1.1) rotate(2deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
+        @keyframes levelupSpin { to { transform: rotate(360deg); } }
+        @keyframes sparkleFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+        /* ===== [Goal Tab 추가 기능] 마일스톤 수직 타임라인 ===== */
+        .milestone-timeline { position: relative; padding-left: 4px; }
+        .milestone-timeline-item { position: relative; display: flex; align-items: center; gap: 10px; padding: 6px 4px 6px 0; cursor: grab; transition: background 0.15s ease, opacity 0.15s ease; border-radius: 8px; }
+        .milestone-timeline-item:hover { background: #F8F6FC; }
+        .milestone-timeline-item.dragging { opacity: 0.45; cursor: grabbing; }
+        .milestone-timeline-item.drag-over-top { box-shadow: 0 -2px 0 0 #1FC7D4; }
+        .milestone-timeline-item.drag-over-bottom { box-shadow: 0 2px 0 0 #1FC7D4; }
+        .milestone-timeline-dot { position: relative; width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #FFFFFF; border: 2.5px solid #D7CAEC; z-index: 2; transition: all 0.2s ease; }
+        .milestone-timeline-dot.achieved { background: linear-gradient(135deg, #FFB237, #ED4B9E); border-color: #FFB237; box-shadow: 0 0 0 3px rgba(255,178,55,0.15); }
+        .milestone-timeline-dot .check-icon { color: white; opacity: 0; transition: opacity 0.15s ease; }
+        .milestone-timeline-dot.achieved .check-icon { opacity: 1; }
+        .milestone-timeline-line { position: absolute; left: 13px; top: 26px; bottom: -6px; width: 2px; background: #E7E3EB; z-index: 1; }
+        .milestone-timeline-line.achieved { background: linear-gradient(to bottom, #FFB237, #E7E3EB); }
+        .milestone-timeline-item:last-child .milestone-timeline-line { display: none; }
+        .milestone-timeline-label { flex: 1; min-width: 0; font-size: 12px; font-weight: 700; color: #280D5F; line-height: 1.3; }
+        .milestone-timeline-label.achieved { color: #7A6EAA; text-decoration: line-through; }
+        .milestone-timeline-order { font-size: 9px; font-weight: 800; color: #7A6EAA; background: #EEEAF4; padding: 1px 5px; border-radius: 999px; margin-right: 4px; }
+        .milestone-timeline-actions { display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s ease; flex-shrink: 0; }
+        .milestone-timeline-item:hover .milestone-timeline-actions { opacity: 1; }
+        .milestone-drag-handle { color: #C4BDD3; padding: 2px; cursor: grab; }
+
+        /* 확대 모달 (Timeline Expanded) */
+        .milestone-timeline-expanded { max-height: 60vh; overflow-y: auto; padding: 8px 4px; }
+        .milestone-timeline-expanded .milestone-timeline-item { padding: 10px 6px; }
+        .milestone-timeline-expanded .milestone-timeline-dot { width: 26px; height: 26px; }
+        .milestone-timeline-expanded .milestone-timeline-line { left: 16px; top: 34px; }
+        .milestone-timeline-expanded .milestone-timeline-label { font-size: 14px; }
+        .milestone-timeline-expanded .milestone-timeline-actions { opacity: 0.6; }
     </style>

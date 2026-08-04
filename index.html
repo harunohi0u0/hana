@@ -956,6 +956,23 @@
     </div>
 </div>
 
+<!-- Goal 모달 5: 마일스톤 타임라인 확대 -->
+<div id="milestone-timeline-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-lg m-4 shadow-2xl relative bg-white">
+        <button onclick="closeModal('milestone-timeline-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 class="text-lg font-bold mb-1 flex items-center"><i data-lucide="milestone" class="w-5 h-5 mr-2 text-pancake-warning"></i> 마일스톤 타임라인</h2>
+        <p id="milestone-timeline-goal-name" class="text-xs font-bold text-gray-400 mb-3 border-b border-gray-100 pb-2"></p>
+        <p class="text-[10px] text-gray-400 mb-2 font-bold">💡 항목을 드래그해서 선후 순서를 조정할 수 있어요.</p>
+        <div id="milestone-timeline-modal-content" class="milestone-timeline milestone-timeline-expanded">
+            <!-- JS 렌더링 영역 -->
+        </div>
+        <div class="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
+            <button id="milestone-timeline-add-btn" class="text-xs font-bold text-pancake-primary hover:underline">+ 이 목표에 마일스톤 추가</button>
+            <button onclick="closeModal('milestone-timeline-modal')" class="pc-btn pc-btn-secondary !px-4 !py-1.5 !text-xs">닫기</button>
+        </div>
+    </div>
+</div>
+
 <!-- 🌟 JS 파일 연결 🌟 -->
 <script src="script.js"></script>
 <script src="goal.js"></script>
