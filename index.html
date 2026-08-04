@@ -585,6 +585,31 @@
                     <!-- JS 렌더링 영역 -->
                 </div>
             </section>
+
+            <!-- 5. 루틴 성공률 통계 & 추이 -->
+            <section class="pc-card">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                    <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="trending-up" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 루틴 성공률</h2>
+                </div>
+                <div class="grid grid-cols-3 gap-3 mb-6">
+                    <div class="bg-gray-50 rounded-xl p-3 text-center border border-gray-100">
+                        <div class="text-[10px] font-bold text-gray-400 mb-1">어제</div>
+                        <div id="stat-yesterday-rate" class="text-2xl font-black text-pancake-text">-</div>
+                    </div>
+                    <div class="bg-[#F0FDFA] rounded-xl p-3 text-center border border-pancake-primary/20">
+                        <div class="text-[10px] font-bold text-pancake-primary mb-1">오늘 (진행중)</div>
+                        <div id="stat-today-rate" class="text-2xl font-black text-pancake-primary">-</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3 text-center border border-gray-100">
+                        <div class="text-[10px] font-bold text-gray-400 mb-1">이번주 평균</div>
+                        <div id="stat-week-rate" class="text-2xl font-black text-pancake-text">-</div>
+                    </div>
+                </div>
+                <div class="relative" style="height:220px;">
+                    <canvas id="routine-trend-chart"></canvas>
+                </div>
+                <p id="routine-trend-empty" class="text-center text-xs text-gray-400 font-bold py-6 hidden">아직 표시할 데이터가 없어요. 루틴을 며칠 체크하면 추이가 쌓입니다.</p>
+            </section>
         </div>
     </main>
 </div>
@@ -890,13 +915,20 @@
         <form onsubmit="event.preventDefault(); if(window.addMilestone) { window.addMilestone(); } else { alert('🚨 파일 로딩 에러: goal.js 파일을 읽지 못했습니다!'); }" class="space-y-4">
             <input type="hidden" id="milestone-parent-id">
             <div>
-                <label class="text-xs font-bold text-gray-500 mb-1 block">마일스톤 이름</label>
-                <input type="text" id="milestone-title" class="pc-input bg-white border-gray-200" placeholder="예: 중간 목표 달성" required>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">달성 방식</label>
+                <div class="flex gap-2" id="milestone-type-group">
+                    <button type="button" class="pc-day-btn selected flex-1 !py-2" data-type="manual" onclick="window.setMilestoneType('manual')">✅ 직접 체크</button>
+                    <button type="button" class="pc-day-btn flex-1 !py-2" data-type="exp" onclick="window.setMilestoneType('exp')">🎯 경험치 자동</button>
+                </div>
+                <p id="milestone-type-desc" class="text-[10px] text-gray-400 mt-1.5">시험 합격, 자격증 취득처럼 경험치와 무관하게 실제로 이뤘을 때 직접 체크하는 방식이에요. (예: N3 합격, N2 합격)</p>
             </div>
             <div>
-                <label class="text-xs font-bold text-gray-500 mb-1 block">목표 경험치(EXP) 도달 시 달성 처리</label>
-                <input type="number" id="milestone-target-exp" class="pc-input bg-white border-gray-200" placeholder="예: 3000" required>
-                <p class="text-[10px] text-gray-400 mt-1">해당 목표의 누적 경험치가 이 값에 도달하면 자동으로 달성 축하 팝업이 뜹니다.</p>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">마일스톤 이름</label>
+                <input type="text" id="milestone-title" class="pc-input bg-white border-gray-200" placeholder="예: JLPT N2 합격" required>
+            </div>
+            <div id="milestone-exp-field" class="hidden">
+                <label class="text-xs font-bold text-gray-500 mb-1 block">목표 경험치(EXP) 도달 시 자동 달성</label>
+                <input type="number" id="milestone-target-exp" class="pc-input bg-white border-gray-200" placeholder="예: 3000">
             </div>
             <button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">마일스톤 등록</button>
         </form>
