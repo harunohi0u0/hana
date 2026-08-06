@@ -98,6 +98,7 @@
                 <button class="nav-tab" onclick="switchMainTab('tab2')">Trading Desk</button>
                 <button class="nav-tab" onclick="switchMainTab('tab3')">Trading Notes</button>
                 <button class="nav-tab font-bold text-pancake-primary" onclick="switchMainTab('tab4')">🎯 Goal</button>
+                <button class="nav-tab font-bold text-pancake-secondary" onclick="switchMainTab('tab5')">🛒 Commerce</button>
             </div>
             
             <div class="flex items-center gap-2 ml-4">
@@ -620,7 +621,169 @@
                 <p id="routine-trend-empty" class="text-center text-xs text-gray-400 font-bold py-6 hidden">아직 표시할 데이터가 없어요. 루틴을 며칠 체크하면 추이가 쌓입니다.</p>
             </section>
         </div>
+
+        <!-- ================= [Tab 5] COMMERCE (커머스 관리) ================= -->
+        <div id="tab5" class="tab-content space-y-6 hidden">
+            <!-- A. 계정 관리 -->
+            <section class="pc-card">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                    <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="users" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 계정 관리</h2>
+                    <button onclick="if(window.resetAccountModal){ try { window.resetAccountModal(); } catch(e){ console.warn(e); } } openModal('add-account-modal')" class="pc-btn pc-btn-purple !px-3 !py-1.5 !text-xs">+ 계정 추가</button>
+                </div>
+                <div class="mb-1 p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg text-[10px] text-yellow-800 font-bold flex items-start gap-2">
+                    <span>⚠️</span>
+                    <span>비밀번호는 여기 저장하지 마세요. 아이디·URL·용도·메모만 관리하는 용도입니다.</span>
+                </div>
+                <div id="account-filter-bar" class="flex flex-wrap gap-1.5 mt-3 mb-3">
+                    <!-- JS: 카테고리 필터 -->
+                </div>
+                <div class="flex items-center justify-between mb-2">
+                    <span id="account-summary" class="text-[10px] font-bold text-gray-400">총 0개</span>
+                </div>
+                <div id="account-list-container" class="space-y-2 max-h-[420px] overflow-y-auto custom-scrollbar pr-1">
+                    <!-- JS 렌더링 영역 -->
+                </div>
+            </section>
+
+            <!-- B. 경비 기록 -->
+            <section class="pc-card">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                    <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="receipt" class="w-5 h-5 mr-2 text-pancake-warning"></i> 경비 기록</h2>
+                    <button onclick="if(window.resetExpenseModal){ try { window.resetExpenseModal(); } catch(e){ console.warn(e); } } openModal('add-expense-modal')" class="pc-btn pc-btn-purple !px-3 !py-1.5 !text-xs">+ 지출 추가</button>
+                </div>
+                <div class="flex items-center gap-2 mb-3">
+                    <label class="text-[10px] font-bold text-gray-500">보기 월:</label>
+                    <input type="month" id="expense-month-picker" onchange="window.renderExpenses()" class="pc-input bg-white border-gray-200 !py-1.5 !text-xs !w-auto">
+                    <select id="expense-brand-filter" onchange="window.renderExpenses()" class="pc-input bg-white border-gray-200 !py-1.5 !text-xs !w-auto">
+                        <option value="all">전체 브랜드</option>
+                    </select>
+                </div>
+                <div id="expense-summary-container" class="mb-4">
+                    <!-- JS: 이번달 요약 카드 -->
+                </div>
+                <div id="expense-list-container" class="space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar pr-1">
+                    <!-- JS 렌더링 영역 -->
+                </div>
+            </section>
+        </div>
     </main>
+</div>
+
+<!-- Commerce 모달 1: 계정 추가/수정 -->
+<div id="add-account-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
+        <button onclick="closeModal('add-account-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 id="account-modal-title" class="text-lg font-bold mb-4 flex items-center"><i data-lucide="user-plus" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 계정 추가</h2>
+        <form onsubmit="event.preventDefault(); if(window.saveAccount) { window.saveAccount(); } else { alert('🚨 commerce.js 파일을 읽지 못했습니다!'); }" class="space-y-4">
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">종류</label>
+                <div class="flex gap-2" id="account-category-group">
+                    <button type="button" class="pc-day-btn selected flex-1 !py-2" data-category="shop" onclick="window.setAccountCategory('shop')">🛒 쇼핑몰</button>
+                    <button type="button" class="pc-day-btn flex-1 !py-2" data-category="blog" onclick="window.setAccountCategory('blog')">📝 블로그</button>
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">플랫폼</label>
+                <input type="text" id="account-platform" class="pc-input bg-white border-gray-200" placeholder="예: 스마트스토어 / 쿠팡 / 네이버블로그 / 티스토리" required>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">계정명 (닉네임)</label>
+                <input type="text" id="account-name" class="pc-input bg-white border-gray-200" placeholder="예: 멜라니크 공식스토어" required>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">로그인 아이디 <span class="text-gray-400 font-normal">(비밀번호는 절대 X)</span></label>
+                <input type="text" id="account-id" class="pc-input bg-white border-gray-200" placeholder="예: melanique_official">
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">URL</label>
+                <input type="url" id="account-url" class="pc-input bg-white border-gray-200" placeholder="https://...">
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">용도</label>
+                <input type="text" id="account-purpose" class="pc-input bg-white border-gray-200" placeholder="예: 메인 판매 / 체험단용 / 서브 홍보">
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">메모 (선택)</label>
+                <textarea id="account-memo" class="pc-input bg-white border-gray-200" rows="2" placeholder="자유 메모"></textarea>
+            </div>
+            <button type="submit" id="account-submit-btn" class="pc-btn pc-btn-purple w-full py-3 text-base">계정 등록</button>
+        </form>
+    </div>
+</div>
+
+<!-- Commerce 모달 2: 지출 추가/수정 -->
+<div id="add-expense-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
+    <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
+        <button onclick="closeModal('add-expense-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
+        <h2 id="expense-modal-title" class="text-lg font-bold mb-4 flex items-center"><i data-lucide="receipt" class="w-5 h-5 mr-2 text-pancake-warning"></i> 지출 추가</h2>
+        <form onsubmit="event.preventDefault(); if(window.saveExpense) { window.saveExpense(); } else { alert('🚨 commerce.js 파일을 읽지 못했습니다!'); }" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 mb-1 block">지출일</label>
+                    <input type="date" id="expense-date" class="pc-input bg-white border-gray-200" required>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 mb-1 block">금액 (원)</label>
+                    <input type="number" id="expense-amount" class="pc-input bg-white border-gray-200" placeholder="예: 50000" required>
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">카테고리</label>
+                <select id="expense-category" class="pc-input bg-white border-gray-200 cursor-pointer" required>
+                    <option value="체험단">체험단</option>
+                    <option value="광고">광고</option>
+                    <option value="매입">매입 (상품 원가)</option>
+                    <option value="배송">배송</option>
+                    <option value="수수료">수수료 (플랫폼/결제)</option>
+                    <option value="세금">세금</option>
+                    <option value="소모품">소모품/포장재</option>
+                    <option value="구독">구독 (SW/도구)</option>
+                    <option value="기타">기타</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">지출처</label>
+                <input type="text" id="expense-target" class="pc-input bg-white border-gray-200" placeholder="예: 레뷰 (체험단 대행) / 네이버 광고" required>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">관련 브랜드/상품 (선택)</label>
+                <input type="text" id="expense-brand" class="pc-input bg-white border-gray-200" placeholder="예: 인트라젠 / 멜라니크 / 바이미네 / 공통" list="expense-brand-suggestions">
+                <datalist id="expense-brand-suggestions">
+                    <option value="인트라젠"></option>
+                    <option value="멜라니크"></option>
+                    <option value="바이미네"></option>
+                    <option value="공통"></option>
+                </datalist>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 mb-1 block">결제수단</label>
+                    <select id="expense-payment" class="pc-input bg-white border-gray-200 cursor-pointer">
+                        <option value="사업용카드">사업용카드</option>
+                        <option value="개인카드">개인카드</option>
+                        <option value="계좌이체">계좌이체</option>
+                        <option value="현금">현금</option>
+                        <option value="기타">기타</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 mb-1 block">증빙</label>
+                    <select id="expense-receipt" class="pc-input bg-white border-gray-200 cursor-pointer">
+                        <option value="none">없음</option>
+                        <option value="card">카드매출전표</option>
+                        <option value="tax">세금계산서</option>
+                        <option value="cash">현금영수증</option>
+                        <option value="simple">간이영수증</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 mb-1 block">메모 (선택)</label>
+                <textarea id="expense-memo" class="pc-input bg-white border-gray-200" rows="2" placeholder="상세 내용"></textarea>
+            </div>
+            <button type="submit" id="expense-submit-btn" class="pc-btn pc-btn-purple w-full py-3 text-base">지출 기록</button>
+        </form>
+    </div>
 </div>
 
 <!-- ================= Modals (팝업창) ================= -->
@@ -976,3 +1139,4 @@
 <!-- 🌟 JS 파일 연결 🌟 -->
 <script src="script.js"></script>
 <script src="goal.js"></script>
+<script src="commerce.js"></script>

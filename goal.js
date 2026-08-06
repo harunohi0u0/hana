@@ -30,6 +30,10 @@ window.switchMainTab = function(id) {
         safeCall(window.renderTodayChecklist);
         safeCall(window.renderRoutineStats);
     }
+    if(id==='tab5') {
+        safeCall(window.renderAccounts);
+        safeCall(window.renderExpenses);
+    }
 }
 
 // 2. 데이터 불러오기 기능
