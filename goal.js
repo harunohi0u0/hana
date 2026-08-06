@@ -8,6 +8,9 @@ let localRoutineLogs = [];
 let routineTrendChartInstance = null;
 let questFilterGoalId = 'all';
 let showCompletedQuests = false;
+let editingTopGoalId = null;
+let editingQuestId = null;
+let editingRoutineId = null;
 
 // 1. 기존 탭 전환 기능
 window.switchMainTab = function(id) { 
@@ -108,10 +111,87 @@ window.setAllDays = function(select) {
     });
 }
 window.resetRoutineModal = function() {
+    editingRoutineId = null;
+    const nameEl = document.getElementById('routine-name');
+    const expEl = document.getElementById('routine-exp');
+    const parentEl = document.getElementById('routine-parent');
+    if(nameEl) nameEl.value = '';
+    if(expEl) expEl.value = '';
+    if(parentEl && parentEl.options.length > 0) parentEl.selectedIndex = 0;
     window.setAllDays(true);
+    const titleH = document.getElementById('routine-modal-title');
+    const btn = document.getElementById('routine-submit-btn');
+    if(titleH) titleH.innerHTML = '<i data-lucide="sprout" class="w-5 h-5 mr-2 text-pancake-success"></i> 반복할 루틴 추가';
+    if(btn) btn.textContent = '루틴 심기';
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+window.openEditRoutine = function(id) {
+    const r = localRoutines.find(x => x.id === id);
+    if(!r) return;
+    editingRoutineId = id;
+    const nameEl = document.getElementById('routine-name');
+    const expEl = document.getElementById('routine-exp');
+    const parentEl = document.getElementById('routine-parent');
+    if(nameEl) nameEl.value = r.routine_name || '';
+    if(expEl) expEl.value = r.exp_reward || '';
+    if(parentEl) parentEl.value = r.parent_goal_id || '';
+    // 요일 셋팅
+    const days = (r.repeat_days && Array.isArray(r.repeat_days) && r.repeat_days.length > 0) ? r.repeat_days : [0,1,2,3,4,5,6];
+    document.querySelectorAll('#routine-repeat-days .pc-day-btn').forEach(btn => {
+        const d = parseInt(btn.dataset.day);
+        btn.classList.toggle('selected', days.includes(d));
+    });
+    const titleH = document.getElementById('routine-modal-title');
+    const btn = document.getElementById('routine-submit-btn');
+    if(titleH) titleH.innerHTML = '<i data-lucide="pencil" class="w-5 h-5 mr-2 text-pancake-success"></i> 루틴 수정';
+    if(btn) btn.textContent = '변경사항 저장';
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+    if(typeof openModal !== 'undefined') openModal('add-routine-modal');
 }
 
 // ================= [최상위 목표 (Top Goals) 기능] =================
+
+window.resetTopGoalModal = function() {
+    editingTopGoalId = null;
+    const titleEl = document.getElementById('top-goal-title');
+    const iconEl = document.getElementById('top-goal-icon');
+    const colorEl = document.getElementById('top-goal-color');
+    const expEl = document.getElementById('top-goal-max-exp');
+    const deadlineEl = document.getElementById('top-goal-deadline');
+    if(titleEl) titleEl.value = '';
+    if(iconEl) iconEl.value = '';
+    if(colorEl) colorEl.value = 'primary';
+    if(expEl) expEl.value = '';
+    if(deadlineEl) deadlineEl.value = '';
+    const titleH = document.getElementById('top-goal-modal-title');
+    const btn = document.getElementById('top-goal-submit-btn');
+    if(titleH) titleH.innerHTML = '<i data-lucide="target" class="w-5 h-5 mr-2 text-pancake-primary"></i> 새 최상위 목표 생성';
+    if(btn) btn.textContent = '목표 생성하기';
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+window.openEditTopGoal = function(id) {
+    const g = localTopGoals.find(x => x.id === id);
+    if(!g) return;
+    editingTopGoalId = id;
+    const titleEl = document.getElementById('top-goal-title');
+    const iconEl = document.getElementById('top-goal-icon');
+    const colorEl = document.getElementById('top-goal-color');
+    const expEl = document.getElementById('top-goal-max-exp');
+    const deadlineEl = document.getElementById('top-goal-deadline');
+    if(titleEl) titleEl.value = g.title || '';
+    if(iconEl) iconEl.value = g.icon || '';
+    if(colorEl) colorEl.value = g.color || 'primary';
+    if(expEl) expEl.value = g.max_exp || '';
+    if(deadlineEl) deadlineEl.value = g.deadline || '';
+    const titleH = document.getElementById('top-goal-modal-title');
+    const btn = document.getElementById('top-goal-submit-btn');
+    if(titleH) titleH.innerHTML = '<i data-lucide="pencil" class="w-5 h-5 mr-2 text-pancake-primary"></i> 목표 수정';
+    if(btn) btn.textContent = '변경사항 저장';
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+    if(typeof openModal !== 'undefined') openModal('add-top-goal-modal');
+}
 
 window.addTopGoal = async function() {
     try {
@@ -131,14 +211,32 @@ window.addTopGoal = async function() {
             alert("목표 이름과 경험치를 올바르게 입력해주세요."); return;
         }
 
-        // 1. 모달부터 무조건 닫기 (오류로 인한 화면 멈춤 원천 방지)
-        titleEl.value = ''; iconEl.value = ''; expEl.value = ''; if(deadlineEl) deadlineEl.value = '';
+        const isEditing = !!editingTopGoalId;
+        const editId = editingTopGoalId;
+
+        // 모달부터 무조건 닫기
         if(typeof closeModal !== 'undefined') closeModal('add-top-goal-modal');
+        window.resetTopGoalModal();
+
+        if(isEditing) {
+            const existing = localTopGoals.find(g => g.id === editId);
+            if(!existing) { alert("수정할 목표를 찾지 못했습니다."); return; }
+            const updates = { title, icon, color, max_exp: maxExp, deadline: deadline || '' };
+            Object.assign(existing, updates);
+            if(typeof db !== 'undefined' && typeof currentUser !== 'undefined' && currentUser) {
+                try { await db.collection("users").doc(currentUser.uid).collection("top_goals").doc(editId).update(updates); }
+                catch(fbErr) { console.warn("DB 권한 오류:", fbErr); }
+            }
+            window.renderTopGoals(); window.updateDropdowns(); window.renderQuests(); window.renderRoutines(); window.renderTodayChecklist();
+            // 경험치가 남아있는 상태에서 max_exp가 바뀌면 마일스톤/레벨이 재계산되므로 마일스톤도 체크
+            window.checkMilestones(editId, existing.current_exp);
+            if(typeof showToast !== 'undefined') showToast("목표가 수정되었습니다.");
+            return;
+        }
 
         const goalData = { title, icon, color, max_exp: maxExp, current_exp: 0, created_at: new Date().toISOString(), deadline: deadline || '' };
         let newId = 'g_' + Date.now();
 
-        // 2. 파이어베이스 저장 시도 (실패해도 화면에는 뜨도록 처리)
         if(typeof db !== 'undefined' && typeof currentUser !== 'undefined' && currentUser) {
             try {
                 const docRef = await db.collection("users").doc(currentUser.uid).collection("top_goals").add(goalData);
@@ -148,7 +246,6 @@ window.addTopGoal = async function() {
             }
         }
         
-        // 3. 화면 업데이트
         localTopGoals.push({ id: newId, ...goalData });
         window.renderTopGoals(); window.updateDropdowns();
         if(typeof showToast !== 'undefined') showToast("목표가 생성되었습니다!");
@@ -226,7 +323,10 @@ window.renderTopGoals = function() {
 
         container.innerHTML += `
             <div class="pc-card border-t-4 border-pancake-${goal.color} hover:-translate-y-1 transition duration-300 relative group">
-                <button onclick="window.deleteTopGoal('${goal.id}')" class="absolute top-4 right-4 text-gray-300 hover:text-pancake-failure opacity-0 group-hover:opacity-100 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                <div class="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                    <button onclick="window.openEditTopGoal('${goal.id}')" class="text-gray-300 hover:text-pancake-primary" title="목표 수정"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                    <button onclick="window.deleteTopGoal('${goal.id}')" class="text-gray-300 hover:text-pancake-failure" title="목표 삭제"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
                 <div class="flex items-center gap-3 mb-2 pr-6">
                     <div class="text-3xl">${goal.icon}</div>
                     <div>
@@ -486,11 +586,38 @@ window.setQuestPriority = function(priority) {
 }
 
 window.resetQuestModal = function() {
+    editingQuestId = null;
     const nameEl = document.getElementById('quest-name');
     const deadlineEl = document.getElementById('quest-deadline');
+    const parentEl = document.getElementById('quest-parent');
     if(nameEl) nameEl.value = '';
     if(deadlineEl) deadlineEl.value = '';
+    if(parentEl && parentEl.options.length > 0) parentEl.selectedIndex = 0;
     window.setQuestPriority('medium');
+    const titleH = document.getElementById('quest-modal-title');
+    const btn = document.getElementById('quest-submit-btn');
+    if(titleH) titleH.innerHTML = '<i data-lucide="plus-circle" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 세부 퀘스트 추가';
+    if(btn) btn.textContent = '퀘스트 등록';
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+window.openEditQuest = function(id) {
+    const q = localQuests.find(x => x.id === id);
+    if(!q) return;
+    editingQuestId = id;
+    const nameEl = document.getElementById('quest-name');
+    const deadlineEl = document.getElementById('quest-deadline');
+    const parentEl = document.getElementById('quest-parent');
+    if(nameEl) nameEl.value = q.task_name || '';
+    if(deadlineEl) deadlineEl.value = q.deadline || '';
+    if(parentEl) parentEl.value = q.parent_goal_id || '';
+    window.setQuestPriority(q.priority || 'medium');
+    const titleH = document.getElementById('quest-modal-title');
+    const btn = document.getElementById('quest-submit-btn');
+    if(titleH) titleH.innerHTML = '<i data-lucide="pencil" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 퀘스트 수정';
+    if(btn) btn.textContent = '변경사항 저장';
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+    if(typeof openModal !== 'undefined') openModal('add-quest-modal');
 }
 
 window.setQuestFilter = function(goalId) {
@@ -517,11 +644,26 @@ window.addQuest = async function() {
         
         if(!parentId || !taskName) return alert("목표를 선택하고 내용을 입력하세요.");
 
+        const isEditing = !!editingQuestId;
+        const editId = editingQuestId;
+
         // 무조건 창부터 닫기
-        taskNameEl.value = '';
-        if(deadlineEl) deadlineEl.value = '';
-        window.setQuestPriority('medium');
         if(typeof closeModal !== 'undefined') closeModal('add-quest-modal');
+        window.resetQuestModal();
+
+        if(isEditing) {
+            const existing = localQuests.find(q => q.id === editId);
+            if(!existing) { alert("수정할 퀘스트를 찾지 못했습니다."); return; }
+            const updates = { parent_goal_id: parentId, task_name: taskName, priority, deadline: deadline || '' };
+            Object.assign(existing, updates);
+            if(typeof db !== 'undefined' && typeof currentUser !== 'undefined' && currentUser) {
+                try { await db.collection("users").doc(currentUser.uid).collection("quests").doc(editId).update(updates); } catch(e){ console.warn(e); }
+            }
+            window.renderQuests();
+            window.renderTodayChecklist();
+            if(typeof showToast !== 'undefined') showToast("퀘스트가 수정되었습니다.");
+            return;
+        }
 
         const questData = { parent_goal_id: parentId, task_name: taskName, is_completed: false, created_at: new Date().toISOString(), priority, deadline: deadline || '', completed_at: '' };
         let newId = 'q_' + Date.now();
@@ -646,7 +788,10 @@ window.renderQuests = function() {
                             </div>
                         </div>
                     </div>
-                    <button onclick="window.deleteQuest('${q.id}')" class="text-gray-400 hover:text-pancake-failure p-1 shrink-0"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <div class="flex items-center gap-0.5 shrink-0">
+                        <button onclick="event.stopPropagation(); window.openEditQuest('${q.id}')" class="text-gray-400 hover:text-pancake-primary p-1" title="수정"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="event.stopPropagation(); window.deleteQuest('${q.id}')" class="text-gray-400 hover:text-pancake-failure p-1" title="삭제"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </div>
                 </div>
             `;
         });
@@ -708,9 +853,26 @@ window.addRoutine = async function() {
         const repeatDays = Array.from(selectedDayEls).map(el => parseInt(el.dataset.day)).sort((a,b)=>a-b);
         if(repeatDays.length === 0) return alert("반복할 요일을 최소 하루 이상 선택해주세요.");
 
-        nameEl.value = ''; expEl.value = '';
-        window.setAllDays(true);
+        const isEditing = !!editingRoutineId;
+        const editId = editingRoutineId;
+
         if(typeof closeModal !== 'undefined') closeModal('add-routine-modal');
+        window.resetRoutineModal();
+
+        if(isEditing) {
+            const existing = localRoutines.find(r => r.id === editId);
+            if(!existing) { alert("수정할 루틴을 찾지 못했습니다."); return; }
+            const updates = { parent_goal_id: parentId, routine_name: name, exp_reward: expReward, repeat_days: repeatDays };
+            Object.assign(existing, updates);
+            if(typeof db !== 'undefined' && typeof currentUser !== 'undefined' && currentUser) {
+                try { await db.collection("users").doc(currentUser.uid).collection("routines").doc(editId).update(updates); } catch(e){ console.warn(e); }
+            }
+            window.renderRoutines();
+            window.renderTodayChecklist();
+            window.renderRoutineStats();
+            if(typeof showToast !== 'undefined') showToast("루틴이 수정되었습니다.");
+            return;
+        }
 
         const routineData = { parent_goal_id: parentId, routine_name: name, exp_reward: expReward, streak_count: 0, last_completed_date: '', repeat_days: repeatDays, created_at: new Date().toISOString() };
         let newId = 'r_' + Date.now();
@@ -854,9 +1016,10 @@ window.renderRoutines = function() {
                             <span class="text-[10px] text-gray-400 font-bold mt-0.5 inline-block">${goalIcon} ${repeatLabel} · 오늘은 쉬는 날</span>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3 pl-2">
+                    <div class="flex items-center gap-2 pl-2">
                         <span class="text-xs font-bold text-gray-300 flex items-center shrink-0"><i data-lucide="flame" class="w-4 h-4 mr-1"></i> ${r.streak_count || 0}일</span>
-                        <button onclick="window.deleteRoutine('${r.id}')" class="text-gray-400 hover:text-pancake-failure p-1 shrink-0"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="window.openEditRoutine('${r.id}')" class="text-gray-400 hover:text-pancake-primary p-1 shrink-0" title="수정"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="window.deleteRoutine('${r.id}')" class="text-gray-400 hover:text-pancake-failure p-1 shrink-0" title="삭제"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                 </div>
             `;
@@ -874,9 +1037,10 @@ window.renderRoutines = function() {
                         <span class="text-[10px] text-gray-400 font-bold mt-0.5 inline-block">${goalIcon} ${repeatLabel} · ${isDone ? '완료됨' : `완료 시 +${r.exp_reward} EXP`}</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-3 pl-2">
+                <div class="flex items-center gap-2 pl-2">
                     <span class="text-xs font-bold ${isDone ? 'text-pancake-warning' : 'text-gray-400'} flex items-center shrink-0"><i data-lucide="flame" class="w-4 h-4 mr-1"></i> ${r.streak_count || 0}일</span>
-                    <button onclick="window.deleteRoutine('${r.id}')" class="text-gray-400 hover:text-pancake-failure p-1 shrink-0"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <button onclick="window.openEditRoutine('${r.id}')" class="text-gray-400 hover:text-pancake-primary p-1 shrink-0" title="수정"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="window.deleteRoutine('${r.id}')" class="text-gray-400 hover:text-pancake-failure p-1 shrink-0" title="삭제"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>
             </div>
         `;

@@ -541,7 +541,7 @@
             <section>
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-gray-100 pb-3 gap-2">
                     <h2 class="text-xl font-bold flex items-center text-pancake-text"><i data-lucide="target" class="w-6 h-6 mr-2 text-pancake-primary"></i> 나의 최상위 목표</h2>
-                    <button onclick="openModal('add-top-goal-modal')" class="pc-btn pc-btn-primary !px-4 !py-2 !text-xs !rounded-lg"><span class="text-lg mr-1">+</span> 목표 추가</button>
+                    <button onclick="if(window.resetTopGoalModal){ try { window.resetTopGoalModal(); } catch(e){ console.warn(e); } } openModal('add-top-goal-modal')" class="pc-btn pc-btn-primary !px-4 !py-2 !text-xs !rounded-lg"><span class="text-lg mr-1">+</span> 목표 추가</button>
                 </div>
                 <div id="top-goals-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- JS 렌더링 영역 -->
@@ -816,7 +816,7 @@
 <div id="add-top-goal-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
     <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
         <button onclick="closeModal('add-top-goal-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
-        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="target" class="w-5 h-5 mr-2 text-pancake-primary"></i> 새 최상위 목표 생성</h2>
+        <h2 id="top-goal-modal-title" class="text-lg font-bold mb-4 flex items-center"><i data-lucide="target" class="w-5 h-5 mr-2 text-pancake-primary"></i> 새 최상위 목표 생성</h2>
         <form onsubmit="event.preventDefault(); if(window.addTopGoal) { window.addTopGoal(); } else { alert('🚨 파일 로딩 에러: goalswap.js 파일을 읽지 못했습니다! 파일 이름이 소문자 goalswap.js 가 맞는지 확인해주세요.'); }" class="space-y-4">
             <div>
                 <label class="text-xs font-bold text-gray-500 mb-1 block">목표 이름</label>
@@ -848,7 +848,7 @@
                 <input type="date" id="top-goal-deadline" class="pc-input bg-white border-gray-200">
                 <p class="text-[10px] text-gray-400 mt-1">설정하면 카드에 D-day가 표시됩니다.</p>
             </div>
-            <button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">목표 생성하기</button>
+            <button type="submit" id="top-goal-submit-btn" class="pc-btn pc-btn-primary w-full py-3 text-base">목표 생성하기</button>
         </form>
     </div>
 </div>
@@ -857,7 +857,7 @@
 <div id="add-quest-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
     <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
         <button onclick="closeModal('add-quest-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
-        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="plus-circle" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 세부 퀘스트 추가</h2>
+        <h2 id="quest-modal-title" class="text-lg font-bold mb-4 flex items-center"><i data-lucide="plus-circle" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 세부 퀘스트 추가</h2>
         <form onsubmit="event.preventDefault(); if(window.addQuest) { window.addQuest(); } else { alert('🚨 파일 로딩 에러: goalswap.js 파일을 읽지 못했습니다!'); }" class="space-y-4">
             <div>
                 <label class="text-xs font-bold text-gray-500 mb-1 block">어떤 최상위 목표와 연결할까요?</label>
@@ -881,7 +881,7 @@
                 <label class="text-xs font-bold text-gray-500 mb-1 block">마감일 (선택)</label>
                 <input type="date" id="quest-deadline" class="pc-input bg-white border-gray-200">
             </div>
-            <button type="submit" class="pc-btn pc-btn-purple w-full py-3 text-base">퀘스트 등록</button>
+            <button type="submit" id="quest-submit-btn" class="pc-btn pc-btn-purple w-full py-3 text-base">퀘스트 등록</button>
         </form>
     </div>
 </div>
@@ -890,7 +890,7 @@
 <div id="add-routine-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-pancake-text/50 backdrop-blur-sm transition-opacity">
     <div class="pc-card w-full max-w-sm m-4 shadow-2xl relative bg-white">
         <button onclick="closeModal('add-routine-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-pancake-failure"><span class="text-2xl font-bold">×</span></button>
-        <h2 class="text-lg font-bold mb-4 flex items-center"><i data-lucide="sprout" class="w-5 h-5 mr-2 text-pancake-success"></i> 반복할 루틴 추가</h2>
+        <h2 id="routine-modal-title" class="text-lg font-bold mb-4 flex items-center"><i data-lucide="sprout" class="w-5 h-5 mr-2 text-pancake-success"></i> 반복할 루틴 추가</h2>
         <form onsubmit="event.preventDefault(); if(window.addRoutine) { window.addRoutine(); } else { alert('🚨 파일 로딩 에러: goalswap.js 파일을 읽지 못했습니다!'); }" class="space-y-4">
             <div>
                 <label class="text-xs font-bold text-gray-500 mb-1 block">완료 시 어느 목표의 경험치를 올릴까요?</label>
@@ -922,7 +922,7 @@
                     <button type="button" onclick="window.setAllDays(false)" class="text-[10px] font-bold text-gray-400 hover:underline">전체 해제</button>
                 </div>
             </div>
-            <button type="submit" class="pc-btn pc-btn-success w-full py-3 text-base">루틴 심기</button>
+            <button type="submit" id="routine-submit-btn" class="pc-btn pc-btn-success w-full py-3 text-base">루틴 심기</button>
         </form>
     </div>
 </div>
