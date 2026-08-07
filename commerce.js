@@ -5,6 +5,7 @@ let localExpenses = [];
 let editingAccountId = null;
 let editingExpenseId = null;
 let accountFilterCategory = 'all';
+let expandedChecklistAccounts = new Set();
 
 // ---- 초기 데이터 로드 (goal.js의 initializeData 체이닝 방식 흉내) ----
 const originalInitializeData_commerce = window.initializeData || async function(){};
@@ -163,29 +164,190 @@ window.renderAccounts = function() {
         const idPart = a.account_id ? `<span class="text-[10px] text-gray-500 font-bold">ID: ${a.account_id}</span>` : '';
         const purposePart = a.purpose ? `<span class="quest-priority-badge quest-priority-medium">${a.purpose}</span>` : '';
         const memoPart = a.memo ? `<div class="text-[10px] text-gray-400 mt-1 leading-snug break-words">${a.memo}</div>` : '';
+
+        // 체크리스트 섹션
+        const checklist = Array.isArray(a.checklist) ? a.checklist : [];
+        const done = checklist.filter(c => c.done).length;
+        const total = checklist.length;
+        const isExpanded = expandedChecklistAccounts.has(a.id);
+        const barPct = total > 0 ? Math.round((done/total)*100) : 0;
+        const summaryText = total > 0 ? `<span class="text-[10px] font-bold text-pancake-primary">${done}/${total}</span>` : '<span class="text-[10px] font-bold text-gray-400">(비어있음)</span>';
+
+        const itemsHtml = checklist.map(c => `
+            <div class="flex items-center gap-2 group py-0.5">
+                <div onclick="window.toggleChecklistItem('${a.id}', '${c.id}')" class="w-4 h-4 rounded border-2 flex items-center justify-center cursor-pointer ${c.done ? 'bg-pancake-success border-pancake-success' : 'border-gray-300'} shrink-0">
+                    ${c.done ? '<i data-lucide="check" class="w-2.5 h-2.5 text-white"></i>' : ''}
+                </div>
+                <span onclick="window.toggleChecklistItem('${a.id}', '${c.id}')" class="text-xs font-bold flex-1 min-w-0 break-words cursor-pointer ${c.done ? 'text-gray-400 line-through' : 'text-pancake-text'}">${c.text}</span>
+                <button onclick="window.deleteChecklistItem('${a.id}', '${c.id}')" class="text-gray-300 hover:text-pancake-failure opacity-0 group-hover:opacity-100 shrink-0" title="삭제"><i data-lucide="x" class="w-3 h-3"></i></button>
+            </div>
+        `).join('');
+
+        const otherAccountOptions = localAccounts.filter(o => o.id !== a.id).map(o => `<option value="${o.id}">${(o.category==='blog'?'📝':'🛒')} ${o.platform} · ${o.name}</option>`).join('');
+        const copyControls = (total > 0 && localAccounts.length > 1) ? `
+            <div class="flex items-center gap-1 mt-2 pt-2 border-t border-dashed border-gray-200">
+                <span class="text-[9px] font-bold text-gray-400 shrink-0">복사 →</span>
+                <select id="copy-target-${a.id}" class="pc-input !py-1 !text-[10px] bg-gray-50 border-gray-200 flex-1"><option value="">계정 선택...</option>${otherAccountOptions}</select>
+                <button onclick="window.copyChecklistTo('${a.id}')" class="pc-btn pc-btn-secondary !px-2 !py-1 !text-[10px]">복사</button>
+            </div>
+        ` : '';
+
+        const checklistBody = isExpanded ? `
+            <div class="mt-2 pl-1 space-y-0.5">
+                ${itemsHtml}
+                <div class="flex items-center gap-1 mt-1.5">
+                    <input type="text" id="checklist-input-${a.id}" placeholder="+ 항목 추가 후 엔터" class="pc-input !py-1 !text-xs bg-gray-50 border-gray-200 flex-1" onkeydown="if(event.key === 'Enter'){ event.preventDefault(); window.addChecklistItem('${a.id}'); }">
+                    <button onclick="window.addChecklistItem('${a.id}')" class="pc-btn pc-btn-primary !px-2 !py-1 !text-[10px]">추가</button>
+                </div>
+                ${copyControls}
+            </div>
+        ` : '';
+
+        const checklistHtml = `
+            <div class="mt-2 pt-2 border-t border-gray-100">
+                <div class="flex items-center justify-between gap-2">
+                    <button onclick="window.toggleChecklistExpand('${a.id}')" class="flex items-center gap-1 text-[10px] font-bold text-gray-500 hover:text-pancake-primary">
+                        <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" class="w-3 h-3"></i>
+                        체크리스트 ${summaryText}
+                    </button>
+                    ${total > 0 ? `
+                        <div class="flex items-center gap-2 shrink-0">
+                            <div class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-pancake-success" style="width: ${barPct}%"></div></div>
+                            <button onclick="window.resetChecklist('${a.id}')" class="text-gray-400 hover:text-pancake-primary" title="모두 미완료로 초기화"><i data-lucide="rotate-ccw" class="w-3 h-3"></i></button>
+                        </div>
+                    ` : ''}
+                </div>
+                ${checklistBody}
+            </div>
+        `;
+
         return `
-        <div class="flex justify-between items-start gap-2 p-2.5 bg-white rounded-lg border border-gray-200 hover:border-pancake-primary/50 transition">
-            <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="text-sm">${catIcon}</span>
-                    <span class="text-sm font-bold text-pancake-text">${a.platform}</span>
-                    <span class="text-xs font-bold text-gray-500">· ${a.name}</span>
-                    ${purposePart}
+        <div class="flex flex-col gap-1 p-2.5 bg-white rounded-lg border border-gray-200 hover:border-pancake-primary/50 transition">
+            <div class="flex justify-between items-start gap-2">
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="text-sm">${catIcon}</span>
+                        <span class="text-sm font-bold text-pancake-text">${a.platform}</span>
+                        <span class="text-xs font-bold text-gray-500">· ${a.name}</span>
+                        ${purposePart}
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap mt-0.5">
+                        ${idPart}
+                        ${urlPart}
+                    </div>
+                    ${memoPart}
                 </div>
-                <div class="flex items-center gap-2 flex-wrap mt-0.5">
-                    ${idPart}
-                    ${urlPart}
+                <div class="flex items-center gap-0.5 shrink-0">
+                    <button onclick="window.openEditAccount('${a.id}')" class="text-gray-400 hover:text-pancake-primary p-1" title="수정"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="window.deleteAccount('${a.id}')" class="text-gray-400 hover:text-pancake-failure p-1" title="삭제"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                 </div>
-                ${memoPart}
             </div>
-            <div class="flex items-center gap-0.5 shrink-0">
-                <button onclick="window.openEditAccount('${a.id}')" class="text-gray-400 hover:text-pancake-primary p-1" title="수정"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                <button onclick="window.deleteAccount('${a.id}')" class="text-gray-400 hover:text-pancake-failure p-1" title="삭제"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-            </div>
+            ${checklistHtml}
         </div>
     `;
     }).join('');
     if(typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// ================= [계정별 체크리스트] =================
+
+window.toggleChecklistExpand = function(accountId) {
+    if(expandedChecklistAccounts.has(accountId)) expandedChecklistAccounts.delete(accountId);
+    else expandedChecklistAccounts.add(accountId);
+    window.renderAccounts();
+    // 확장 직후 입력창에 포커스
+    setTimeout(() => {
+        const inp = document.getElementById(`checklist-input-${accountId}`);
+        if(inp) inp.focus();
+    }, 0);
+}
+
+window.persistChecklist = async function(accountId) {
+    const account = localAccounts.find(a => a.id === accountId);
+    if(!account) return;
+    if(typeof db !== 'undefined' && typeof currentUser !== 'undefined' && currentUser) {
+        try { await db.collection("users").doc(currentUser.uid).collection("accounts").doc(accountId).update({ checklist: account.checklist || [] }); } catch(e){ console.warn("체크리스트 저장 실패:", e); }
+    }
+}
+
+window.addChecklistItem = async function(accountId) {
+    const inputEl = document.getElementById(`checklist-input-${accountId}`);
+    if(!inputEl) return;
+    const text = inputEl.value.trim();
+    if(!text) return;
+    const account = localAccounts.find(a => a.id === accountId);
+    if(!account) return;
+    if(!Array.isArray(account.checklist)) account.checklist = [];
+    account.checklist.push({ id: 'c_' + Date.now() + '_' + Math.floor(Math.random()*1000), text, done: false, created_at: new Date().toISOString() });
+    inputEl.value = '';
+    expandedChecklistAccounts.add(accountId); // 확장 유지
+    window.renderAccounts();
+    setTimeout(() => { const el = document.getElementById(`checklist-input-${accountId}`); if(el) el.focus(); }, 0);
+    await window.persistChecklist(accountId);
+}
+
+window.toggleChecklistItem = async function(accountId, itemId) {
+    const account = localAccounts.find(a => a.id === accountId);
+    if(!account || !Array.isArray(account.checklist)) return;
+    const item = account.checklist.find(i => i.id === itemId);
+    if(!item) return;
+    item.done = !item.done;
+    if(item.done) item.done_at = new Date().toISOString();
+    else delete item.done_at;
+    window.renderAccounts();
+    await window.persistChecklist(accountId);
+}
+
+window.deleteChecklistItem = async function(accountId, itemId) {
+    const account = localAccounts.find(a => a.id === accountId);
+    if(!account || !Array.isArray(account.checklist)) return;
+    account.checklist = account.checklist.filter(i => i.id !== itemId);
+    window.renderAccounts();
+    await window.persistChecklist(accountId);
+}
+
+window.resetChecklist = async function(accountId) {
+    const account = localAccounts.find(a => a.id === accountId);
+    if(!account || !Array.isArray(account.checklist) || account.checklist.length === 0) return;
+    if(!confirm(`"${account.name}"의 체크리스트를 모두 미완료로 되돌릴까요?\n\n(항목 내용은 그대로 유지되고 체크만 해제됩니다.)`)) return;
+    account.checklist.forEach(i => { i.done = false; delete i.done_at; });
+    expandedChecklistAccounts.add(accountId);
+    window.renderAccounts();
+    await window.persistChecklist(accountId);
+    if(typeof showToast !== 'undefined') showToast("체크리스트가 초기화되었습니다.");
+}
+
+window.copyChecklistTo = async function(fromAccountId) {
+    const targetSelect = document.getElementById(`copy-target-${fromAccountId}`);
+    if(!targetSelect || !targetSelect.value) { alert("복사할 대상 계정을 선택해주세요."); return; }
+    const targetId = targetSelect.value;
+    const fromAccount = localAccounts.find(a => a.id === fromAccountId);
+    const targetAccount = localAccounts.find(a => a.id === targetId);
+    if(!fromAccount || !targetAccount) return;
+    const fromList = Array.isArray(fromAccount.checklist) ? fromAccount.checklist : [];
+    if(fromList.length === 0) return;
+
+    const targetHasItems = Array.isArray(targetAccount.checklist) && targetAccount.checklist.length > 0;
+    let mode = 'append';
+    if(targetHasItems) {
+        const choice = confirm(`"${targetAccount.name}"에 이미 ${targetAccount.checklist.length}개의 항목이 있어요.\n\n확인: 기존 항목 뒤에 이어붙이기\n취소: 아무 것도 하지 않기`);
+        if(!choice) return;
+    }
+
+    if(!Array.isArray(targetAccount.checklist)) targetAccount.checklist = [];
+    // 항목 내용만 복사 (완료 상태는 초기화, ID는 새로 부여)
+    const copied = fromList.map((c, i) => ({
+        id: 'c_' + Date.now() + '_' + i + '_' + Math.floor(Math.random()*1000),
+        text: c.text,
+        done: false,
+        created_at: new Date().toISOString()
+    }));
+    targetAccount.checklist = targetAccount.checklist.concat(copied);
+    targetSelect.value = '';
+    expandedChecklistAccounts.add(targetId);
+    window.renderAccounts();
+    await window.persistChecklist(targetId);
+    if(typeof showToast !== 'undefined') showToast(`${copied.length}개 항목이 복사되었습니다.`);
 }
 
 // ================= [경비 기록] =================
