@@ -521,7 +521,9 @@
             const titleEl = document.getElementById('ledger-form-title'); if(titleEl) titleEl.textContent = '가계부 수정';
 
             document.getElementById('ledger-id').value = entry.id;
-            document.getElementById('ledger-date').value = entry.date.split('T')[0];
+            // 저장된 시각을 한국(현지) 날짜로 변환 — UTC 날짜를 쓰면 새벽 기록이 전날로 밀림
+            const ed = new Date(entry.date);
+            document.getElementById('ledger-date').value = new Date(ed.getTime() - ed.getTimezoneOffset() * 60000).toISOString().split('T')[0];
             document.getElementById('ledger-amount').value = formatNumber(entry.amount);
             if(document.getElementById('ledger-memo')) document.getElementById('ledger-memo').value = entry.memo || '';
             
@@ -673,23 +675,75 @@
             safeCall(renderFixedExpenses); }
         };
 
+        // 이번 달 장부에 실제로 기록된 고정비 금액 (자동/수동 납부 기록, 수정한 금액 반영)
+        function getFixedActualThisMonth(fx) {
+            const now = new Date();
+            const list = localLedgerEntries.filter(e => {
+                if(e.type !== 'expense') return false;
+                if(e.category !== '고정지출(자동)' && e.category !== '고정지출(수동)') return false;
+                if((e.subCategory || '') !== fx.name) return false;
+                const d = new Date(e.date);
+                return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+            });
+            if(list.length === 0) return null;
+            return list.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+        }
+
         function renderFixedExpenses() {
             const container = document.getElementById('fixed-expense-list'); 
+            const summaryEl = document.getElementById('fixed-expense-summary');
             if(!container) return;
             container.innerHTML = '';
-            if(localFixedExpenses.length === 0) return container.innerHTML = '<div class="text-xs text-gray-400 text-center py-6 font-bold">등록된 구독료/고정비가 없습니다.</div>';
+            if(localFixedExpenses.length === 0) {
+                if(summaryEl) summaryEl.innerHTML = '';
+                return container.innerHTML = '<div class="text-xs text-gray-400 text-center py-6 font-bold">등록된 구독료/고정비가 없습니다.</div>';
+            }
             const currentMonthStr = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
+            let paidSum = 0, pendingSum = 0, paidCount = 0;
+
             localFixedExpenses.sort((a,b)=>a.day-b.day).forEach(fx => {
                 const isPaid = fx.lastPaidMonth === currentMonthStr;
-                const el = document.createElement('div'); el.className = `flex justify-between items-center border p-3 rounded-xl ${isPaid ? 'bg-gray-50 border-gray-100 opacity-60' : 'bg-white border-pancake-border shadow-sm'}`;
+                const actual = getFixedActualThisMonth(fx);
+                if(isPaid) { paidCount++; paidSum += (actual !== null ? actual : (parseFloat(fx.amount) || 0)); }
+                else pendingSum += (parseFloat(fx.amount) || 0);
+
+                let actualHtml = '';
+                if(isPaid && actual !== null) {
+                    const diff = actual - (parseFloat(fx.amount) || 0);
+                    const diffHtml = diff !== 0
+                        ? `<span class="ml-1 text-[10px] ${diff > 0 ? 'text-pancake-failure' : 'text-pancake-success'}">(${diff > 0 ? '+' : '-'}${formatNumber(Math.abs(diff))})</span>`
+                        : '';
+                    actualHtml = `<div class="text-xs font-bold text-pancake-text mt-0.5">이번 달 실제 ₩${formatNumber(actual)}${diffHtml}</div>`;
+                }
+
+                const el = document.createElement('div'); el.className = `flex justify-between items-center border p-3 rounded-xl ${isPaid ? 'bg-gray-50 border-gray-100' : 'bg-white border-pancake-border shadow-sm'}`;
                 el.innerHTML = `
-                    <div><div class="font-bold text-sm text-pancake-text flex items-center">${fx.name} ${isPaid?'<i data-lucide="check-circle" class="w-4 h-4 text-pancake-success ml-1"></i>':''}</div><div class="text-xs text-gray-500 font-bold mt-1">매월 ${fx.day}일 · ₩${formatNumber(fx.amount)}</div></div>
-                    <div class="flex gap-2">
+                    <div class="min-w-0">
+                        <div class="font-bold text-sm flex items-center ${isPaid ? 'text-gray-500' : 'text-pancake-text'}">${fx.name} ${isPaid?'<i data-lucide="check-circle" class="w-4 h-4 text-pancake-success ml-1"></i>':''}</div>
+                        <div class="text-xs text-gray-400 font-bold mt-1">매월 ${fx.day}일 · 등록 ₩${formatNumber(fx.amount)}</div>
+                        ${actualHtml}
+                    </div>
+                    <div class="flex gap-2 items-center shrink-0">
                         ${!isPaid ? `<button onclick="payFixedExpense('${fx.id}')" class="pc-btn pc-btn-primary px-3 py-1.5 text-xs !rounded-lg !shadow-[0px_2px_0px_#139ea8]">납부</button>` : `<span class="text-xs font-bold text-pancake-success px-2">완료</span>`}
                         <button onclick="deleteFixedExpense('${fx.id}')" class="text-gray-400 hover:text-pancake-failure p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>`;
                 container.appendChild(el);
-            }); 
+            });
+
+            if(summaryEl) {
+                const total = paidSum + pendingSum;
+                summaryEl.innerHTML = `
+                    <div class="flex items-end justify-between bg-white rounded-xl border border-gray-200 px-4 py-3">
+                        <div>
+                            <div class="text-[10px] font-bold text-gray-500">${new Date().getMonth() + 1}월 고정비 합계</div>
+                            <div class="text-xl font-brand font-bold text-pancake-text">₩ ${formatNumber(Math.round(total))}</div>
+                        </div>
+                        <div class="text-right text-[11px] font-bold leading-relaxed">
+                            <div class="text-pancake-success">납부 ₩${formatNumber(Math.round(paidSum))} <span class="text-gray-400">(${paidCount}/${localFixedExpenses.length}건)</span></div>
+                            <div class="text-gray-400">남은 예정 ₩${formatNumber(Math.round(pendingSum))}</div>
+                        </div>
+                    </div>`;
+            }
             lucide.createIcons();
         }
 
@@ -869,6 +923,7 @@
 
             safeCall(renderMonthSummary);
             safeCall(renderRecentEntries);
+            safeCall(renderFixedExpenses);
 
             const gTfEl = document.getElementById('growth-timeframe');
             if(!gTfEl) return;
