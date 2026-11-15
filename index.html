@@ -126,6 +126,9 @@
                     <input type="text" id="global-exchange-rate" value="1,380" class="number-input bg-transparent border-none text-sm font-bold text-pancake-text w-16 text-right outline-none">
                 </div>
 
+                <button type="button" onclick="refreshAllData(true)" class="p-2 rounded-full hover:bg-gray-100 transition text-pancake-textSub" title="새로고침">
+                    <i data-lucide="refresh-cw" class="w-5 h-5 refresh-icon"></i>
+                </button>
                 <button id="logout-btn" class="p-2 ml-1 rounded-full hover:bg-gray-100 transition text-pancake-failure" title="로그아웃">
                     <i data-lucide="log-out" class="w-5 h-5"></i>
                 </button>
@@ -142,6 +145,9 @@
             <span class="text-xs font-bold text-gray-500">환율($)</span>
             <input type="text" id="global-exchange-rate-mobile" value="1,380" class="number-input bg-transparent border-none text-sm font-bold text-pancake-text w-16 text-right outline-none">
         </div>
+        <button type="button" onclick="refreshAllData(true)" class="shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-pancake-input border border-pancake-border text-pancake-textSub active:scale-95 transition" aria-label="새로고침">
+            <i data-lucide="refresh-cw" class="w-4 h-4 refresh-icon"></i>
+        </button>
     </div>
 
     <main id="app-main" class="max-w-7xl mx-auto px-4 py-4 sm:py-8">

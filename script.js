@@ -242,6 +242,7 @@
 
         async function loadAllData() {
             if(!db || !currentUser) {
+                lastDataLoadAt = Date.now();
                 initSystemWallet();
                 safeCall(renderFixedExpenses); safeCall(initTab1Charts); safeCall(renderTimeline);
                 safeCall(resetJournalForm); safeCall(renderJournals); safeCall(renderFuturesSpecs); safeCall(renderPrinciples); safeCall(renderNotes);
@@ -310,11 +311,63 @@
                 console.error("데이터 로드 중 에러:", error);
                 showToast("데이터를 완전히 불러오지 못했습니다. (로컬 캐시 사용)");
             } finally {
+                lastDataLoadAt = Date.now();
                 initSystemWallet();
                 safeCall(renderFixedExpenses); safeCall(initTab1Charts); safeCall(renderTimeline);
                 safeCall(resetJournalForm); safeCall(renderJournals); safeCall(renderFuturesSpecs); safeCall(renderPrinciples); safeCall(renderNotes);
             }
         }
+
+        // ================= 새로고침 (폰 앱에서 다른 기기 변경사항 반영) =================
+        let lastDataLoadAt = 0;
+        let isRefreshing = false;
+
+        function rerenderActiveTab() {
+            const active = document.querySelector('.tab-content.active');
+            const id = active ? active.id : 'tab1';
+            if(id === 'tab2') { safeCall(renderJournals); safeCall(renderFuturesAccountDisplay); safeCall(renderPrinciples); }
+            if(id === 'tab3') safeCall(renderNotes);
+            if(id === 'tab4') {
+                safeCall(window.renderTopGoals); safeCall(window.renderQuests); safeCall(window.renderRoutines);
+                safeCall(window.updateDropdowns); safeCall(window.renderTodayChecklist); safeCall(window.renderRoutineStats);
+            }
+            if(id === 'tab5') { safeCall(window.renderAccounts); safeCall(window.renderExpenses); }
+        }
+
+        // 입력 중이거나 팝업·입력창이 열려 있으면 자동 새로고침을 건너뜀 (쓰던 내용 보호)
+        function isUserBusy() {
+            if(document.body.classList.contains('ledger-sheet-open')) return true;
+            if(document.querySelector('div[id$="-modal"]:not(.hidden)')) return true;
+            const a = document.activeElement;
+            if(a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT')) return true;
+            return false;
+        }
+
+        window.refreshAllData = async function(manual) {
+            if(!currentUser || isRefreshing) return;
+            isRefreshing = true;
+            document.querySelectorAll('.refresh-icon').forEach(el => el.classList.add('animate-spin'));
+            try {
+                await window.initializeData();   // 가계부 + 트레이딩 + 골 + 커머스 데이터 모두 다시 불러오기
+                rerenderActiveTab();
+                if(manual) showToast("최신 데이터로 새로고침했어요");
+            } catch(e) {
+                console.warn("새로고침 실패:", e);
+                if(manual) showToast("새로고침에 실패했어요. 인터넷 연결을 확인해주세요.");
+            } finally {
+                lastDataLoadAt = Date.now();
+                isRefreshing = false;
+                document.querySelectorAll('.refresh-icon').forEach(el => el.classList.remove('animate-spin'));
+            }
+        };
+
+        // 다른 앱 갔다가 돌아왔을 때 30초 이상 지났으면 자동으로 최신 데이터 불러오기
+        document.addEventListener('visibilitychange', () => {
+            if(document.visibilityState !== 'visible') return;
+            if(Date.now() - lastDataLoadAt < 30000) return;
+            if(isUserBusy()) return;
+            window.refreshAllData(false);
+        });
 
         // ================= LEDGER (가계부) =================
         let localLedgerCategories = { expense: {'식비':['외식'], '교통비':['택시']}, income: {'월급':[]} };
