@@ -1,3 +1,16 @@
+<!-- 📱 모바일 & 홈 화면 앱 설정 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Dashboard</title>
+<meta name="theme-color" content="#FFFFFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="My Dashboard">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+
 <!-- Libraries -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -53,6 +66,7 @@
 
 <!-- 🌟 CSS 파일 연결 🌟 -->
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="mobile.css">
 
 
 <!-- Background Blobs (Login Screen) -->
@@ -84,7 +98,7 @@
 
 <!-- 2. Main App Container -->
 <div id="app-container" class="hidden">
-    <nav class="bg-white border-b border-pancake-border sticky top-0 z-40 shadow-sm overflow-x-auto custom-scrollbar">
+    <nav id="main-nav" class="bg-white border-b border-pancake-border sticky top-0 z-40 shadow-sm overflow-x-auto custom-scrollbar">
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-16 min-w-max">
             <div class="flex items-center gap-2 pr-4 border-r border-gray-100 mr-2">
                 <span class="text-2xl">🥞</span>
@@ -130,129 +144,140 @@
         </div>
     </div>
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
+    <main id="app-main" class="max-w-7xl mx-auto px-4 py-4 sm:py-8">
         
         <!-- ================= [TAB 1] 가계부 ================= -->
         <div id="tab1" class="tab-content active space-y-6">
-            <div class="flex justify-center mb-6">
-                <div id="ledger-subtab-group" class="pc-toggle-group shadow-sm p-1.5 border border-gray-100">
-                    <button class="pc-toggle-btn selected flex items-center gap-2" onclick="switchSubTab('sub-dashboard', this)"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> 대시보드</button>
-                    <button class="pc-toggle-btn flex items-center gap-2" onclick="switchSubTab('sub-timeline', this)"><i data-lucide="history" class="w-4 h-4"></i> 거래 타임라인</button>
+            <div class="flex justify-center mb-4 sm:mb-6">
+                <div id="ledger-subtab-group" class="pc-toggle-group shadow-sm p-1.5 border border-gray-100 w-full sm:w-auto">
+                    <button class="pc-toggle-btn selected flex items-center justify-center gap-2 flex-1 sm:flex-none" onclick="switchSubTab('sub-dashboard', this)"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> 대시보드</button>
+                    <button class="pc-toggle-btn flex items-center justify-center gap-2 flex-1 sm:flex-none" onclick="switchSubTab('sub-timeline', this)"><i data-lucide="history" class="w-4 h-4"></i> 거래 타임라인</button>
                 </div>
             </div>
 
-            <div id="sub-dashboard" class="sub-tab-content active space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="pc-card text-center py-8 md:col-span-2 flex flex-col justify-center border-b-4 border-pancake-cyan">
+            <!-- 모바일: 순서를 order-* 로 재배치 / 데스크톱(sm 이상): 원래 순서 -->
+            <div id="sub-dashboard" class="sub-tab-content active flex flex-col gap-4 sm:gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 order-1 sm:order-none">
+                    <div class="pc-card text-center py-5 sm:py-8 md:col-span-2 flex flex-col justify-center border-b-4 border-pancake-cyan">
                         <h2 class="text-pancake-textSub font-bold text-sm mb-1">💰 총 자산 (Net Worth)</h2>
-                        <p id="total-net-worth" class="text-4xl lg:text-5xl font-brand font-bold text-pancake-text">₩ 0</p>
-                        <p class="text-xs font-bold mt-2 text-gray-400">기본 예금 + 외화 예금(환율 환산)</p>
+                        <p id="total-net-worth" class="text-3xl sm:text-4xl lg:text-5xl font-brand font-bold text-pancake-text">₩ 0</p>
+                        <p class="text-[11px] sm:text-xs font-bold mt-2 text-gray-400">기본 예금 + 외화 예금(환율 환산)</p>
                     </div>
-                    <div class="pc-card text-center py-6 flex flex-col justify-center bg-[#F0FDFA] border-b-4 border-pancake-primary">
+                    <div class="pc-card text-center py-4 sm:py-6 flex flex-col justify-center bg-[#F0FDFA] border-b-4 border-pancake-primary">
                         <h2 class="text-pancake-primary font-bold text-sm mb-2 flex justify-center items-center">💵 보유 현금 (Cash)</h2>
-                        <div class="flex flex-col items-center gap-1">
-                            <p id="system-wallet-balance" class="text-2xl font-brand font-bold text-pancake-text">₩ 0</p>
-                            <p id="usd-wallet-balance" class="text-lg font-brand font-bold text-blue-500">$ 0</p>
+                        <div class="flex flex-row sm:flex-col items-center justify-center gap-x-4 gap-y-1 flex-wrap">
+                            <p id="system-wallet-balance" class="text-xl sm:text-2xl font-brand font-bold text-pancake-text">₩ 0</p>
+                            <p id="usd-wallet-balance" class="text-base sm:text-lg font-brand font-bold text-blue-500">$ 0</p>
                         </div>
-                        <p class="text-[10px] font-bold mt-3 text-pancake-textSub">가계부 수입/지출 자동 연동</p>
-                        <button type="button" onclick="openCashAdjustModal()" class="mt-3 mx-auto text-[10px] font-bold text-pancake-secondary bg-white border border-gray-200 px-3 py-1 rounded-lg hover:bg-gray-50 transition flex items-center"><i data-lucide="sliders-horizontal" class="w-3 h-3 mr-1"></i> 잔액 조정</button>
+                        <p class="text-[10px] font-bold mt-2 sm:mt-3 text-pancake-textSub">가계부 수입/지출 자동 연동</p>
+                        <button type="button" onclick="openCashAdjustModal()" class="mt-2 sm:mt-3 mx-auto text-[11px] sm:text-[10px] font-bold text-pancake-secondary bg-white border border-gray-200 px-3 py-1.5 sm:py-1 rounded-lg hover:bg-gray-50 transition flex items-center"><i data-lucide="sliders-horizontal" class="w-3 h-3 mr-1"></i> 잔액 조정</button>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="pc-card flex flex-col">
-                        <h3 class="font-bold flex items-center mb-4 text-pancake-text"><i data-lucide="calendar-range" class="w-5 h-5 mr-2 text-pancake-warning"></i> <span id="month-summary-title">이번 달 요약</span></h3>
-                        <div class="grid grid-cols-2 gap-3 flex-1">
+                <!-- 모바일에서는 contents 로 풀어서 요약/성장추이 사이에 최근 내역이 들어가게 함 -->
+                <div class="contents lg:grid lg:grid-cols-2 lg:gap-6">
+                    <div class="pc-card flex flex-col order-2 sm:order-none">
+                        <h3 class="font-bold flex items-center mb-3 sm:mb-4 text-pancake-text"><i data-lucide="calendar-range" class="w-5 h-5 mr-2 text-pancake-warning"></i> <span id="month-summary-title">이번 달 요약</span></h3>
+                        <div class="grid grid-cols-2 gap-2 sm:gap-3 flex-1">
                             <div class="bg-green-50 rounded-xl p-3 border border-green-100">
                                 <div class="text-[10px] font-bold text-gray-500 mb-1">수입</div>
-                                <div id="month-income" class="text-lg font-brand font-bold text-pancake-success">₩ 0</div>
+                                <div id="month-income" class="text-base sm:text-lg font-brand font-bold text-pancake-success break-all">₩ 0</div>
                             </div>
                             <div class="bg-pink-50 rounded-xl p-3 border border-pink-100">
                                 <div class="text-[10px] font-bold text-gray-500 mb-1">지출</div>
-                                <div id="month-expense" class="text-lg font-brand font-bold text-pancake-failure">₩ 0</div>
+                                <div id="month-expense" class="text-base sm:text-lg font-brand font-bold text-pancake-failure break-all">₩ 0</div>
                             </div>
                             <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
                                 <div class="text-[10px] font-bold text-gray-500 mb-1">순수지 (수입 − 지출)</div>
-                                <div id="month-net" class="text-lg font-brand font-bold text-pancake-text">₩ 0</div>
+                                <div id="month-net" class="text-base sm:text-lg font-brand font-bold text-pancake-text break-all">₩ 0</div>
                             </div>
                             <div class="bg-[#F0FDFA] rounded-xl p-3 border border-pancake-primary/20">
                                 <div class="text-[10px] font-bold text-gray-500 mb-1">저축률</div>
-                                <div id="month-savings-rate" class="text-lg font-brand font-bold text-pancake-primary">-</div>
+                                <div id="month-savings-rate" class="text-base sm:text-lg font-brand font-bold text-pancake-primary">-</div>
                             </div>
                         </div>
                         <p id="month-expense-compare" class="text-[10px] font-bold text-gray-400 mt-3">지난달 대비 지출 -</p>
                     </div>
-                    <div class="pc-card flex flex-col">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <h3 class="font-bold flex items-center text-pancake-text"><i data-lucide="trending-up" class="w-5 h-5 mr-2 text-pancake-success"></i> 재산 성장 추이</h3>
+                    <div class="pc-card flex flex-col order-4 sm:order-none">
+                        <div class="flex justify-between items-start gap-2 mb-2">
+                            <div class="min-w-0">
+                                <h3 class="font-bold flex items-center text-pancake-text whitespace-nowrap"><i data-lucide="trending-up" class="w-5 h-5 mr-2 text-pancake-success"></i> 재산 성장 추이</h3>
                                 <p id="growth-summary-text" class="text-[10px] font-bold text-gray-400 mt-1 ml-7">데이터 누적 중</p>
                             </div>
-                            <select id="growth-timeframe" class="pc-input text-xs py-1 px-2 w-auto h-auto bg-white border border-gray-200 cursor-pointer" onchange="initTab1Charts()">
+                            <select id="growth-timeframe" class="pc-input text-xs py-1 px-2 !w-auto shrink-0 h-auto bg-white border border-gray-200 cursor-pointer" onchange="initTab1Charts()">
                                 <option value="month">월별 (최근 6개월)</option>
                                 <option value="quarter">분기별 (최근 4분기)</option>
                             </select>
                         </div>
-                        <div class="h-44 relative w-full flex items-center justify-center mt-auto">
+                        <div class="h-40 sm:h-44 relative w-full flex items-center justify-center mt-auto">
                             <canvas id="chart-asset-growth"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <div class="pc-card">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-gray-100 pb-4 gap-4">
+                <div class="pc-card order-5 sm:order-none">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-gray-100 pb-4 gap-3 sm:gap-4">
                         <h3 class="font-bold text-base text-pancake-text flex items-center"><i data-lucide="bar-chart-2" class="w-5 h-5 mr-2 text-pancake-purple"></i> 가계부 수입/지출 분포</h3>
-                        <div class="flex items-center gap-2 bg-pancake-input p-1.5 rounded-xl">
-                            <input type="date" id="ledger-filter-start" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold">
+                        <div class="flex flex-wrap items-center gap-2 bg-pancake-input p-1.5 rounded-xl w-full sm:w-auto">
+                            <input type="date" id="ledger-filter-start" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold flex-1 min-w-0 sm:flex-none">
                             <span class="text-xs text-gray-500">~</span>
-                            <input type="date" id="ledger-filter-end" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold">
-                            <button onclick="renderLedgerCharts()" class="pc-btn pc-btn-primary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#139ea8]">조회</button>
-                            <button onclick="setAllTime('ledger')" class="pc-btn pc-btn-secondary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#D7CAEC]">전체</button>
+                            <input type="date" id="ledger-filter-end" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold flex-1 min-w-0 sm:flex-none">
+                            <div class="flex gap-2 w-full sm:w-auto">
+                                <button onclick="renderLedgerCharts()" class="pc-btn pc-btn-primary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#139ea8] flex-1 sm:flex-none">조회</button>
+                                <button onclick="setAllTime('ledger')" class="pc-btn pc-btn-secondary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#D7CAEC] flex-1 sm:flex-none">전체</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex flex-col md:flex-row gap-6 pt-2">
-                        <div class="flex-1 flex flex-col items-center">
+                    <div class="flex flex-row gap-3 sm:gap-6 pt-2">
+                        <div class="flex-1 min-w-0 flex flex-col items-center">
                             <h4 class="font-bold text-xs mb-2 text-pancake-success bg-green-50 px-3 py-1 rounded-full">수입</h4>
-                            <div class="h-36 w-full"><canvas id="chart-income-pie"></canvas></div>
-                            <div id="chart-income-total" class="mt-4 font-brand font-bold text-lg text-pancake-success">₩ 0</div>
+                            <div class="h-28 sm:h-36 w-full"><canvas id="chart-income-pie"></canvas></div>
+                            <div id="chart-income-total" class="mt-3 sm:mt-4 font-brand font-bold text-sm sm:text-lg text-pancake-success">₩ 0</div>
                         </div>
-                        <div class="w-px bg-gray-100 hidden md:block"></div>
-                        <div class="flex-1 flex flex-col items-center">
+                        <div class="w-px bg-gray-100"></div>
+                        <div class="flex-1 min-w-0 flex flex-col items-center">
                             <h4 class="font-bold text-xs mb-2 text-pancake-failure bg-pink-50 px-3 py-1 rounded-full">지출</h4>
-                            <div class="h-36 w-full"><canvas id="chart-expense-pie"></canvas></div>
-                            <div id="chart-expense-total" class="mt-4 font-brand font-bold text-lg text-pancake-failure">₩ 0</div>
+                            <div class="h-28 sm:h-36 w-full"><canvas id="chart-expense-pie"></canvas></div>
+                            <div id="chart-expense-total" class="mt-3 sm:mt-4 font-brand font-bold text-sm sm:text-lg text-pancake-failure">₩ 0</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="pc-card relative z-10 overflow-hidden" id="ledger-write-section">
-                        <div class="flex justify-between items-center mb-6 relative z-20">
-                            <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="edit-3" class="w-5 h-5 mr-2 text-pancake-purple"></i> 가계부 작성</h2>
-                            <div class="pc-toggle-group shadow-sm" data-group="ledger-type">
-                                <button type="button" data-value="expense" class="pc-toggle-btn selected text-pancake-failure px-5">💸 지출</button>
-                                <button type="button" data-value="income" class="pc-toggle-btn text-pancake-success px-5">💰 수입</button>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 order-6 sm:order-none">
+                    <!-- 가계부 작성: 데스크톱은 카드, 모바일은 + 버튼으로 여는 하단 시트 (mobile.css) -->
+                    <div class="pc-card relative z-10 overflow-hidden ledger-sheet" id="ledger-write-section">
+                        <div class="sm:hidden flex justify-center pb-2">
+                            <div class="w-10 h-1.5 rounded-full bg-gray-200"></div>
+                        </div>
+                        <div class="flex justify-between items-center mb-5 sm:mb-6 relative z-20 gap-2">
+                            <h2 class="text-lg font-bold flex items-center text-pancake-text whitespace-nowrap"><i data-lucide="edit-3" class="w-5 h-5 mr-2 text-pancake-purple"></i> <span id="ledger-form-title">가계부 작성</span></h2>
+                            <div class="flex items-center gap-2">
+                                <div class="pc-toggle-group shadow-sm" data-group="ledger-type">
+                                    <button type="button" data-value="expense" class="pc-toggle-btn selected text-pancake-failure !px-3 sm:!px-5">💸 지출</button>
+                                    <button type="button" data-value="income" class="pc-toggle-btn text-pancake-success !px-3 sm:!px-5">💰 수입</button>
+                                </div>
+                                <button type="button" onclick="closeLedgerSheet()" class="sm:hidden text-gray-400 hover:text-pancake-failure p-1" aria-label="닫기"><i data-lucide="x" class="w-5 h-5"></i></button>
                             </div>
                         </div>
 
-                        <form id="ledger-form" class="space-y-5 relative z-20" onsubmit="event.preventDefault(); addLedger();">
+                        <form id="ledger-form" class="space-y-4 sm:space-y-5 relative z-20" onsubmit="event.preventDefault(); addLedger();">
                             <input type="hidden" id="ledger-id">
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-3 sm:gap-4">
                                 <div><label class="text-xs font-bold text-gray-500 block mb-1">날짜</label><input type="date" id="ledger-date" class="pc-input bg-white border-gray-200" required></div>
-                                <div><label class="text-xs font-bold text-gray-500 block mb-1">금액 (기본 예금 연동)</label><input type="text" id="ledger-amount" placeholder="0" class="pc-input bg-white number-input font-bold text-right text-lg border-gray-200" required></div>
+                                <div><label class="text-xs font-bold text-gray-500 block mb-1">금액 (기본 예금 연동)</label><input type="text" inputmode="numeric" id="ledger-amount" placeholder="0" class="pc-input bg-white number-input font-bold text-right text-lg border-gray-200" required></div>
                             </div>
                             
-                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                                <div class="flex justify-between items-center mb-3">
-                                    <span class="text-xs font-bold text-pancake-text flex items-center"><i data-lucide="folder" class="w-3 h-3 mr-1 text-pancake-warning"></i> 대분류</span>
-                                    <div class="flex gap-1"><input type="text" id="new-ledger-major" class="pc-input py-1 px-2 text-xs w-24 bg-white border border-gray-200" placeholder="카테고리명"><button type="button" id="add-ledger-major-btn" class="bg-white border border-gray-300 text-pancake-text rounded px-2 font-bold hover:bg-gray-100 transition">+</button></div>
+                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 sm:p-4">
+                                <div class="flex justify-between items-center mb-3 gap-2">
+                                    <span class="text-xs font-bold text-pancake-text flex items-center whitespace-nowrap"><i data-lucide="folder" class="w-3 h-3 mr-1 text-pancake-warning"></i> 대분류</span>
+                                    <div class="flex gap-1"><input type="text" id="new-ledger-major" class="pc-input py-1 px-2 text-xs w-28 sm:w-24 bg-white border border-gray-200" placeholder="카테고리명"><button type="button" id="add-ledger-major-btn" class="bg-white border border-gray-300 text-pancake-text rounded px-2.5 font-bold hover:bg-gray-100 transition">+</button></div>
                                 </div>
                                 <div id="ledger-major-container" class="flex flex-wrap gap-2 mb-2"></div>
                                 
                                 <div id="ledger-minor-wrapper" class="hidden border-t border-dashed border-gray-300 pt-3 mt-2">
-                                    <div class="flex justify-between items-center mb-3">
-                                        <span class="text-xs font-bold text-pancake-primary flex items-center"><i data-lucide="corner-down-right" class="w-3 h-3 mr-1"></i> <span id="selected-major-name"></span> > 소분류</span>
-                                        <div class="flex gap-1"><input type="text" id="new-ledger-minor" class="pc-input py-1 px-2 text-xs w-24 bg-white border border-gray-200" placeholder="추가..."><button type="button" id="add-ledger-minor-btn" class="bg-white border border-gray-300 text-pancake-text rounded px-2 font-bold hover:bg-gray-100 transition">+</button></div>
+                                    <div class="flex justify-between items-center mb-3 gap-2">
+                                        <span class="text-xs font-bold text-pancake-primary flex items-center min-w-0 truncate"><i data-lucide="corner-down-right" class="w-3 h-3 mr-1 shrink-0"></i> <span id="selected-major-name"></span>&nbsp;> 소분류</span>
+                                        <div class="flex gap-1 shrink-0"><input type="text" id="new-ledger-minor" class="pc-input py-1 px-2 text-xs w-28 sm:w-24 bg-white border border-gray-200" placeholder="추가..."><button type="button" id="add-ledger-minor-btn" class="bg-white border border-gray-300 text-pancake-text rounded px-2.5 font-bold hover:bg-gray-100 transition">+</button></div>
                                     </div>
                                     <div id="ledger-minor-container" class="flex flex-wrap gap-2"></div>
                                 </div>
@@ -260,50 +285,65 @@
 
                             <div><label class="text-xs font-bold text-gray-500 block mb-1">메모</label><input type="text" id="ledger-memo" class="pc-input bg-white border-gray-200" placeholder="내용 입력..."></div>
                             
-                            <div class="flex justify-end gap-3 pt-4">
-                                <button type="button" onclick="resetLedgerForm()" class="pc-btn pc-btn-secondary text-sm px-6">초기화</button>
-                                <button type="submit" class="pc-btn pc-btn-purple text-base w-full sm:w-auto"><i data-lucide="save" class="w-5 h-5 mr-2"></i> 가계부 저장</button>
+                            <div class="flex justify-end gap-3 pt-2 sm:pt-4">
+                                <button type="button" onclick="resetLedgerForm()" class="pc-btn pc-btn-secondary text-sm px-5 sm:px-6">초기화</button>
+                                <button type="submit" class="pc-btn pc-btn-purple text-base flex-1 sm:flex-none"><i data-lucide="save" class="w-5 h-5 mr-2"></i> 가계부 저장</button>
                             </div>
                         </form>
                     </div>
 
                     <div class="pc-card flex flex-col h-full bg-gray-50/50">
-                        <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
-                            <div>
+                        <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3 gap-2">
+                            <div class="min-w-0">
                                 <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="repeat" class="w-5 h-5 mr-2 text-pancake-primary"></i> 매월 고정비 (구독)</h2>
                                 <p class="text-[10px] text-gray-500 mt-1">월 시작 시 '기본 예금'에서 자동 차감</p>
                             </div>
-                            <button onclick="openModal('fixed-modal')" class="pc-btn pc-btn-primary py-2 px-4 text-xs"><span class="text-lg mr-1">+</span> 추가</button>
+                            <button onclick="openModal('fixed-modal')" class="pc-btn pc-btn-primary py-2 px-4 text-xs shrink-0"><span class="text-lg mr-1">+</span> 추가</button>
                         </div>
-                        <div id="fixed-expense-list" class="space-y-3 flex-grow overflow-y-auto custom-scrollbar pr-2 min-h-[200px]"></div>
+                        <div id="fixed-expense-list" class="space-y-3 flex-grow overflow-y-auto custom-scrollbar pr-1 sm:pr-2 min-h-[120px] sm:min-h-[200px]"></div>
                     </div>
+                </div>
+
+                <!-- 최근 내역: 모바일은 요약 바로 아래(order-3), 데스크톱은 맨 아래 -->
+                <div class="pc-card order-3 sm:order-none">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold flex items-center text-pancake-text"><i data-lucide="list" class="w-5 h-5 mr-2 text-pancake-secondary"></i> 최근 내역</h3>
+                        <button type="button" onclick="showAllLedgerEntries()" class="text-xs font-bold text-pancake-primary hover:underline">전체 보기 →</button>
+                    </div>
+                    <div id="recent-entries-list"></div>
                 </div>
             </div>
 
             <div id="sub-timeline" class="sub-tab-content hidden space-y-6">
                 <div class="pc-card min-h-[500px]">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-gray-100 pb-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3 sm:gap-4 border-b border-gray-100 pb-4">
                         <h2 class="text-lg font-bold flex items-center text-pancake-text"><i data-lucide="activity" class="w-5 h-5 mr-2 text-pancake-primary"></i> 거래 타임라인</h2>
-                        <div class="flex flex-wrap items-center gap-3">
-                            <div class="pc-toggle-group shadow-sm" data-group="timeline-filter">
-                                <button type="button" data-value="all" class="pc-toggle-btn selected px-4">전체보기</button>
-                                <button type="button" data-value="ledger" class="pc-toggle-btn px-4">가계부만</button>
-                                <button type="button" data-value="transfer" class="pc-toggle-btn px-4">잔액 조정</button>
+                        <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                            <div class="pc-toggle-group shadow-sm w-full sm:w-auto" data-group="timeline-filter">
+                                <button type="button" data-value="all" class="pc-toggle-btn selected px-4 flex-1 sm:flex-none">전체보기</button>
+                                <button type="button" data-value="ledger" class="pc-toggle-btn px-4 flex-1 sm:flex-none">가계부만</button>
+                                <button type="button" data-value="transfer" class="pc-toggle-btn px-4 flex-1 sm:flex-none">잔액 조정</button>
                             </div>
-                            <div class="flex items-center gap-2 bg-pancake-input p-1.5 rounded-xl">
-                                <input type="date" id="timeline-filter-start" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold outline-none">
+                            <div class="flex flex-wrap items-center gap-2 bg-pancake-input p-1.5 rounded-xl w-full sm:w-auto">
+                                <input type="date" id="timeline-filter-start" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold outline-none flex-1 min-w-0 sm:flex-none">
                                 <span class="text-xs text-gray-500 font-bold">~</span>
-                                <input type="date" id="timeline-filter-end" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold outline-none">
-                                <button onclick="renderTimeline()" class="pc-btn pc-btn-primary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#139ea8]">조회</button>
-                                <button onclick="setAllTime('timeline')" class="pc-btn pc-btn-secondary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#D7CAEC]">전체</button>
+                                <input type="date" id="timeline-filter-end" class="bg-white border border-gray-200 rounded px-2 py-1 text-xs font-bold outline-none flex-1 min-w-0 sm:flex-none">
+                                <div class="flex gap-2 w-full sm:w-auto">
+                                    <button onclick="renderTimeline()" class="pc-btn pc-btn-primary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#139ea8] flex-1 sm:flex-none">조회</button>
+                                    <button onclick="setAllTime('timeline')" class="pc-btn pc-btn-secondary px-3 py-1 text-xs font-bold !rounded-lg !shadow-[0px_2px_0px_#D7CAEC] flex-1 sm:flex-none">전체</button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="border-l-2 border-pancake-border ml-4 pl-6 space-y-6 relative" id="timeline-container">
+                    <div class="border-l-2 border-pancake-border ml-3 sm:ml-4 pl-5 sm:pl-6 space-y-6 relative" id="timeline-container">
                         <!-- JS 렌더링 -->
                     </div>
                 </div>
             </div>
+
+            <!-- 모바일 전용: 가계부 입력 + 버튼 & 시트 배경 -->
+            <div id="ledger-sheet-backdrop" class="sm:hidden" onclick="closeLedgerSheet()"></div>
+            <button type="button" id="ledger-fab" onclick="openLedgerSheet()" class="sm:hidden" aria-label="가계부 작성"><i data-lucide="plus" class="w-7 h-7"></i></button>
         </div>
 
         <!-- ================= [TAB 2] 트레이딩 데스크 ================= -->
@@ -748,7 +788,7 @@
         <form id="fixed-form" class="space-y-4" onsubmit="saveFixedExpense(event)">
             <div><label class="text-xs font-bold text-gray-500 mb-1 block">구독/고정비 이름</label><input type="text" id="fx-name" class="pc-input bg-white border-gray-200" placeholder="예: 넷플릭스" required></div>
             <div><label class="text-xs font-bold text-gray-500 mb-1 block">결제일 (매월)</label><select id="fx-day" class="pc-input bg-white border-gray-200" required></select></div>
-            <div><label class="text-xs font-bold text-gray-500 mb-1 block">금액</label><input type="text" id="fx-amount" class="pc-input bg-white number-input text-right border-gray-200" placeholder="0" required></div>
+            <div><label class="text-xs font-bold text-gray-500 mb-1 block">금액</label><input type="text" inputmode="numeric" id="fx-amount" class="pc-input bg-white number-input text-right border-gray-200" placeholder="0" required></div>
             <div class="pt-2"><button type="submit" class="pc-btn pc-btn-primary w-full py-3 text-base">등록하기</button></div>
         </form>
     </div>

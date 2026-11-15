@@ -12,12 +12,16 @@
 
             if (loginBtn) {
                 loginBtn.addEventListener('click', () => {
-                    auth.signInWithPopup(provider).catch(e => showToast("로그인 실패: " + e.message));
+                    // 홈 화면 앱(standalone)에서는 팝업 로그인이 앱으로 돌아오지 못하는 경우가 많아 리다이렉트 방식 사용
+                    if (isStandaloneApp()) auth.signInWithRedirect(provider).catch(e => showToast("로그인 실패: " + e.message));
+                    else auth.signInWithPopup(provider).catch(e => showToast("로그인 실패: " + e.message));
                 });
             }
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', () => auth.signOut());
             }
+
+            if (auth && auth.getRedirectResult) auth.getRedirectResult().catch(e => showToast("로그인 실패: " + e.message));
 
             auth.onAuthStateChanged((user) => {
                 if (user) {
@@ -38,6 +42,10 @@
                 }
             });
         };
+
+        function isStandaloneApp() {
+            return window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+        }
 
         function safeCall(fn) {
             try { fn(); } catch(e) { console.warn(`Error in ${fn.name}:`, e); }
@@ -373,7 +381,77 @@
             }
         });
 
+        // ================= 모바일: 가계부 작성 시트 =================
+        function isMobileLayout() { return window.matchMedia('(max-width: 639px)').matches; }
+
+        window.openLedgerSheet = function() {
+            const sheet = document.getElementById('ledger-write-section');
+            if(!sheet) return;
+            if(!isMobileLayout()) { sheet.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+            if(!document.getElementById('ledger-date')?.value) document.getElementById('ledger-date').value = localTodayString();
+            sheet.scrollTop = 0;
+            sheet.classList.add('sheet-open');
+            document.body.classList.add('ledger-sheet-open');
+        };
+
+        window.closeLedgerSheet = function() {
+            const sheet = document.getElementById('ledger-write-section');
+            if(!sheet || !sheet.classList.contains('sheet-open')) return;
+            sheet.classList.remove('sheet-open');
+            document.body.classList.remove('ledger-sheet-open');
+            if(document.activeElement && sheet.contains(document.activeElement)) document.activeElement.blur();
+            // 수정하다가 닫으면 수정 모드 해제 (다음에 + 누를 때 새 기록으로 시작)
+            if(document.getElementById('ledger-id')?.value) safeCall(resetLedgerForm);
+        };
+
+        // 화면을 돌리거나 넓혀서 데스크톱 레이아웃이 되면 시트 상태 해제
+        window.matchMedia('(max-width: 639px)').addEventListener?.('change', e => {
+            if(!e.matches) { document.getElementById('ledger-write-section')?.classList.remove('sheet-open'); document.body.classList.remove('ledger-sheet-open'); }
+        });
+
+        // ================= 최근 내역 (대시보드) =================
+        function renderRecentEntries() {
+            const box = document.getElementById('recent-entries-list');
+            if(!box) return;
+            const ts = e => (e.timestamp && e.timestamp.seconds) ? e.timestamp.seconds : 0;
+            const items = localLedgerEntries
+                .filter(e => e.type === 'income' || e.type === 'expense')
+                .slice()
+                .sort((a, b) => (new Date(b.date) - new Date(a.date)) || (ts(b) - ts(a)))
+                .slice(0, 5);
+            if(items.length === 0) {
+                box.innerHTML = '<div class="text-center text-xs text-gray-400 font-bold py-6">아직 가계부 기록이 없어요.</div>';
+                return;
+            }
+            box.innerHTML = items.map(e => {
+                const isInc = e.type === 'income';
+                const d = new Date(e.date);
+                const dateStr = `${d.getMonth() + 1}/${d.getDate()}`;
+                const title = e.subCategory ? `${e.category} · ${e.subCategory}` : e.category;
+                const sub = e.memo ? `${dateStr} · ${e.memo}` : dateStr;
+                return `
+                <button type="button" onclick="editLedgerEntry('${e.id}')" class="w-full flex items-center gap-3 py-2.5 border-b border-gray-100 last:border-0 text-left hover:bg-gray-50 rounded-lg px-1 transition">
+                    <span class="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center text-base ${isInc ? 'bg-green-50' : 'bg-pink-50'}">${isInc ? '💰' : '💸'}</span>
+                    <span class="flex-1 min-w-0">
+                        <span class="block text-sm font-bold text-pancake-text truncate">${title}</span>
+                        <span class="block text-[11px] font-bold text-gray-400 truncate">${sub}</span>
+                    </span>
+                    <span class="shrink-0 font-brand font-bold text-sm ${isInc ? 'text-pancake-success' : 'text-pancake-failure'}">${isInc ? '+' : '-'}₩${formatNumber(e.amount)}</span>
+                </button>`;
+            }).join('');
+        }
+
+        window.showAllLedgerEntries = function() {
+            const btn = document.querySelector('#ledger-subtab-group button[onclick*="sub-timeline"]');
+            if(btn) btn.click();
+            setTimeout(() => {
+                document.querySelector('#tab1 [data-group="timeline-filter"] button[data-value="ledger"]')?.click();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 0);
+        };
+
         window.resetLedgerForm = function() {
+            const titleEl = document.getElementById('ledger-form-title'); if(titleEl) titleEl.textContent = '가계부 작성';
             document.getElementById('ledger-form')?.reset();
             if(document.getElementById('ledger-id')) document.getElementById('ledger-id').value = '';
             if(document.getElementById('ledger-date')) document.getElementById('ledger-date').value = localTodayString();
@@ -417,14 +495,16 @@
                 safeCall(updateWalletDisplay);
                 safeCall(renderTimeline); safeCall(initTab1Charts);
             }
-            safeCall(resetLedgerForm); showToast("가계부가 안전하게 저장되었습니다.");
+            safeCall(resetLedgerForm); safeCall(closeLedgerSheet); showToast("가계부가 안전하게 저장되었습니다.");
         }
 
         window.editLedgerEntry = function(id) {
             const entry = localLedgerEntries.find(e => e.id === id);
             if(!entry) return;
             document.querySelector('#tab1 [onclick*="sub-dashboard"]')?.click(); 
-            document.getElementById('ledger-write-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if(isMobileLayout()) safeCall(openLedgerSheet);
+            else document.getElementById('ledger-write-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const titleEl = document.getElementById('ledger-form-title'); if(titleEl) titleEl.textContent = '가계부 수정';
 
             document.getElementById('ledger-id').value = entry.id;
             document.getElementById('ledger-date').value = entry.date.split('T')[0];
@@ -705,7 +785,7 @@
                             <div class="flex items-center gap-3">
                                 <span class="text-2xl">${icon}</span>
                                 <div>
-                                    <div class="font-bold text-sm text-pancake-text">${e.category} <span class="text-[10px] text-gray-500 font-normal ml-1 bg-gray-100 px-1.5 py-0.5 rounded">${e.subCategory||''}</span></div>
+                                    <div class="font-bold text-sm text-pancake-text">${e.category} ${e.subCategory ? `<span class="text-[10px] text-gray-500 font-normal ml-1 bg-gray-100 px-1.5 py-0.5 rounded">${e.subCategory}</span>` : ''}</div>
                                     <div class="text-[10px] text-gray-500 font-medium mt-1">${e.memo||''}</div>
                                 </div>
                             </div>
@@ -756,6 +836,7 @@
             }
 
             safeCall(renderMonthSummary);
+            safeCall(renderRecentEntries);
 
             const gTfEl = document.getElementById('growth-timeframe');
             if(!gTfEl) return;

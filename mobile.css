@@ -1,0 +1,99 @@
+/* =========================================================
+   📱 모바일(아이폰 등) 전용 스타일 — 가계부 탭
+   - 데스크톱(640px 이상)에는 영향 없음
+   ========================================================= */
+
+html { -webkit-text-size-adjust: 100%; }
+body { -webkit-tap-highlight-color: transparent; }
+
+/* 노치/다이내믹 아일랜드 영역만큼 상단 여백 (일반 브라우저에서는 0) */
+#main-nav { padding-top: env(safe-area-inset-top); }
+#login-view { padding-top: env(safe-area-inset-top); }
+
+/* + 버튼 / 시트 배경 — 기본은 숨김 (데스크톱) */
+#ledger-fab, #ledger-sheet-backdrop { display: none; }
+
+@media (max-width: 639px) {
+    /* 아이폰은 16px 미만 입력창을 누르면 화면이 확대됨 → 16px로 고정 */
+    input, select, textarea { font-size: 16px !important; }
+
+    /* + 버튼과 홈 인디케이터에 내용이 가리지 않도록 하단 여백 */
+    #app-main { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+
+    /* 카드 여백·모서리 살짝 줄이기 */
+    #tab1 .pc-card { padding: 18px; border-radius: 20px; }
+
+    /* ---------- + 버튼 (Floating Action Button) ---------- */
+    #ledger-fab {
+        display: flex;
+        position: fixed;
+        right: 20px;
+        bottom: calc(22px + env(safe-area-inset-bottom));
+        z-index: 55;
+        width: 60px; height: 60px;
+        border-radius: 9999px;
+        border: none;
+        align-items: center; justify-content: center;
+        background: #7645D9;
+        color: #fff;
+        box-shadow: 0 4px 0 #522f99, 0 10px 24px rgba(118, 69, 217, 0.35);
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    #ledger-fab:active { transform: translateY(3px); box-shadow: 0 1px 0 #522f99, 0 6px 14px rgba(118, 69, 217, 0.3); }
+    body.ledger-sheet-open #ledger-fab { opacity: 0; pointer-events: none; }
+
+    /* ---------- 시트 뒤 어두운 배경 ---------- */
+    #ledger-sheet-backdrop {
+        display: block;
+        position: fixed; inset: 0;
+        z-index: 65;
+        background: rgba(40, 13, 95, 0.4);
+        opacity: 0; pointer-events: none;
+        transition: opacity 0.25s ease;
+    }
+    body.ledger-sheet-open #ledger-sheet-backdrop { opacity: 1; pointer-events: auto; }
+    body.ledger-sheet-open { overflow: hidden; }
+
+    /* ---------- 가계부 작성 → 아래에서 올라오는 시트 ---------- */
+    #ledger-write-section.ledger-sheet {
+        position: fixed !important;
+        left: 0; right: 0; bottom: 0;
+        z-index: 70;
+        margin: 0;
+        max-height: 88dvh;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        border-radius: 24px 24px 0 0;
+        border-bottom: none;
+        padding: 10px 18px calc(18px + env(safe-area-inset-bottom));
+        box-shadow: 0 -12px 32px rgba(40, 13, 95, 0.18);
+        transform: translateY(110%);
+        visibility: hidden;
+        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0.3s;
+    }
+    #ledger-write-section.ledger-sheet.sheet-open {
+        transform: translateY(0);
+        visibility: visible;
+        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s;
+    }
+
+    /* 타임라인 날짜 배지 위치 (모바일 여백에 맞춤) */
+    #timeline-container > div.inline-block { left: -26px !important; }
+    #timeline-container .group > div.absolute:first-child { left: -27px !important; }
+}
+
+/* 휴대폰·터치 기기(마우스 hover 없음): 타임라인의 수정/삭제 버튼이 항상 보이게 */
+@media (max-width: 639px), (hover: none) {
+    #timeline-container .group .absolute.top-2 {
+        position: static;
+        opacity: 1;
+        display: inline-flex;
+        margin-top: 6px;
+        background: transparent;
+        box-shadow: none;
+        border: 0;
+        padding: 0;
+        gap: 6px;
+    }
+    #timeline-container .group .absolute.top-2 button { padding: 6px; background: #F4F2F8; border-radius: 8px; }
+}
