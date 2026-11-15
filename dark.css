@@ -1,0 +1,133 @@
+/* =========================================================
+   🌙 다크모드 — <html class="dark"> 일 때만 적용
+   - 바탕: 유튜브 다크모드 무채색 (배경 #0F0F0F / 카드 #181818)
+   - 우리 색: 선택된 탭·버튼, 카드 제목 아이콘, 저장·+ 버튼에만 보라 포인트
+   - 민트·핑크·초록·노랑 포인트 색은 그대로
+   ========================================================= */
+
+/* ---- 기본 팔레트 ----
+   배경 #0F0F0F / 카드 #181818 / 입력·한 단계 위 #212121 / 눌림 #272727
+   테두리 #272727 / 본문 글씨 #F1F1F1 / 보조 글씨 #AAAAAA
+   보라 포인트: 배경 rgba(118,69,217,0.28) + 글씨 #E4D9FF            */
+
+html.dark { color-scheme: dark; }
+html.dark body { background-color: #0F0F0F; color: #F1F1F1; }
+
+/* ---------- style.css 컴포넌트 ---------- */
+html.dark .pc-card { background-color: #181818; border-color: #272727; box-shadow: none; }
+html.dark .pc-input { background-color: #212121; color: #F1F1F1; }
+html.dark .pc-input:focus { background-color: #262626; border-color: #1FC7D4; }
+html.dark input::placeholder, html.dark textarea::placeholder { color: #717171; }
+
+html.dark .pc-btn-secondary { background-color: #212121 !important; color: #D0D0D0 !important; border-color: #333333 !important; box-shadow: 0 3px 0 #000000 !important; }
+html.dark .pc-toggle-group { background-color: #212121; }
+html.dark .pc-toggle-btn { color: #AAAAAA; }
+/* 💜 포인트: 선택된 탭·토글은 보라 */
+html.dark .pc-toggle-btn.selected { background-color: rgba(118,69,217,0.32) !important; color: #E4D9FF; box-shadow: none; }
+html.dark .nav-tab { color: #AAAAAA; }
+html.dark .nav-tab.active { color: #1FC7D4; }
+
+html.dark .category-btn { background-color: #212121; color: #F1F1F1; }
+html.dark .minor-category-btn { background-color: #181818; }
+html.dark .pc-day-btn { background-color: #212121; color: #AAAAAA; }
+html.dark .pc-day-btn.selected { background-color: #31D0AA; color: #fff; }
+html.dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #333333; }
+
+/* 💜 포인트: 카드·팝업 제목 옆 아이콘에 작은 보라 배경 */
+html.dark .pc-card h2 > svg.lucide:first-child,
+html.dark .pc-card h3 > svg.lucide:first-child {
+    background: rgba(118,69,217,0.22);
+    color: #B69CFF !important;
+    border-radius: 7px;
+    padding: 4px;
+    box-sizing: content-box;
+}
+
+/* Goal 탭 배지·칩 */
+html.dark .milestone-chip { background: #212121; color: #AAAAAA; border-color: #333333; }
+html.dark .milestone-chip.achieved { background: rgba(255,178,55,0.14); color: #FFC861; border-color: rgba(255,178,55,0.5); }
+html.dark .dday-badge { background: #212121; color: #AAAAAA; }
+html.dark .dday-badge.overdue { background: rgba(237,75,158,0.16); color: #FF7BB8; }
+html.dark .quest-priority-high { background: rgba(237,75,158,0.16); color: #FF7BB8; }
+html.dark .quest-priority-medium { background: rgba(255,178,55,0.16); color: #FFC861; }
+html.dark .quest-priority-low { background: rgba(31,199,212,0.14); color: #4FD8E3; }
+html.dark .quest-deadline-badge { background: #212121; color: #AAAAAA; }
+html.dark .quest-deadline-badge.today { background: rgba(255,178,55,0.16); color: #FFC861; }
+html.dark .quest-deadline-badge.overdue { background: rgba(237,75,158,0.16); color: #FF7BB8; }
+html.dark .quest-filter-chip { background: #212121; color: #AAAAAA; }
+html.dark .quest-filter-chip:hover { background: #272727; }
+html.dark .quest-filter-chip.selected { background: rgba(118,69,217,0.32); color: #E4D9FF; border-color: transparent; box-shadow: none; }
+
+html.dark .milestone-celebrate-card { background: #181818; color: #F1F1F1; }
+html.dark .levelup-celebrate-card { background: linear-gradient(135deg, #2A2418 0%, #181818 60%, #13222A 100%); }
+html.dark .levelup-number { color: #F1F1F1; }
+html.dark .levelup-goal-title { color: #AAAAAA; }
+html.dark .milestone-hline::before { background: #272727; }
+html.dark .milestone-hdot { background: #181818; border-color: #444444; }
+html.dark .milestone-hlabel { color: #F1F1F1; }
+html.dark .milestone-hlabel.achieved { color: #AAAAAA; }
+html.dark .milestone-horder { background: #212121; color: #AAAAAA; }
+html.dark .milestone-hdel { background: #181818; color: #717171; }
+
+/* ---------- Tailwind 배경 ---------- */
+html.dark .bg-white { background-color: #181818 !important; }
+html.dark .bg-white\/90, html.dark .bg-white\/80 { background-color: rgba(24,24,24,0.92) !important; }
+html.dark .bg-gray-50 { background-color: #1F1F1F !important; }
+html.dark .bg-gray-50\/50 { background-color: rgba(31,31,31,0.55) !important; }
+html.dark .bg-gray-100 { background-color: #262626 !important; }
+html.dark .bg-gray-200 { background-color: #2E2E2E !important; }
+html.dark .bg-pancake-input { background-color: #212121 !important; }
+html.dark .bg-\[\#F0FDFA\] { background-color: rgba(31,199,212,0.07) !important; }
+html.dark .bg-green-50 { background-color: rgba(49,208,170,0.10) !important; }
+html.dark .bg-pink-50, html.dark .bg-red-50 { background-color: rgba(237,75,158,0.10) !important; }
+html.dark .bg-red-100 { background-color: rgba(237,75,158,0.18) !important; }
+html.dark .bg-yellow-50 { background-color: rgba(255,178,55,0.10) !important; }
+html.dark .bg-blue-50 { background-color: rgba(59,130,246,0.12) !important; }
+html.dark .bg-gradient-to-br.from-\[\#FFF9E6\] { background-image: linear-gradient(to bottom right, #262118, #181818) !important; }
+
+/* 입력칸은 카드보다 한 단계 밝게 (bg-white 가 붙어 있어도) */
+html.dark input.bg-white, html.dark select.bg-white, html.dark textarea.bg-white,
+html.dark input.pc-input, html.dark select.pc-input, html.dark textarea.pc-input { background-color: #212121 !important; color: #F1F1F1; }
+html.dark input[type="date"].bg-white, html.dark input[type="month"] { background-color: #212121 !important; color: #F1F1F1; }
+
+/* hover */
+html.dark .hover\:bg-gray-50:hover { background-color: #1F1F1F !important; }
+html.dark .hover\:bg-gray-100:hover { background-color: #262626 !important; }
+html.dark .hover\:bg-gray-200:hover { background-color: #2E2E2E !important; }
+html.dark .hover\:bg-red-50:hover { background-color: rgba(237,75,158,0.14) !important; }
+
+/* ---------- Tailwind 테두리 ---------- */
+html.dark .border-gray-100 { border-color: #222222 !important; }
+html.dark .border-gray-200, html.dark .border-pancake-border { border-color: #272727 !important; }
+html.dark .border-gray-300 { border-color: #333333 !important; }
+html.dark .border-green-100 { border-color: rgba(49,208,170,0.25) !important; }
+html.dark .border-pink-100, html.dark .border-red-100, html.dark .border-red-200 { border-color: rgba(237,75,158,0.28) !important; }
+html.dark .border-yellow-100, html.dark .border-yellow-200 { border-color: rgba(255,178,55,0.30) !important; }
+html.dark .border-blue-200 { border-color: rgba(59,130,246,0.35) !important; }
+html.dark .ring-white { --tw-ring-color: #181818 !important; }
+
+/* ---------- Tailwind 글씨 ---------- */
+html.dark .text-pancake-text { color: #F1F1F1 !important; }
+html.dark .text-pancake-textSub { color: #AAAAAA !important; }
+html.dark .text-gray-300 { color: #5A5A5A !important; }
+html.dark .text-gray-400 { color: #8A8A8A !important; }
+html.dark .text-gray-500 { color: #9E9E9E !important; }
+html.dark .text-gray-600 { color: #B8B8B8 !important; }
+html.dark .text-gray-700 { color: #D0D0D0 !important; }
+html.dark .text-blue-500, html.dark .text-blue-600 { color: #6EA8FE !important; }
+html.dark .text-red-600 { color: #FF7BB8 !important; }
+html.dark .text-yellow-800 { color: #FFC861 !important; }
+
+/* 모바일 입력 시트·+버튼 */
+html.dark #ledger-write-section.ledger-sheet { box-shadow: 0 -12px 32px rgba(0,0,0,0.6); }
+html.dark #ledger-fab { box-shadow: 0 4px 0 #3D2380, 0 10px 24px rgba(0,0,0,0.5); }
+html.dark #timeline-container .group .absolute.top-2 button { background: #262626; }
+
+/* 🌙/☀️ 아이콘: 지금 모드에 맞는 것만 보이기 */
+.theme-icon-sun { display: none; }
+html.dark .theme-icon-sun { display: inline-block; }
+html.dark .theme-icon-moon { display: none; }
+
+/* 팝업·입력 시트 뒤 배경: 보라 대신 검정 */
+html.dark #ledger-sheet-backdrop { background: rgba(0,0,0,0.6); }
+html.dark .bg-pancake-text\/50 { background-color: rgba(0,0,0,0.6) !important; }

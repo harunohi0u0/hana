@@ -3,6 +3,53 @@
         Chart.defaults.color = '#7A6EAA'; 
         let chartInstances = {};
 
+        // ================= 🌙 다크모드 =================
+        function isDarkMode() { return document.documentElement.classList.contains('dark'); }
+
+        // 차트 글씨·격자 색 (다른 파일에서 격자색을 직접 지정한 차트도 다크모드일 때 덮어씀)
+        Chart.register({
+            id: 'themeColors',
+            beforeUpdate(chart) {
+                if(!isDarkMode()) return;
+                Object.values(chart.options.scales || {}).forEach(sc => {
+                    if(sc && sc.grid && sc.grid.display !== false) sc.grid.color = 'rgba(255,255,255,0.08)';
+                });
+            }
+        });
+
+        function applyChartTheme() {
+            const dark = isDarkMode();
+            Chart.defaults.color = dark ? '#AAAAAA' : '#7A6EAA';
+            Chart.defaults.borderColor = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
+        }
+        applyChartTheme();
+
+        function applyTheme(dark) {
+            document.documentElement.classList.toggle('dark', dark);
+            document.getElementById('theme-color-meta')?.setAttribute('content', dark ? '#0F0F0F' : '#FFFFFF');
+            applyChartTheme();
+            // 이미 그려진 차트 다시 그리기 (가계부 차트는 색 계산이 있어서 새로 생성)
+            safeCall(initTab1Charts);
+            Object.values(Chart.instances || {}).forEach(c => { try { c.update(); } catch(e) {} });
+        }
+
+        // 버튼: 누를 때마다 전환. 시스템 설정과 같아지면 저장을 지워서 다시 '시스템 따라가기'로 돌아감
+        window.toggleTheme = function() {
+            const next = !isDarkMode();
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            try {
+                if(next === systemDark) localStorage.removeItem('theme');
+                else localStorage.setItem('theme', next ? 'dark' : 'light');
+            } catch(e) {}
+            applyTheme(next);
+        };
+
+        // 버튼으로 따로 정하지 않았다면, 폰/PC 설정이 바뀔 때 자동으로 따라감
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', e => {
+            let saved = null; try { saved = localStorage.getItem('theme'); } catch(err) {}
+            if(!saved) applyTheme(e.matches);
+        });
+
         // ================= AUTH (Google Login) =================
         window.onload = () => {
             const loginView = document.getElementById('login-view');
@@ -1147,7 +1194,7 @@
                 const chartData = displayCurrency === 'USD' ? vals.map(v => v / globalExchangeRate) : vals;
                 createOrUpdateChart(id, {
                     type: 'pie',
-                    data: { labels: keys.length?keys:['없음'], datasets: [{ data: chartData.length?chartData:[1], backgroundColor: vals.length?colors:['#F4F4F4'], borderWidth: 0 }] },
+                    data: { labels: keys.length?keys:['없음'], datasets: [{ data: chartData.length?chartData:[1], backgroundColor: vals.length?colors:[isDarkMode() ? '#262626' : '#F4F4F4'], borderWidth: 0 }] },
                     options: { 
                         responsive: true, maintainAspectRatio: false, 
                         plugins: { 

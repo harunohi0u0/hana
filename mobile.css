@@ -29,7 +29,7 @@ body { -webkit-tap-highlight-color: transparent; }
         position: fixed;
         right: 20px;
         bottom: calc(22px + env(safe-area-inset-bottom));
-        z-index: 55;
+        z-index: 45;
         width: 60px; height: 60px;
         border-radius: 9999px;
         border: none;
@@ -104,8 +104,10 @@ body { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 639px) {
     /* Trading Desk: 기간 조회 줄이 화면 밖으로 밀리지 않게 줄바꿈 */
     #tab2 div:has(> #journal-filter-start) { flex-wrap: wrap; width: 100%; }
-    #tab2 #journal-filter-start, #tab2 #journal-filter-end { flex: 1 1 0; min-width: 0; }
+    #tab2 #journal-filter-start, #tab2 #journal-filter-end { flex: 1 1 calc(50% - 20px); min-width: 8rem; }
     #tab2 div:has(> #journal-filter-start) > button { flex: 1 1 40%; }
+    /* 기간별 성과 보기 선택칸이 제목을 밀어내지 않게 */
+    #tab2 #period-stat-type { width: auto !important; flex-shrink: 0; }
 }
 
 /* 폰·터치 기기: 마우스를 올려야만 보이던 수정/삭제 버튼을 항상 표시
