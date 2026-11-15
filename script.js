@@ -63,7 +63,7 @@
         }
 
         function switchSubTab(id, btn) { 
-            document.querySelectorAll('.pc-toggle-group .pc-toggle-btn').forEach(t=>t.classList.remove('selected'));
+            document.querySelectorAll('#ledger-subtab-group .pc-toggle-btn').forEach(t=>t.classList.remove('selected'));
             btn.classList.add('selected'); 
             document.querySelectorAll('.sub-tab-content').forEach(c=>{c.classList.remove('active');c.classList.add('hidden');}); 
             const target=document.getElementById(id); target.classList.remove('hidden'); target.classList.add('active'); 
@@ -127,7 +127,7 @@
                 if(e.target.id === 'global-exchange-rate') document.getElementById('global-exchange-rate-mobile').value = e.target.value;
                 if(e.target.id === 'global-exchange-rate-mobile') document.getElementById('global-exchange-rate').value = e.target.value;
 
-                safeCall(updateHoldingPreview); safeCall(renderHoldings); safeCall(updateWalletDisplay); safeCall(initTab1Charts); safeCall(renderFuturesAccountDisplay);
+                safeCall(updateWalletDisplay); safeCall(initTab1Charts); safeCall(renderFuturesAccountDisplay);
                 
                 // Firestore 설정 저장 (타이핑 중 잦은 요청 방지를 위해 1초 딜레이)
                 if (window.exchangeRateTimeout) clearTimeout(window.exchangeRateTimeout);
@@ -152,7 +152,8 @@
             if(document.getElementById('timeline-filter-end')) document.getElementById('timeline-filter-end').value = lastDay;
             
             const localTodayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-            if(document.getElementById('holding-date')) document.getElementById('holding-date').value = localTodayStr;
+            if(document.getElementById('cash-adjust-date')) document.getElementById('cash-adjust-date').value = localTodayStr;
+            if(document.getElementById('ledger-date') && !document.getElementById('ledger-date').value) document.getElementById('ledger-date').value = localTodayStr;
         }
 
         function setAllTime(type) {
@@ -227,7 +228,7 @@
         async function loadAllData() {
             if(!db || !currentUser) {
                 initSystemWallet();
-                safeCall(renderHoldings); safeCall(renderFixedExpenses); safeCall(initTab1Charts); safeCall(renderTimeline);
+                safeCall(renderFixedExpenses); safeCall(initTab1Charts); safeCall(renderTimeline);
                 safeCall(resetJournalForm); safeCall(renderJournals); safeCall(renderFuturesSpecs); safeCall(renderPrinciples); safeCall(renderNotes);
                 return;
             }
@@ -293,7 +294,7 @@
                 showToast("데이터를 완전히 불러오지 못했습니다. (로컬 캐시 사용)");
             } finally {
                 initSystemWallet();
-                safeCall(renderHoldings); safeCall(renderFixedExpenses); safeCall(initTab1Charts); safeCall(renderTimeline);
+                safeCall(renderFixedExpenses); safeCall(initTab1Charts); safeCall(renderTimeline);
                 safeCall(resetJournalForm); safeCall(renderJournals); safeCall(renderFuturesSpecs); safeCall(renderPrinciples); safeCall(renderNotes);
             }
         }
@@ -375,7 +376,7 @@
         window.resetLedgerForm = function() {
             document.getElementById('ledger-form')?.reset();
             if(document.getElementById('ledger-id')) document.getElementById('ledger-id').value = '';
-            if(document.getElementById('ledger-date')) document.getElementById('ledger-date').value = new Date().toISOString().split('T')[0];
+            if(document.getElementById('ledger-date')) document.getElementById('ledger-date').value = localTodayString();
             selectedMajorCategory = null; 
             document.querySelectorAll('#ledger-minor-container .selected-minor').forEach(b => b.classList.remove('selected-minor'));
             const type = document.querySelector('[data-group="ledger-type"] .selected')?.dataset.value;
@@ -491,7 +492,7 @@
                 await loadAllData();
             } else {
                 localLedgerEntries = localLedgerEntries.filter(e => e.id !== id);
-                safeCall(updateWalletDisplay); safeCall(renderTimeline); safeCall(initTab1Charts); safeCall(renderHoldings);
+                safeCall(updateWalletDisplay); safeCall(renderTimeline); safeCall(initTab1Charts);
             }
             showToast("기록 삭제 및 롤백 완료");
         };
@@ -580,272 +581,75 @@
             lucide.createIcons();
         }
 
-        // ================= ASSET PORTFOLIO =================
-        window.toggleHoldingInputs = function() {
-            const type = document.getElementById('holding-type')?.value;
-            const isCash = type === 'cash' || type === 'usd_cash';
-            document.getElementById('holding-name-container')?.classList.toggle('hidden', isCash);
-            document.getElementById('holding-qty-price-container')?.classList.toggle('hidden', isCash);
-            document.getElementById('holding-currency-container')?.classList.toggle('hidden', isCash);
-            document.getElementById('holding-cash-container')?.classList.toggle('hidden', !isCash);
-            document.getElementById('holding-preview-container')?.classList.toggle('hidden', isCash);
-            if(document.getElementById('holding-qty')) document.getElementById('holding-qty').required = !isCash;
-            if(document.getElementById('holding-price')) document.getElementById('holding-price').required = !isCash;
-            if(document.getElementById('holding-cash-amount')) document.getElementById('holding-cash-amount').required = isCash;
-            if (isCash) {
-                const label = document.getElementById('holding-cash-label');
-                const input = document.getElementById('holding-cash-amount');
-                if(!label || !input) return;
-                if (type === 'usd_cash') {
-                    label.textContent = '입출금 금액($)';
-                    input.placeholder = "예: 1,000";
-                    input.classList.remove('text-pancake-success'); input.classList.add('text-blue-500');
-                } else {
-                    label.textContent = '입출금 금액(₩)';
-                    input.placeholder = "예: 100,000";
-                    input.classList.add('text-pancake-success'); input.classList.remove('text-blue-500');
-                }
-            }
+        // ================= CASH BALANCE ADJUST (현금 잔액 조정) =================
+        function localTodayString() {
+            const t = new Date();
+            return new Date(t.getTime() - (t.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
         }
 
-        document.querySelectorAll('[data-group="holding-currency"] button').forEach(btn => {
+        function getCashAdjustCurrency() {
+            return document.querySelector('[data-group="cash-adjust-currency"] .selected')?.dataset.value || 'krw';
+        }
+
+        function updateCashAdjustLabel() {
+            const isUsd = getCashAdjustCurrency() === 'usd';
+            const label = document.getElementById('cash-adjust-label');
+            const input = document.getElementById('cash-adjust-amount');
+            if(!label || !input) return;
+            label.textContent = isUsd ? '조정 금액($)' : '조정 금액(₩)';
+            input.placeholder = isUsd ? '예: 1,000' : '예: 100,000';
+            input.classList.toggle('text-blue-500', isUsd);
+            input.classList.toggle('text-pancake-success', !isUsd);
+        }
+
+        document.querySelectorAll('[data-group="cash-adjust-currency"] button').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                document.querySelectorAll('[data-group="holding-currency"] button').forEach(b => b.classList.remove('selected'));
-                e.target.classList.add('selected');
-                safeCall(updateHoldingPreview);
+                document.querySelectorAll('[data-group="cash-adjust-currency"] button').forEach(b => b.classList.remove('selected'));
+                e.currentTarget.classList.add('selected');
+                safeCall(updateCashAdjustLabel);
             });
         });
 
-        window.updateHoldingPreview = function() {
-            const q = parseFloat(unformatNumber(document.getElementById('holding-qty')?.value)) || 0;
-            const p = parseFloat(unformatNumber(document.getElementById('holding-price')?.value)) || 0;
-            const isUsdBtn = document.querySelector('[data-group="holding-currency"] .selected');
-            const isUsd = isUsdBtn ? isUsdBtn.dataset.value === 'usd' : false;
-            
-            const rate = isUsd ? globalExchangeRate : 1;
-            const totalKRW = q * p * rate;
-            if(document.getElementById('holding-preview-total')) document.getElementById('holding-preview-total').textContent = `₩ ${formatNumber(totalKRW)}`;
-        }
-
-        document.getElementById('holding-qty')?.addEventListener('input', updateHoldingPreview);
-        document.getElementById('holding-price')?.addEventListener('input', updateHoldingPreview);
-
-        window.resetHoldingForm = function() { 
-            document.getElementById('holding-form')?.reset();
-            if(document.getElementById('holding-id')) document.getElementById('holding-id').value = ''; 
-            const localTodayStr = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-            if(document.getElementById('holding-date')) document.getElementById('holding-date').value = localTodayStr;
-            if(document.getElementById('holding-preview-total')) document.getElementById('holding-preview-total').textContent = `₩ 0`; 
-            if(document.getElementById('holding-cash-label')) document.getElementById('holding-cash-label').textContent = '입출금 금액(₩)';
-            const hcAmount = document.getElementById('holding-cash-amount');
-            if(hcAmount) { hcAmount.classList.add('text-pancake-success'); hcAmount.classList.remove('text-blue-500'); }
-            safeCall(toggleHoldingInputs);
-        }
-
-        window.addHolding = async function() {
-            const id = document.getElementById('holding-id').value;
-            const type = document.getElementById('holding-type').value;
-            const dateStr = document.getElementById('holding-date').value;
-            const entryDate = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
-            const wallet = getSystemWallet();
-            const usdWallet = getUsdWallet();
-            
-            if(type === 'cash' || type === 'usd_cash') {
-                const amtStr = document.getElementById('holding-cash-amount').value;
-                const amt = parseFloat(unformatNumber(amtStr));
-                if(isNaN(amt) || amt === 0) return alert("입출금 금액을 올바르게 입력하세요.");
-                
-                let entry, targetWallet;
-                if (type === 'cash') {
-                    wallet.total += amt;
-                    targetWallet = wallet;
-                    entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: wallet.id, assetQty: Math.abs(amt), category: '기본예금 수동조절', subCategory: '입출금', amount: Math.abs(amt), memo: '수동 잔액 변경', date: entryDate };
-                } else {
-                    usdWallet.qty += amt;
-                    usdWallet.totalKRW = usdWallet.qty * globalExchangeRate;
-                    targetWallet = usdWallet;
-                    entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: usdWallet.id, assetQty: Math.abs(amt), category: '외화예금 수동조절', subCategory: '입출금(USD)', amount: Math.abs(amt * globalExchangeRate), memo: `수동 잔액 변경 (${amt>0?'+':''}$${formatNumber(Math.abs(amt))})`, date: entryDate };
-                }
-                
-                if(db && currentUser) {
-                    await db.collection("users").doc(currentUser.uid).collection("holdings").doc(targetWallet.id).set(targetWallet);
-                    await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entry, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
-                    await loadAllData();
-                } else {
-                    localLedgerEntries.unshift({ id: `led_${type}_`+Date.now(), ...entry });
-                    safeCall(updateWalletDisplay); safeCall(renderHoldings); safeCall(renderTimeline); safeCall(initTab1Charts);
-                }
-                safeCall(resetHoldingForm);
-                showToast(`${type==='cash'?'예금':'외화 예금'} 잔액 조정 완료 (${amt>0?'+':''}${type==='cash'?'₩':'$'}${formatNumber(Math.abs(amt))})`);
-                return;
-            }
-
-            const name = document.getElementById('holding-name').value;
-            const qty = parseFloat(unformatNumber(document.getElementById('holding-qty').value)) || 0;
-            const price = parseFloat(unformatNumber(document.getElementById('holding-price').value)) || 0;
-            const isUsd = document.querySelector('[data-group="holding-currency"] .selected')?.dataset.value === 'usd';
-            const rate = isUsd ? globalExchangeRate : 1;
-            const totalKRW = qty * price * rate;
-            if(totalKRW <= 0 || isNaN(totalKRW)) return alert("수량과 단가를 올바르게 입력하세요.");
-            
-            let holdingIdToUse = id || 'ast_'+Date.now().toString();
-            if(id) {
-                 const oldAsset = localHoldings.find(h => h.id === id);
-                 if(oldAsset) wallet.total -= (totalKRW - oldAsset.totalKRW); 
-            } else {
-                 wallet.total -= totalKRW;
-            }
-
-            const holdingData = { type, name, qty, price, currency: isUsd?'USD':'KRW', exchangeRate: rate, totalKRW };
-            const entryData = { type: 'buy', assetId: holdingIdToUse, assetQty: qty, category: '자산매수', subCategory: name, amount: totalKRW, memo: `${formatNumber(qty)}주 매수${isUsd?'(USD)':''}`, date: entryDate };
-            
-            if(db && currentUser) {
-                if(id) await db.collection("users").doc(currentUser.uid).collection("holdings").doc(id).update(holdingData);
-                else {
-                     const ref = await db.collection("users").doc(currentUser.uid).collection("holdings").add(holdingData);
-                     entryData.assetId = ref.id;
-                     await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entryData, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
-                }
-                await db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
-                await loadAllData();
-            } else {
-                if(!id) {
-                    localLedgerEntries.unshift({ id: 'led_buy_'+Date.now(), ...entryData });
-                    localHoldings.push({id: holdingIdToUse, ...holdingData});
-                } else {
-                    const idx = localHoldings.findIndex(h => h.id === id);
-                    if(idx > -1) localHoldings[idx] = { ...localHoldings[idx], ...holdingData };
-                }
-                safeCall(updateWalletDisplay);
-                safeCall(renderHoldings); safeCall(renderTimeline); safeCall(initTab1Charts);
-            }
-            safeCall(resetHoldingForm); showToast(`${name} 매수/등록 완료!`);
-        }
-
-        window.editHolding = function(id) {
-            const h = localHoldings.find(x => x.id === id);
-            if(!h) return;
-            document.getElementById('holding-id').value = h.id;
-            document.getElementById('holding-type').value = h.type;
-            const localTodayStr = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-            document.getElementById('holding-date').value = localTodayStr;
-            document.getElementById('holding-name').value = h.name;
-            document.getElementById('holding-qty').value = formatNumber(h.qty);
-            document.getElementById('holding-price').value = formatNumber(h.price);
-            
-            const btn = document.querySelector(`[data-group="holding-currency"] button[data-value="${h.currency==='USD'?'usd':'krw'}"]`);
-            if(btn) btn.click();
-            safeCall(updateHoldingPreview);
+        window.openCashAdjustModal = function() {
+            document.getElementById('cash-adjust-form')?.reset();
+            document.querySelectorAll('[data-group="cash-adjust-currency"] button').forEach(b => b.classList.toggle('selected', b.dataset.value === 'krw'));
+            if(document.getElementById('cash-adjust-date')) document.getElementById('cash-adjust-date').value = localTodayString();
+            safeCall(updateCashAdjustLabel);
+            openModal('cash-adjust-modal');
         };
 
-        window.openSellModal = function(id) {
-            const h = localHoldings.find(x => x.id === id);
-            if(!h) return;
-            document.getElementById('sell-asset-id').value = h.id; 
-            document.getElementById('sell-avg-price').value = h.price;
-            document.getElementById('sell-currency').value = h.currency || 'KRW';
-            
-            const curLabel = h.currency === 'USD' ? '달러($)' : '원화(₩)';
-            document.getElementById('sell-asset-name').textContent = `${h.name} (보유: ${formatNumber(h.qty)}주)`;
-            document.getElementById('sell-price-label').textContent = `매도 단가 (${curLabel})`;
-            const localTodayStr = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-            document.getElementById('sell-date').value = localTodayStr;
-            document.getElementById('sell-qty').value = formatNumber(h.qty); 
-            document.getElementById('sell-price').value = formatNumber(h.price);
-            safeCall(calculateSell); openModal('sell-modal');
-        }
-        
-        document.getElementById('sell-qty')?.addEventListener('input', calculateSell);
-        document.getElementById('sell-price')?.addEventListener('input', calculateSell);
-        
-        function calculateSell() {
-            const q = parseFloat(unformatNumber(document.getElementById('sell-qty')?.value)) || 0; 
-            const p = parseFloat(unformatNumber(document.getElementById('sell-price')?.value)) || 0; 
-            const avg = parseFloat(document.getElementById('sell-avg-price')?.value) || 0;
-            const currency = document.getElementById('sell-currency')?.value;
-            const rate = currency === 'USD' ? globalExchangeRate : 1;
-            const proceedsKRW = q * p * rate;
-            const pnlKRW = ((p - avg) * q) * rate;
-
-            if(document.getElementById('sell-proceeds')) document.getElementById('sell-proceeds').textContent = `₩ ${formatNumber(proceedsKRW)}`;
-            const pel = document.getElementById('sell-pnl');
-            if(pel) {
-                pel.textContent = `₩ ${formatNumber(pnlKRW)}`;
-                pel.className = pnlKRW>0 ? 'font-bold text-pancake-success text-base' : (pnlKRW<0 ? 'font-bold text-pancake-failure text-base' : 'font-bold text-gray-500 text-base');
-            }
-        }
-
-        window.processSell = async function(e) {
-            e.preventDefault();
-            const id = document.getElementById('sell-asset-id').value;
-            const dateStr = document.getElementById('sell-date').value;
+        window.adjustCashBalance = async function() {
+            const isUsd = getCashAdjustCurrency() === 'usd';
+            const dateStr = document.getElementById('cash-adjust-date')?.value;
             const entryDate = dateStr ? new Date(dateStr).toISOString() : new Date().toISOString();
-            const q = parseFloat(unformatNumber(document.getElementById('sell-qty').value)); 
-            const p = parseFloat(unformatNumber(document.getElementById('sell-price').value));
-            if (isNaN(q) || isNaN(p) || q <= 0 || p <= 0) return alert("올바른 숫자를 입력하세요.");
-            const asset = localHoldings.find(h => h.id === id);
-            if(q > asset.qty) return alert("보유 수량을 초과합니다.");
-            const rate = asset.currency === 'USD' ? globalExchangeRate : 1;
-            const proceedsKRW = q * p * rate;
-            const pnlKRW = ((p - asset.price) * q) * rate;
+            const amt = parseFloat(unformatNumber(document.getElementById('cash-adjust-amount')?.value));
+            if(isNaN(amt) || amt === 0) return alert("조정 금액을 올바르게 입력하세요.");
 
             const wallet = getSystemWallet();
-            asset.qty -= q;
-            asset.totalKRW = asset.qty * asset.price * (asset.currency==='USD'?globalExchangeRate:1);
-            wallet.total += proceedsKRW;
-            const entryData = { type: 'sell', assetId: asset.id, assetQty: q, category: '자산매도', subCategory: asset.name, amount: proceedsKRW, memo: `${formatNumber(q)}주 매도`, pnl: pnlKRW, date: entryDate };
-            
+            const usdWallet = getUsdWallet();
+            let entry, targetWallet;
+            if(!isUsd) {
+                wallet.total += amt;
+                targetWallet = wallet;
+                entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: wallet.id, assetQty: Math.abs(amt), category: '기본예금 수동조절', subCategory: '입출금', amount: Math.abs(amt), memo: '수동 잔액 변경', date: entryDate };
+            } else {
+                usdWallet.qty += amt;
+                usdWallet.totalKRW = usdWallet.qty * globalExchangeRate;
+                targetWallet = usdWallet;
+                entry = { type: amt > 0 ? 'deposit' : 'withdrawal', assetId: usdWallet.id, assetQty: Math.abs(amt), category: '외화예금 수동조절', subCategory: '입출금(USD)', amount: Math.abs(amt * globalExchangeRate), memo: `수동 잔액 변경 (${amt>0?'+':'-'}$${formatNumber(Math.abs(amt))})`, date: entryDate };
+            }
+
             if(db && currentUser) {
-                if(asset.qty <= 0.0001) await db.collection("users").doc(currentUser.uid).collection("holdings").doc(id).delete();
-                else await db.collection("users").doc(currentUser.uid).collection("holdings").doc(id).update({qty: asset.qty, totalKRW: asset.totalKRW});
-                await db.collection("users").doc(currentUser.uid).collection("holdings").doc(wallet.id).set(wallet);
-                await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entryData, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
+                await db.collection("users").doc(currentUser.uid).collection("holdings").doc(targetWallet.id).set(targetWallet);
+                await db.collection("users").doc(currentUser.uid).collection("ledgerEntries").add({...entry, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
                 await loadAllData();
             } else {
-                localLedgerEntries.unshift({ id: 'led_sell_'+Date.now(), ...entryData });
-                if(asset.qty <= 0.0001) localHoldings = localHoldings.filter(h=>h.id!==id); 
-                safeCall(updateWalletDisplay); safeCall(renderHoldings); safeCall(renderTimeline); safeCall(initTab1Charts);
+                localLedgerEntries.unshift({ id: 'led_adj_'+Date.now(), ...entry });
+                safeCall(updateWalletDisplay); safeCall(renderTimeline); safeCall(initTab1Charts);
             }
-            closeModal('sell-modal'); showToast("수익 실현! 예금 입금됨");
-        }
-
-        function renderHoldings() {
-            localHoldings.forEach(h => {
-                if(h.type !== 'cash' && h.currency === 'USD') h.totalKRW = h.qty * h.price * globalExchangeRate;
-                else if(h.type !== 'cash') h.totalKRW = h.qty * h.price; 
-            });
-            const container = document.getElementById('holdings-list-container'); 
-            if(!container) return;
-            container.innerHTML = '';
-            const cats = [{ type: 'stock', title: '📈 주식'}, { type: 'bond', title: '🏛️ 채권'}, { type: 'commodity', title: '🥇 원자재'}];
-            let hasItems = false;
-            cats.forEach(cat => {
-                const items = localHoldings.filter(h => h.type === cat.type && h.qty > 0);
-                if(items.length === 0) return;
-                hasItems = true;
-                const section = document.createElement('div'); section.className = 'bg-[#F9F8FA] rounded-xl p-4 border border-gray-200';
-                let html = `<h4 class="font-bold text-sm mb-3 text-pancake-textSub">${cat.title}</h4><div class="space-y-3">`;
-                items.forEach(item => {
-                    const priceStr = item.currency === 'USD' ? `$${formatNumber(item.price)}` : `₩${formatNumber(item.price)}`;
-                    html += `
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 rounded-xl shadow-sm border border-gray-100 gap-2">
-                        <div>
-                            <div class="font-bold text-base text-pancake-text flex items-center">${item.name} ${item.currency==='USD'?'<span class="text-[10px] ml-2 bg-blue-100 text-blue-600 px-1.5 rounded">USD</span>':''}</div>
-                            <div class="text-xs text-gray-500 font-bold mt-1">${item.type === 'usd_cash' ? `잔액: $${formatNumber(item.qty)}` : `${formatNumber(item.qty)}주 × ${priceStr}`}</div>
-                        </div>
-                        <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                            <div class="font-brand font-bold text-xl text-pancake-text">₩ ${formatNumber(item.totalKRW)}</div>
-                            <div class="flex gap-1">
-                                ${item.type !== 'usd_cash' ? `<button onclick="openSellModal('${item.id}')" class="pc-btn pc-btn-success px-3 py-1.5 text-xs !rounded-lg !shadow-[0px_2px_0px_#1e7a63]">매도</button>` : ''}
-                            </div>
-                        </div>
-                    </div>`;
-                });
-                html += '</div>'; section.innerHTML = html; container.appendChild(section);
-            });
-            if(!hasItems) container.innerHTML = '<div class="text-center text-sm text-gray-400 py-10 font-bold border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">등록된 자산이 없습니다.</div>';
-            lucide.createIcons();
-        }
+            closeModal('cash-adjust-modal');
+            showToast(`${isUsd?'외화 예금':'기본 예금'} 잔액 조정 완료 (${amt>0?'+':'-'}${isUsd?'$':'₩'}${formatNumber(Math.abs(amt))})`);
+        };
 
         document.querySelectorAll('#tab1 [data-group="timeline-filter"] button').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -863,7 +667,7 @@
             const typeFilter = typeFilterEl ? typeFilterEl.dataset.value : 'all';
             let filtered = localLedgerEntries.filter(e => {
                 if(typeFilter === 'ledger') return e.type === 'income' || e.type === 'expense';
-                if(typeFilter === 'trade') return e.type === 'buy' || e.type === 'sell' || e.type === 'deposit' || e.type === 'withdrawal';
+                if(typeFilter === 'transfer') return e.type === 'deposit' || e.type === 'withdrawal' || e.type === 'buy' || e.type === 'sell';
                 return true;
             });
             const startVal = document.getElementById('timeline-filter-start')?.value;
@@ -931,57 +735,27 @@
             const entries = localLedgerEntries.filter(e => { let d = new Date(e.date); return d >= start && d < end; });
             let change = 0;
             entries.forEach(e => {
-                if (e.type === 'income' || e.type === 'deposit') change += (parseFloat(e.amount) || 0);
-                if (e.type === 'expense' || e.type === 'withdrawal') change -= (parseFloat(e.amount) || 0);
-                if (e.type === 'sell' && e.pnl) change += (parseFloat(e.pnl) || 0); 
+                // 현금 기준: 예전 매수/매도 기록도 현금 증감으로 반영
+                if (e.type === 'income' || e.type === 'deposit' || e.type === 'sell') change += (parseFloat(e.amount) || 0);
+                if (e.type === 'expense' || e.type === 'withdrawal' || e.type === 'buy') change -= (parseFloat(e.amount) || 0);
             });
             return change;
         }
 
         function initTab1Charts() {
-            let sums = { stock: 0, bond: 0, commodity: 0, usd_cash: 0 };
-            localHoldings.forEach(h => { 
-                if(h.type && h.type !== 'cash') {
-                    sums[h.type] = (sums[h.type] || 0) + (parseFloat(h.totalKRW) || parseFloat(h.total) || 0);
-                }
-            });
             const wallet = getSystemWallet();
+            const usdWallet = getUsdWallet();
             const safeWalletTotal = parseFloat(wallet.total) || 0;
-            const totalAsset = (sums.stock || 0) + (sums.bond || 0) + (sums.commodity || 0) + (sums.usd_cash || 0) + safeWalletTotal;
-            
+            const usdKRW = (parseFloat(usdWallet.qty) || 0) * globalExchangeRate;
+            const totalAsset = safeWalletTotal + usdKRW;
+
             if(document.getElementById('total-net-worth')) {
                 const amt = displayCurrency === 'USD' ? (totalAsset / globalExchangeRate).toFixed(2) : totalAsset;
                 const prefix = displayCurrency === 'USD' ? '$' : '₩';
                 document.getElementById('total-net-worth').textContent = `${prefix} ${formatNumber(amt)}`;
             }
 
-            safeCall(() => createOrUpdateChart('chart-asset-allocation', {
-                type: 'doughnut',
-                data: { 
-                    labels: ['주식', '채권', '원자재', '외화 예금', '기본 예금'], 
-                    datasets: [{ 
-                        data: [sums.stock || 0, sums.bond || 0, sums.commodity || 0, sums.usd_cash || 0, safeWalletTotal], 
-                        backgroundColor: ['#7645D9', '#1FC7D4', '#FFB237', '#3B82F6', '#EDF2F7'], 
-                        borderWidth: 0 
-                    }] 
-                },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, cutout: '70%', circumference: 180, rotation: -90, 
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font:{weight:'bold'} } },
-                        tooltip: {
-                            callbacks: {
-                                label: function(ctx) {
-                                    let val = ctx.raw || 0; let total = ctx.chart._metasets[ctx.datasetIndex].total;
-                                    let pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
-                                    let valDisplay = displayCurrency === 'USD' ? `$${formatNumber((val / globalExchangeRate).toFixed(2))}` : `₩${formatNumber(val)}`;
-                                    return `${ctx.label}: ${valDisplay} (${pct}%)`;
-                                }
-                            }
-                        }
-                    } 
-                }
-            }));
+            safeCall(renderMonthSummary);
 
             const gTfEl = document.getElementById('growth-timeframe');
             if(!gTfEl) return;
@@ -1062,6 +836,54 @@
                 }
             }));
             safeCall(renderLedgerCharts);
+        }
+
+        function sumIncomeExpense(start, end) {
+            let inc = 0, exp = 0;
+            localLedgerEntries.forEach(e => {
+                const d = new Date(e.date);
+                if(d < start || d >= end) return;
+                if(e.type === 'income') inc += (parseFloat(e.amount) || 0);
+                else if(e.type === 'expense') exp += (parseFloat(e.amount) || 0);
+            });
+            return { inc, exp };
+        }
+
+        function renderMonthSummary() {
+            const now = new Date();
+            const thisStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const nextStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            const prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const cur = sumIncomeExpense(thisStart, nextStart);
+            const prev = sumIncomeExpense(prevStart, thisStart);
+            const net = cur.inc - cur.exp;
+
+            const isUsd = displayCurrency === 'USD';
+            const fmt = v => isUsd ? `$ ${formatNumber((v / globalExchangeRate).toFixed(2))}` : `₩ ${formatNumber(Math.round(v))}`;
+            const set = (id, text) => { const el = document.getElementById(id); if(el) el.textContent = text; };
+
+            set('month-summary-title', `${now.getMonth() + 1}월 요약`);
+            set('month-income', fmt(cur.inc));
+            set('month-expense', fmt(cur.exp));
+            const netEl = document.getElementById('month-net');
+            if(netEl) {
+                netEl.textContent = `${net > 0 ? '+' : (net < 0 ? '-' : '')}${fmt(Math.abs(net))}`;
+                netEl.className = `text-lg font-brand font-bold ${net > 0 ? 'text-pancake-success' : (net < 0 ? 'text-pancake-failure' : 'text-pancake-text')}`;
+            }
+            set('month-savings-rate', cur.inc > 0 ? `${((net / cur.inc) * 100).toFixed(1)}%` : '-');
+
+            const cmpEl = document.getElementById('month-expense-compare');
+            if(cmpEl) {
+                if(prev.exp > 0) {
+                    const diff = cur.exp - prev.exp;
+                    const pct = Math.round((diff / prev.exp) * 100);
+                    cmpEl.textContent = `지난달 전체 지출(${fmt(prev.exp)}) 대비 ${diff > 0 ? '▲' : '▼'} ${Math.abs(pct)}%`;
+                    cmpEl.className = `text-[10px] font-bold mt-3 ${diff > 0 ? 'text-pancake-failure' : 'text-pancake-success'}`;
+                } else {
+                    cmpEl.textContent = '지난달 지출 기록 없음';
+                    cmpEl.className = 'text-[10px] font-bold text-gray-400 mt-3';
+                }
+            }
         }
 
         window.renderLedgerCharts = function() {
