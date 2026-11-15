@@ -264,6 +264,8 @@
 
                 localHoldings = hSnap.docs.map(d=>({id:d.id, ...d.data()}));
                 localLedgerEntries = lSnap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b) => new Date(b.date) - new Date(a.date));
+                // 예전 버그로 소분류 끝에 '×'가 붙어 저장된 기록 정리 (화면 표시용, 수정·저장 시 DB에도 반영됨)
+                localLedgerEntries.forEach(e => { if(typeof e.subCategory === 'string') e.subCategory = e.subCategory.replace(/\s*×\s*$/, ''); });
                 localFixedExpenses = fSnap.docs.map(d=>({id:d.id, ...d.data()}));
                 
                 localJournals = jSnap.docs.map(d => {
@@ -474,7 +476,12 @@
             const amtStr = document.getElementById('ledger-amount')?.value;
             const amt = parseFloat(unformatNumber(amtStr));
             const type = document.querySelector('[data-group="ledger-type"] .selected')?.dataset.value;
-            const sub = document.querySelector('#ledger-minor-container .selected-minor')?.textContent || '';
+            let sub = document.querySelector('#ledger-minor-container .selected-minor span')?.textContent || '';
+            if(!sub && id) {
+                // 수정 중 소분류를 따로 고르지 않았고 대분류가 그대로면 기존 소분류 유지 (예: 고정지출(자동) > 클로드)
+                const prev = localLedgerEntries.find(e => e.id === id);
+                if(prev && prev.category === selectedMajorCategory) sub = prev.subCategory || '';
+            }
             const dateStr = document.getElementById('ledger-date')?.value;
             
             if(isNaN(amt) || amt <= 0) return alert("올바 금액을 입력하세요.");
@@ -522,6 +529,24 @@
             setTimeout(() => {
                 const majorBtn = Array.from(document.querySelectorAll('#ledger-major-container button')).find(b => b.querySelector('span').textContent === entry.category);
                 if(majorBtn) majorBtn.click();
+                else {
+                    // 카테고리 목록에 없는 분류(예: 고정지출(자동))는 임시 칩으로 표시하고 그대로 유지
+                    selectedMajorCategory = entry.category;
+                    const box = document.getElementById('ledger-major-container');
+                    if(box) {
+                        const chip = document.createElement('button'); chip.type = 'button';
+                        chip.className = 'px-4 py-2 text-sm transition flex items-center gap-1 category-btn selected-cat';
+                        chip.innerHTML = `<span>${entry.category}</span>`;
+                        chip.title = '기존 분류 유지 (다른 대분류를 누르면 변경됨)';
+                        box.appendChild(chip);
+                    }
+                    if(entry.subCategory) {
+                        document.getElementById('ledger-minor-wrapper')?.classList.remove('hidden');
+                        const nameEl = document.getElementById('selected-major-name'); if(nameEl) nameEl.textContent = entry.category;
+                        const mc = document.getElementById('ledger-minor-container');
+                        if(mc) mc.innerHTML = `<span class="px-3 py-1.5 text-xs flex items-center gap-1 minor-category-btn selected-minor"><span>${entry.subCategory}</span></span>`;
+                    }
+                }
                 setTimeout(() => {
                     if(entry.subCategory) {
                         const minorBtn = Array.from(document.querySelectorAll('#ledger-minor-container button')).find(b => b.querySelector('span').textContent === entry.subCategory);
