@@ -12,9 +12,16 @@
 
             if (loginBtn) {
                 loginBtn.addEventListener('click', () => {
-                    // 홈 화면 앱(standalone)에서는 팝업 로그인이 앱으로 돌아오지 못하는 경우가 많아 리다이렉트 방식 사용
-                    if (isStandaloneApp()) auth.signInWithRedirect(provider).catch(e => showToast("로그인 실패: " + e.message));
-                    else auth.signInWithPopup(provider).catch(e => showToast("로그인 실패: " + e.message));
+                    // GitHub Pages(파이어베이스 외부 호스팅)에서는 리다이렉트 로그인이 Safari에서 막히므로 팝업이 기본.
+                    // 홈 화면 앱에서 팝업 자체가 막히면 그때만 리다이렉트로 재시도.
+                    auth.signInWithPopup(provider).catch(e => {
+                        const popupUnsupported = ['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment'].includes(e.code);
+                        if (isStandaloneApp() && popupUnsupported) {
+                            auth.signInWithRedirect(provider).catch(err => showToast("로그인 실패: " + err.message));
+                        } else if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+                            showToast("로그인 실패: " + e.message);
+                        }
+                    });
                 });
             }
             if (logoutBtn) {
@@ -1013,6 +1020,7 @@
                         plugins: { 
                             legend: { display: false },
                             tooltip: {
+                                enabled: keys.length > 0,
                                 callbacks: {
                                     label: function(ctx) {
                                         if(keys.length === 0) return '데이터 없음';
